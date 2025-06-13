@@ -92,8 +92,8 @@
             <button class="btn btn-outline-light" id="sidebarToggle">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand ms-3" href="#">
-                <img src="/images/logo.png" alt="Company Logo">
+            <a class="navbar-brand ms-3" href="">
+                <img src="/images/國鼎LOGO.jpg" alt="Company Logo">
                 國鼎鋼鐵
             </a>
             <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
@@ -103,7 +103,7 @@
                             <?= session()->get('userName') ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="<?= base_url('login/logout') ?>">登出</a></li>
+                            <li><a class="dropdown-item" href="<?= url_to('AuthController::logout') ?>">登出</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -116,10 +116,10 @@
         <div class="bg-dark border-right" id="sidebar-wrapper">
             <div class="sidebar-heading">功能列</div>
             <div class="list-group list-group-flush">
-                <a href="<?= base_url('user') ?>" class="list-group-item list-group-item-action">使用者管理</a>
-                <a href="<?= base_url('position') ?>" class="list-group-item list-group-item-action">職位管理</a>
-                <a href="#" class="list-group-item list-group-item-action">產品管理</a>
-                <a href="#" class="list-group-item list-group-item-action">訂單管理</a>
+                <a href="<?= url_to('UserController::index') ?>" class="list-group-item list-group-item-action">使用者管理</a>
+                <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">職位管理</a>
+                <a href="<?= url_to('MajorCategoryController::index') ?>" class="list-group-item list-group-item-action">大分類管理</a>
+                <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">小分類管理</a>
                 <a href="#" class="list-group-item list-group-item-action">客戶管理</a>
                 <a href="#" class="list-group-item list-group-item-action">報表</a>
                 <a href="#" class="list-group-item list-group-item-action">設定</a>

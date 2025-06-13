@@ -36,7 +36,7 @@
                 <?= session()->getFlashdata('error') ?>
             </div>
         <?php endif; ?>
-        <form action="<?= url_to('Login::authenticate') ?>" method="post">
+        <form action="<?= url_to('AuthController::login') ?>" method="post">
             <!-- 使用者名稱 -->
             <div class="mb-3">
                 <label for="username" class="form-label">使用者名稱</label>
