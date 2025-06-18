@@ -60,6 +60,15 @@ $routes->group('product', function ($routes) {
     $routes->post('save', 'ProductController::save');
 });
 
+// 地點
+$routes->group('location', function ($routes) {
+    $routes->get('/', 'LocationController::index');
+    $routes->get('create', 'LocationController::create');
+    $routes->get('edit/(:num)', 'LocationController::edit/$1');
+    $routes->get('delete/(:num)', 'LocationController::delete/$1');
+    $routes->post('save', 'LocationController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
@@ -76,4 +85,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 取得產品
     $routes->get('product/getProducts/(:num)', 'ProductController::getProductsByMinorCategoryId/$1');
+
+    // 取得地點
+    $routes->get('location/getLocations/(:num)', 'LocationController::getLocations/$1');
 }); 

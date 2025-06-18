@@ -1,6 +1,12 @@
 function search(url) {
     const keyword = document.getElementById('keyword').value.trim();
-    location.href = url + '?keyword=' + encodeURIComponent(keyword);
+    const type = document.getElementById('type').value;
+
+    let queryString = '?keyword=' + encodeURIComponent(keyword);
+    if (type !== '') {
+        queryString += '&type=' + encodeURIComponent(type);
+    }
+    location.href = url + queryString;
 }
 
 function confirmDelete(url) {

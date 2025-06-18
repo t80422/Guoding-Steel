@@ -121,8 +121,7 @@
                 <a href="<?= url_to('MajorCategoryController::index') ?>" class="list-group-item list-group-item-action">大分類管理</a>
                 <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">小分類管理</a>
                 <a href="<?= url_to('ProductController::index') ?>" class="list-group-item list-group-item-action">產品管理</a>
-                <a href="#" class="list-group-item list-group-item-action">報表</a>
-                <a href="#" class="list-group-item list-group-item-action">設定</a>
+                <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">地點管理</a>
             </div>
         </div>
         <!-- Page Content -->

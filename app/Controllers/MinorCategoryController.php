@@ -48,11 +48,17 @@ class MinorCategoryController extends BaseController
     public function save()
     {
         $data = $this->request->getPost();
+        $userId = session()->get('userId');
+
+        if (!$userId) {
+            return redirect()->to(url_to('AuthController::index'))
+                ->with('error', '請先登入！');
+        }
 
         if(empty($data['mic_id'])){
-            $data['mic_create_by'] = session()->get('userId');
+            $data['mic_create_by'] = $userId;
         }else{
-            $data['mic_update_by'] = session()->get('userId');
+            $data['mic_update_by'] = $userId;
             $data['mic_update_at'] = date('Y-m-d H:i:s');
         }
         $this->minorCategoryModel->save($data);

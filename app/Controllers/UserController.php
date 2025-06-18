@@ -101,9 +101,16 @@ class UserController extends BaseController
             $data['u_password'] = password_hash($password, PASSWORD_DEFAULT);
         }
 
+        $userId = session()->get('userId');
+
+        if (!$userId) {
+            return redirect()->to(url_to('AuthController::index'))
+                ->with('error', '請先登入！');
+        }
+
         if ($isEdit) {
             $data['u_id'] = $this->request->getPost('u_id');
-            $data['u_update_by'] = session()->get('userId');
+            $data['u_update_by'] = $userId;
             $data['u_update_at'] = date('Y-m-d H:i:s');
         }
 

@@ -68,11 +68,17 @@ class ProductController extends BaseController
     public function save()
     {
         $data = $this->request->getPost();
+        $userId = session()->get('userId');
+
+        if (!$userId) {
+            return redirect()->to(url_to('AuthController::index'))
+                ->with('error', '請先登入！');
+        }
 
         if (empty($data['pr_id'])) {
-            $data['pr_create_by'] = session()->get('userId');
+            $data['pr_create_by'] = $userId;
         } else {
-            $data['pr_update_by'] = session()->get('userId');
+            $data['pr_update_by'] = $userId;
             $data['pr_update_at'] = date('Y-m-d H:i:s');
         }
         $this->productModel->save($data);
