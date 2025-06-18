@@ -6,7 +6,6 @@ use CodeIgniter\Model;
 
 class MinorCategoryModel extends Model
 {
-    protected $DBGroup          = 'default';
     protected $table            = 'minor_categories';
     protected $primaryKey       = 'mic_id';
     protected $allowedFields    = [

@@ -51,6 +51,15 @@ $routes->group('minorCategory', function ($routes) {
     $routes->post('save', 'MinorCategoryController::save');
 });
 
+// 產品
+$routes->group('product', function ($routes) {
+    $routes->get('/', 'ProductController::index');
+    $routes->get('create', 'ProductController::create');
+    $routes->get('edit/(:num)', 'ProductController::edit/$1');
+    $routes->get('delete/(:num)', 'ProductController::delete/$1');
+    $routes->post('save', 'ProductController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
@@ -63,5 +72,8 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
     $routes->get('majorCategory/getMajorCategories', 'MajorCategoryController::getMajorCategories');
 
     // 取得小分類
-    $routes->get('minorCategory/getMinorCategories/(:num)', 'MinorCategoryController::getMinorCategories/$1');
-});
+    $routes->get('minorCategory/getMinorCategories/(:num)', 'MinorCategoryController::getMinorCategoriesByMajorCategory/$1');
+
+    // 取得產品
+    $routes->get('product/getProducts/(:num)', 'ProductController::getProductsByMinorCategoryId/$1');
+}); 
