@@ -43,11 +43,11 @@
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <p class="text-muted fw-semibold mb-1">上料時間</p>
-                    <p class="mb-0"><?= esc($order['o_load_time'] ?? '無') ?></p>
+                    <p class="mb-0"><?= esc($order['o_loading_time'] ?? '無') ?></p>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <p class="text-muted fw-semibold mb-1">下料時間</p>
-                    <p class="mb-0"><?= esc($order['o_unload_time'] ?? '無') ?></p>
+                    <p class="mb-0"><?= esc($order['o_unloading_time'] ?? '無') ?></p>
                 </div>
             </div>
             <div class="row g-3 mt-3">

@@ -83,6 +83,7 @@ class OrderController extends Controller
         try {
             $orders = $this->orderModel->getByInProgress();
 
+            $data = [];
             foreach ($orders as $order) {
                 $data[] = [
                     'o_id' => $order['o_id'],
@@ -143,7 +144,7 @@ class OrderController extends Controller
                 return $this->failNotFound('訂單不存在');
             }
 
-            $data = $this->request->getRawInput();
+            $data = $this->request->getPost();
             $files = $this->request->getFiles();
 
             $jsonOrder = json_decode($data['order'], true);
@@ -173,6 +174,7 @@ class OrderController extends Controller
                 }
             }
 
+            $jsonDetails['o_update_at'] = date('Y-m-d H:i:s');
             $this->orderModel->update($id, $jsonOrder);
 
             // 呼叫 OrderService 處理明細的增、改、刪
