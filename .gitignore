@@ -56,3 +56,4 @@ php_errors.log     # PHP error log file
 
 .cursor
 .gitignore
+build/

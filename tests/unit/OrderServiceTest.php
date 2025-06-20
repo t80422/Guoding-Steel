@@ -12,12 +12,6 @@ class OrderServiceTest extends CIUnitTestCase
 {
     use DatabaseTestTrait;
 
-    protected $migrate     = true;
-    protected $refresh     = true;
-    protected $seedOnce    = false;
-    protected $basePath    = APPPATH . 'Database';
-    protected $namespace   = 'App';
-
     protected $orderService;
     protected $orderModel;
     protected $orderDetailModel;
@@ -29,6 +23,30 @@ class OrderServiceTest extends CIUnitTestCase
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();
 
+        // 插入測試用的產品和次要類別 (OrderDetailModel 依賴這些)
+        $db = \CodeIgniter\Database\Config::connect();
+        $db->table('locations')->insertBatch([
+            ['l_id' => 1, 'l_name' => '地點A'],
+            ['l_id' => 2, 'l_name' => '地點B'],
+        ]);
+        $db->table('users')->insertBatch([
+            ['u_id' => 1, 'u_name' => '測試用戶', 'u_account' => 'testuser', 'u_password' => 'testpass', 'u_level' => 1],
+        ]);
+        $db->table('major_categories')->insertBatch([
+            ['mac_id' => 1, 'mac_name' => '主要類別1'],
+            ['mac_id' => 2, 'mac_name' => '主要類別2'],
+        ]);
+        $db->table('minor_categories')->insertBatch([
+            ['mic_id' => 1, 'mic_name' => '次要類別1', 'mic_mac_id' => 1],
+            ['mic_id' => 2, 'mic_name' => '次要類別2', 'mic_mac_id' => 1],
+        ]);
+        $db->table('products')->insertBatch([
+            ['pr_id' => 1, 'pr_name' => '產品A', 'pr_mic_id' => 1],
+            ['pr_id' => 2, 'pr_name' => '產品B', 'pr_mic_id' => 1],
+            ['pr_id' => 3, 'pr_name' => '產品C', 'pr_mic_id' => 2],
+            ['pr_id' => 4, 'pr_name' => '產品D', 'pr_mic_id' => 2], // 添加一個新產品用於新增情境
+        ]);
+        
         // 準備測試用的訂單資料
         $this->orderModel->insert([
             'o_type' => 0,
@@ -49,26 +67,6 @@ class OrderServiceTest extends CIUnitTestCase
             'o_create_by' => 1,
             'o_update_by' => 1,
             'o_status' => 0,
-        ]);
-
-        // 插入測試用的產品和次要類別 (OrderDetailModel 依賴這些)
-        $db = \CodeIgniter\Database\Config::connect();
-        $db->table('products')->insertBatch([
-            ['pr_id' => 1, 'pr_name' => '產品A', 'pr_mic_id' => 1],
-            ['pr_id' => 2, 'pr_name' => '產品B', 'pr_mic_id' => 1],
-            ['pr_id' => 3, 'pr_name' => '產品C', 'pr_mic_id' => 2],
-            ['pr_id' => 4, 'pr_name' => '產品D', 'pr_mic_id' => 2], // 添加一個新產品用於新增情境
-        ]);
-        $db->table('minor_categories')->insertBatch([
-            ['mic_id' => 1, 'mic_name' => '次要類別1', 'mic_mac_id' => 1],
-            ['mic_id' => 2, 'mic_name' => '次要類別2', 'mic_mac_id' => 1],
-        ]);
-        $db->table('locations')->insertBatch([
-            ['l_id' => 1, 'l_name' => '地點A'],
-            ['l_id' => 2, 'l_name' => '地點B'],
-        ]);
-        $db->table('users')->insertBatch([
-            ['u_id' => 1, 'u_name' => '測試用戶', 'u_account' => 'testuser', 'u_password' => 'testpass', 'u_level' => 1],
         ]);
     }
 

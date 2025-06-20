@@ -99,10 +99,11 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
     // 取得地點
     $routes->get('location/getLocations/(:num)', 'LocationController::getLocations/$1');
 
-    // 送出料單
+    // 訂單
     $routes->group('order', function ($routes) {
-        $routes->post('create', 'OrderController::create');
-        $routes->get('/', 'OrderController::index');
-        $routes->get('detail/(:num)', 'OrderController::detail/$1');
+        $routes->post('create', 'OrderController::create'); // 新增訂單
+        $routes->get('/', 'OrderController::index'); // 取得訂單列表
+        $routes->get('detail/(:num)', 'OrderController::detail/$1'); // 取得訂單詳細資料
+        $routes->post('update/(:num)', 'OrderController::update/$1'); // 更新訂單
     });
 }); 
