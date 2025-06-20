@@ -47,6 +47,10 @@
             </tbody>
         </table>
     </div>
+    <?= view('components/pagination', [
+        'pager' => $pager,
+        'baseUrl' => url_to('AuthController::authLogs')
+    ]) ?>
 </div>
 
 <script src="<?= base_url('js/script.js') ?>"></script>

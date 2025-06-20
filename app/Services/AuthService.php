@@ -191,8 +191,8 @@ class AuthService
         }
     }
 
-    public function getAuthLogs($keyword)
+    public function getAuthLogs($keyword, $page)
     {
-        return $this->userSessionModel->getList($keyword);
+        return $this->userSessionModel->getList($keyword, $page);
     }
 }

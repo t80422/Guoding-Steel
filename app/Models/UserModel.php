@@ -26,7 +26,7 @@ class UserModel extends Model
             ->get()->getResultArray();
     }
 
-    public function getList($keyword)
+    public function getList($keyword, $page)
     {
         $builder = $this->builder('users u')
             ->join('positions p', 'p.p_id=u.u_p_id','left')
@@ -39,6 +39,17 @@ class UserModel extends Model
                 ->groupEnd();
         }
 
-        return $builder->get()->getResultArray();
+        $builder->orderBy('u.u_create_at', 'DESC');
+        
+        $total = $builder->countAllResults(false);
+        $perPage = 10;
+        $totalPages = ceil($total / $perPage);
+        $data = $builder->limit($perPage, ($page - 1) * $perPage)->get()->getResultArray();
+        
+        return [
+            'data' => $data,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ];
     }
 }

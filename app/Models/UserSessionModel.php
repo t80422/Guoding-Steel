@@ -21,17 +21,25 @@ class UserSessionModel extends Model
             ->first();
     }
 
-    public function getList($keyword)
+    public function getList($keyword, $page)
     {
         $builder = $this->builder('user_sessions us')
-            ->join('users u', 'u.u_id = us.us_u_id');
+            ->join('users u', 'u.u_id = us.us_u_id')
+            ->select('u.u_name, us.us_login_time, us.us_logout_time');
 
         if ($keyword) {
             $builder->like('u.u_name', $keyword);
         }
 
-        return $builder->select('u.u_name, us.us_login_time, us.us_logout_time')
-            ->orderBy('us_login_time', 'DESC')
-            ->get()->getResultArray();
+        $total = $builder->countAllResults(false);
+        $perPage = 10;
+        $totalPages = ceil($total / $perPage);
+        $data = $builder->limit($perPage, ($page - 1) * $perPage)->get()->getResultArray();
+
+        return [
+            'data' => $data,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ];
     }
 }

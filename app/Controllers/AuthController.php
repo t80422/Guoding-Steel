@@ -16,14 +16,13 @@ class AuthController extends BaseController
     // 登入頁
     public function index()
     {
-        $users = $this->authService->getUsersDropdown();
-        return view('login', ['users' => $users]);
+        return view('login');
     }
 
     // 登入
     public function login()
     {
-        $userId = $this->request->getPost('userId');
+        $userId = 1;
         $password = $this->request->getPost('password');
 
         $result = $this->authService->validateAndAuthenticate($userId, $password);
@@ -52,7 +51,16 @@ class AuthController extends BaseController
     public function authLogs()
     {
         $keyword = $this->request->getGet('keyword');
-        $data = $this->authService->getAuthLogs($keyword);
-        return view('auth_logs', ['data' => $data]);
+        $page = $this->request->getGet('page') ?? 1;
+        $data = $this->authService->getAuthLogs($keyword, $page);
+        $pagerData = [
+            'currentPage' => $data['currentPage'],
+            'totalPages' => $data['totalPages']
+        ];
+        return view('auth_logs', [
+            'data' => $data['data'],
+            'pager' => $pagerData,
+            'keyword' => $keyword
+        ]);
     }
 }

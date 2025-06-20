@@ -13,7 +13,8 @@ class ProductModel extends Model
         'pr_create_by',
         'pr_update_by',
         'pr_update_at',
-        'pr_mic_id'
+        'pr_mic_id',
+        'pr_weight'
     ];
 
     public function getList($keyword)
@@ -23,7 +24,7 @@ class ProductModel extends Model
             ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
             ->join('users u1', 'u1.u_id=pr.pr_create_by', 'left')
             ->join('users u2', 'u2.u_id=pr.pr_update_by', 'left')
-            ->select('pr.pr_id, pr.pr_name, mc.mc_name, mic.mic_name, pr.pr_create_at, pr.pr_update_at, u1.u_name as creator, u2.u_name as updater');
+            ->select('pr.pr_id, pr.pr_name, mc.mc_name, mic.mic_name, pr.pr_create_at, pr.pr_update_at, u1.u_name as creator, u2.u_name as updater, pr.pr_weight');
 
         if (!empty($keyword)) {
             $builder->like('pr.pr_name', $keyword);

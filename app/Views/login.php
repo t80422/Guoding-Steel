@@ -37,17 +37,6 @@
             </div>
         <?php endif; ?>
         <form action="<?= url_to('AuthController::login') ?>" method="post">
-            <!-- 使用者名稱 -->
-            <div class="mb-3">
-                <label for="username" class="form-label">使用者名稱</label>
-                <select class="form-select" name="userId" required>
-                    <option value="" disabled selected>請選擇</option>
-                    <?php foreach ($users as $name): ?>
-                        <option value="<?= esc($name['u_id']) ?>"><?= esc($name['name']) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <!-- 密碼 -->
             <div class="mb-3">
                 <label for="password" class="form-label">密碼</label>
                 <input type="password" class="form-control" name="password" required>

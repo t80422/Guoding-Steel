@@ -55,7 +55,27 @@
             </tbody>
         </table>
     </div>
+
+    <!-- 分頁控件 -->
+    <?= view('components/pagination', [
+        'pager' => $pager,
+        'baseUrl' => url_to('UserController::index')
+    ]) ?>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 刪除確認功能
+        document.querySelectorAll('.delete-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                if (confirm('確定要刪除此使用者嗎？此操作無法復原。')) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+</script>
 
 <script src="<?= base_url('js/script.js') ?>"></script>
 

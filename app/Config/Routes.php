@@ -78,6 +78,15 @@ $routes->group('order', function ($routes) {
     $routes->get('serveSignature/(:segment)', 'OrderController::serveSignature/$1', ['as' => 'signature_image']);
 });
 
+// GPS
+$routes->group('gps', function ($routes) {
+    $routes->get('/', 'GpsController::index');
+    $routes->get('create', 'GpsController::create');
+    $routes->get('edit/(:num)', 'GpsController::edit/$1');
+    $routes->get('delete/(:num)', 'GpsController::delete/$1');
+    $routes->post('save', 'GpsController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
@@ -106,4 +115,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
         $routes->get('detail/(:num)', 'OrderController::detail/$1'); // 取得訂單詳細資料
         $routes->post('update/(:num)', 'OrderController::update/$1'); // 更新訂單
     });
+
+    // 取得GPS
+    $routes->get('gps/getOptions', 'GpsController::getOptions');
 }); 
