@@ -13,6 +13,7 @@ $routes->get('/', 'AuthController::index');
 $routes->group('auth', function ($routes) {
     $routes->post('login', 'AuthController::login');
     $routes->get('logout', 'AuthController::logout');
+    $routes->get('authLogs', 'AuthController::authLogs');
 });
 
 // 職位
@@ -69,12 +70,21 @@ $routes->group('location', function ($routes) {
     $routes->post('save', 'LocationController::save');
 });
 
+// 訂單
+$routes->group('order', function ($routes) {
+    $routes->get('/', 'OrderController::index');
+    $routes->get('view/(:num)', 'OrderController::view/$1');
+    $routes->get('delete/(:num)', 'OrderController::delete/$1');
+    $routes->get('serveSignature/(:segment)', 'OrderController::serveSignature/$1', ['as' => 'signature_image']);
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
     $routes->group('auth', function ($routes) { 
-        $routes->get('getLoginData', 'AuthController::getLoginData');
+        $routes->get('getUsersList', 'AuthController::getUsersList');
         $routes->post('login', 'AuthController::login');
+        $routes->post('logout/(:num)', 'AuthController::logout/$1');
     });
 
     // 取得大分類
@@ -88,4 +98,11 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 取得地點
     $routes->get('location/getLocations/(:num)', 'LocationController::getLocations/$1');
+
+    // 送出料單
+    $routes->group('order', function ($routes) {
+        $routes->post('create', 'OrderController::create');
+        $routes->get('/', 'OrderController::index');
+        $routes->get('detail/(:num)', 'OrderController::detail/$1');
+    });
 }); 

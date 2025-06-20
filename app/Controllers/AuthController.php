@@ -16,8 +16,8 @@ class AuthController extends BaseController
     // 登入頁
     public function index()
     {
-        $data = $this->authService->getUsersDropdown();
-        return view('login', $data);
+        $users = $this->authService->getUsersDropdown();
+        return view('login', ['users' => $users]);
     }
 
     // 登入
@@ -46,5 +46,13 @@ class AuthController extends BaseController
     {
         session()->destroy();
         return redirect()->to('/');
+    }
+
+    // 登入登出紀錄
+    public function authLogs()
+    {
+        $keyword = $this->request->getGet('keyword');
+        $data = $this->authService->getAuthLogs($keyword);
+        return view('auth_logs', ['data' => $data]);
     }
 }

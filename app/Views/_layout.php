@@ -122,6 +122,8 @@
                 <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">小分類管理</a>
                 <a href="<?= url_to('ProductController::index') ?>" class="list-group-item list-group-item-action">產品管理</a>
                 <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">地點管理</a>
+                <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">登入登出紀錄</a>
+                <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">訂單管理</a>
             </div>
         </div>
         <!-- Page Content -->

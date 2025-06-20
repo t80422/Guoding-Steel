@@ -17,8 +17,8 @@ class AuthController extends BaseController
         $this->authService = new AuthService();
     }
 
-    // 取得登入用戶列表資料 
-    public function getLoginData()
+    // 獲取使用者清單 
+    public function getUsersList()
     {
         $data = $this->authService->getUsersDropdown();
         return $this->respond($data);
@@ -35,6 +35,8 @@ class AuthController extends BaseController
         $result = $this->authService->validateAndAuthenticate($userId, $password);
 
         if ($result['status'] === 'success') {
+            // 紀錄登入時間
+            $this->authService->recordLoginTime($userId);
             // 成功登入，回傳用戶資訊
             return $this->respond($result['message']);
         } else {
@@ -45,5 +47,12 @@ class AuthController extends BaseController
                 return $this->fail($result['message']);
             }
         }
+    }
+
+    // 登出
+    public function logout($userId)
+    {
+        $this->authService->recordLogoutTime($userId);
+        return $this->respond('登出成功');
     }
 }

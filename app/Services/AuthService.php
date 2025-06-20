@@ -3,14 +3,17 @@
 namespace App\Services;
 
 use App\Models\UserModel;
+use App\Models\UserSessionModel;
 
 class AuthService
 {
     protected $userModel;
+    protected $userSessionModel;
 
     public function __construct()
     {
         $this->userModel = new UserModel();
+        $this->userSessionModel = new UserSessionModel();
     }
 
     /**
@@ -130,9 +133,7 @@ class AuthService
                 ];
             }
 
-            return [
-                'users' => $formattedDatas
-            ];
+            return $formattedDatas;
         } catch (\Exception $e) {
             log_message('error', 'AuthService 取得登入資料錯誤: ' . $e->getMessage());
             return [
@@ -156,5 +157,42 @@ class AuthService
             log_message('error', 'AuthService Session 設定錯誤: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * 紀錄登入時間
+     * @param string $userId
+     * @return void
+     */
+    public function recordLoginTime(string $userId)
+    {
+        try {
+            $this->userSessionModel->insert([
+                'us_u_id' => $userId,
+                'us_login_time' => date('Y-m-d H:i:s')
+            ]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * 紀錄登出時間
+     * @param string $userId
+     * @return void
+     */
+    public function recordLogoutTime(string $userId)
+    {
+        try {
+            $lastLogin = $this->userSessionModel->getLastLogin($userId);
+            $this->userSessionModel->update($lastLogin['us_id'], ['us_logout_time' => date('Y-m-d H:i:s')]);
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    public function getAuthLogs($keyword)
+    {
+        return $this->userSessionModel->getList($keyword);
     }
 }
