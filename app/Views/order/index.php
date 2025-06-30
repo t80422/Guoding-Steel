@@ -113,13 +113,13 @@
                             <td><?= esc($item['from_location_name']) ?></td>
                             <td><?= esc($item['to_location_name']) ?></td>
                             <td><?= esc($item['o_car_number']) ?></td>
-                            <td><?= esc($item['o_gps']) ?></td>
+                            <td><?= esc($item['gps_name']) ?></td>
                             <td><?= esc($item['o_oxygen']) ?></td>
                             <td><?= esc($item['o_acetylene']) ?></td>
                             <td><?= esc($item['o_remark']) ?></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-info" onclick="window.location.href='<?= url_to('OrderController::view', $item['o_id']) ?>'" title="查看">
-                                    <i class="bi bi-eye"></i>
+                                <button class="btn btn-sm btn-outline-info" onclick="window.location.href='<?= url_to('OrderController::edit', $item['o_id']) ?>'" title="編輯">
+                                    <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('OrderController::delete', $item['o_id']) ?>')" title="刪除">
                                     <i class="bi bi-trash"></i>

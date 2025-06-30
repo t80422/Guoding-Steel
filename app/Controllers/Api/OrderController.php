@@ -189,4 +189,26 @@ class OrderController extends Controller
             return $this->fail('更新失敗');
         }
     }
+
+    // 歷史紀錄
+    public function history()
+    {
+        try {
+            $orders = $this->orderModel->getByCompleted();
+
+            $data = [];
+            foreach ($orders as $order) {
+                $data[] = [
+                    'o_id' => $order['o_id'],
+                    'o_from_location' => $order['from_location_name'],
+                    'o_to_location' => $order['to_location_name'],
+                    'o_car_number' => $order['o_car_number']
+                ];
+            }
+            return $this->respond($data);
+        } catch (Exception $e) {
+            log_message('error', $e->getMessage());
+            return $this->fail('取得歷史紀錄失敗');
+        }
+    }
 }

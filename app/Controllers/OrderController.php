@@ -5,6 +5,9 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\OrderModel;
 use App\Models\OrderDetailModel;
+use App\Models\LocationModel;
+use App\Models\GpsModel;
+use App\Models\ProductModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use Exception;
 use App\Libraries\OrderService;
@@ -14,12 +17,18 @@ class OrderController extends BaseController
     protected $orderModel;
     protected $orderDetailModel;
     protected $orderService;
+    protected $locationModel;
+    protected $gpsModel;
+    protected $productModel;
 
     public function __construct()
     {
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();   
         $this->orderService = new OrderService();
+        $this->locationModel = new LocationModel();
+        $this->gpsModel = new GpsModel();
+        $this->productModel = new ProductModel();
     }
 
     // 列表
@@ -41,23 +50,53 @@ class OrderController extends BaseController
         ]);
     }
 
-    // 查看
-    public function view($id = null)
+    // 編輯
+    public function edit($id = null)
     {
-        $order = $this->orderModel->getView($id);
+        $order = $this->orderModel->getDetail($id);
 
         if (!$order) {
             throw new PageNotFoundException('無法找到該訂單: ' . $id);
         }
 
-        $orderDetails = $this->orderDetailModel->getView($id);
+        $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
+        $gpsOptions = $this->gpsModel->getOptions();
 
         $data = [
             'order' => $order,
             'orderDetails' => $orderDetails,
+            'gpsOptions' => $gpsOptions,
         ];
 
-        return view('order/view', $data);
+        return view('order/form', ['data' => $data, 'isEdit' => true]);
+    }
+
+    // 保存
+    public function save(){
+        $this->orderModel->db->transStart();
+
+        try {
+            $data = $this->request->getPost();
+            log_message('debug', print_r($data, true));
+            $userId = session()->get('userId');
+    
+            if (!$userId) {
+                return redirect()->to(url_to('AuthController::index'))
+                    ->with('error', '請先登入！');
+            }
+    
+            $data['o_update_by'] = $userId;
+            $data['o_update_at'] = date('Y-m-d H:i:s');
+    
+            $this->orderModel->save($data);
+            $this->orderService->updateOrderDetails($data['o_id'], $data['details']);
+            $this->orderModel->db->transComplete();
+            return redirect()->to(url_to('OrderController::index'));
+        } catch (Exception $e) {
+            log_message('error', $e->getMessage());
+            $this->orderModel->db->transRollback();
+            return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗');
+        }
     }
 
     // 提供簽名圖片

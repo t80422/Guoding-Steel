@@ -73,7 +73,8 @@ $routes->group('location', function ($routes) {
 // 訂單
 $routes->group('order', function ($routes) {
     $routes->get('/', 'OrderController::index');
-    $routes->get('view/(:num)', 'OrderController::view/$1');
+    $routes->get('edit/(:num)', 'OrderController::edit/$1');
+    $routes->post('save', 'OrderController::save');
     $routes->get('delete/(:num)', 'OrderController::delete/$1');
     $routes->get('serveSignature/(:segment)', 'OrderController::serveSignature/$1', ['as' => 'signature_image']);
 });
@@ -103,7 +104,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
     $routes->get('minorCategory/getMinorCategories/(:num)', 'MinorCategoryController::getMinorCategoriesByMajorCategory/$1');
 
     // 取得產品
-    $routes->get('product/getProducts/(:num)', 'ProductController::getProductsByMinorCategoryId/$1');
+    $routes->get('product/getProducts/(:num)', 'ProductController::getProductList/$1');
 
     // 取得地點
     $routes->get('location/getLocations/(:num)', 'LocationController::getLocations/$1');
@@ -114,6 +115,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
         $routes->get('/', 'OrderController::index'); // 取得訂單列表
         $routes->get('detail/(:num)', 'OrderController::detail/$1'); // 取得訂單詳細資料
         $routes->post('update/(:num)', 'OrderController::update/$1'); // 更新訂單
+        $routes->get('history', 'OrderController::history');// 歷史紀錄
     });
 
     // 取得GPS

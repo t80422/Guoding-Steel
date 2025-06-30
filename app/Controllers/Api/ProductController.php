@@ -14,9 +14,17 @@ class ProductController extends BaseController
         $this->productModel = new ProductModel();
     }
 
-    public function getProductsByMinorCategoryId($minorCategoryId)
+    public function getProductList($minorCategoryId)
     {
-        $product = $this->productModel->getNames($minorCategoryId);
-        return $this->response->setJSON($product);
+        $product = $this->productModel->getByMinorCategoryId($minorCategoryId);
+        $data = [];
+        foreach ($product as $item) {
+            $data[] = [
+                'pr_id' => $item['pr_id'],
+                'pr_name' => $item['pr_name'],
+                'pr_weight' => $item['pr_weight'],
+            ];
+        }
+        return $this->response->setJSON($data);
     }
 }

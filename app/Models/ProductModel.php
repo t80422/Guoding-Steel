@@ -35,10 +35,9 @@ class ProductModel extends Model
         return $builder->get()->getResultArray();
     }
 
-    public function getNames($minorCategoryId)
+    public function getByMinorCategoryId($minorCategoryId)
     {
         return $this->where('pr_mic_id', $minorCategoryId)
-        ->select('pr_id,pr_name')
         ->findAll();
     }
 }

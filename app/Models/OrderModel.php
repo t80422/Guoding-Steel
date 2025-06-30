@@ -17,7 +17,7 @@ class OrderModel extends Model
         'o_driver_phone',
         'o_loading_time',
         'o_unloading_time',
-        'o_gps',
+        'o_g_id',
         'o_oxygen',
         'o_acetylene',
         'o_remark',
@@ -84,7 +84,15 @@ class OrderModel extends Model
             ->join('locations l2', 'l2.l_id = o.o_to_location', 'left')
             ->join('users u1', 'u1.u_id = o.o_create_by', 'left')
             ->join('users u2', 'u2.u_id = o.o_update_by', 'left')
-            ->select('o.*, l1.l_name as from_location_name, l2.l_name as to_location_name, u1.u_name as create_name, u2.u_name as update_name');
+            ->join('gps g', 'g.g_id = o.o_g_id', 'left')
+            ->select('
+                o.*,
+                l1.l_name as from_location_name,
+                l2.l_name as to_location_name,
+                u1.u_name as create_name,
+                u2.u_name as update_name,
+                g.g_name as gps_name
+            ');
     }
 
     /**
@@ -144,21 +152,6 @@ class OrderModel extends Model
     }
 
     /**
-     * 取得訂單檢視資料
-     *
-     * @param int $id
-     * @return array
-     */
-    public function getView($id)
-    {
-        $data = $this->getDetail($id);
-
-        $data['o_type'] = self::getTypeName($data['o_type']);
-
-        return $data;
-    }
-
-    /**
      * 取得進行中的訂單
      *
      * @return array
@@ -167,6 +160,13 @@ class OrderModel extends Model
     {
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_IN_PROGRESS)
+            ->get()->getResultArray();
+    }
+
+    public function getByCompleted()
+    {
+        return $this->baseQuery()
+            ->where('o.o_status', self::STATUS_COMPLETED)
             ->get()->getResultArray();
     }
 }

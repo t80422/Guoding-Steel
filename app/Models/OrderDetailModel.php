@@ -17,20 +17,6 @@ class OrderDetailModel extends Model
     ];
 
     /**
-     * 取得訂單明細檢視
-     *
-     * @param int $orderId
-     * @return array
-     */
-    public function getView($orderId)
-    {
-        return $this->builder('order_details od')
-            ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
-            ->where('od.od_o_id', $orderId)
-            ->get()->getResultArray();
-    }
-
-    /**
      * 取得訂單明細資料
      *
      * @param int $orderId
