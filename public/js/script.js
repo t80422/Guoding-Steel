@@ -1,3 +1,4 @@
+//todo: 拿掉,改成在各自的index.php裡面寫
 function search(url) {
     const keyword = document.getElementById('keyword').value.trim();
     const order_date_start = document.getElementById('order_date_start').value;

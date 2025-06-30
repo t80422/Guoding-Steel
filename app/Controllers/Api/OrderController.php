@@ -36,6 +36,7 @@ class OrderController extends Controller
             $jsonOrder = json_decode($data['order'], true);
             $jsonDetails = json_decode($data['details'], true);
 
+            //todo: 改成使用FileManager
             // 處理檔案上傳
             $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
             $newFileNames = []; // 初始化新檔案名稱陣列
@@ -150,6 +151,7 @@ class OrderController extends Controller
             $jsonOrder = json_decode($data['order'], true);
             $jsonDetails = json_decode($data['details'], true);
 
+            //todo: 改成使用FileManager
             // 處理檔案上傳
             $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
             foreach ($signatureKeys as $key) {

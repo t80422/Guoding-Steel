@@ -125,6 +125,9 @@
                 <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">登入登出紀錄</a>
                 <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">訂單管理</a>
                 <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">GPS管理</a>
+                <a href="<?= url_to('RentalController::index') ?>" class="list-group-item list-group-item-action">租賃單管理</a>
+                <a href="<?= url_to('MachineController::index') ?>" class="list-group-item list-group-item-action">機械管理</a>
+                <a href="<?= url_to('MachineMaintenanceController::index') ?>" class="list-group-item list-group-item-action">機械保養管理</a>
             </div>
         </div>
         <!-- Page Content -->
@@ -139,14 +142,6 @@
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('wrapper').classList.toggle('toggled');
         });
-
-        <?php if (session()->has('error')): ?>
-            var errorMessages = [];
-            <?php foreach (session('error') as $error): ?>
-                errorMessages.push("<?= $error; ?>");
-            <?php endforeach; ?>
-            alert(errorMessages.join("\n"));
-        <?php endif; ?>
     </script>
 </body>
 

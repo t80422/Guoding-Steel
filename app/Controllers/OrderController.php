@@ -125,6 +125,7 @@ class OrderController extends BaseController
                 throw new PageNotFoundException('無法找到該訂單: ' . $id);
             }
 
+            //todo: 改成使用FileManager
             // 刪除相關的簽名檔案
             $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
 

@@ -21,15 +21,15 @@ class UserController extends BaseController
     public function index()
     {
         $keyword = $this->request->getGet('keyword');
-        $page = $this->request->getGet('page')??1;
-        
+        $page = $this->request->getGet('page') ?? 1;
+
         $result = $this->userModel->getList($keyword, $page);
-        
+
         $pagerData = [
             'currentPage' => $result['currentPage'],
             'totalPages' => $result['totalPages']
         ];
-        
+
         return view('user/index', [
             'data' => $result['data'],
             'pager' => $pagerData,

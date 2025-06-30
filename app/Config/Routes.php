@@ -88,10 +88,35 @@ $routes->group('gps', function ($routes) {
     $routes->post('save', 'GpsController::save');
 });
 
+// 租賃單
+$routes->group('rental', function ($routes) {
+    $routes->get('/', 'RentalController::index');
+    $routes->get('image/(:segment)', 'RentalController::image/$1');
+    $routes->get('delete/(:num)', 'RentalController::delete/$1');
+});
+
+// 機械
+$routes->group('machine', function ($routes) {
+    $routes->get('/', 'MachineController::index');
+    $routes->get('create', 'MachineController::create');
+    $routes->get('edit/(:num)', 'MachineController::edit/$1');
+    $routes->get('delete/(:num)', 'MachineController::delete/$1');
+    $routes->post('save', 'MachineController::save');
+});
+
+// 機械保養
+$routes->group('machineMaintenance', function ($routes) {
+    $routes->get('/', 'MachineMaintenanceController::index');
+    $routes->get('create', 'MachineMaintenanceController::create');
+    $routes->get('edit/(:num)', 'MachineMaintenanceController::edit/$1');
+    $routes->get('delete/(:num)', 'MachineMaintenanceController::delete/$1');
+    $routes->post('save', 'MachineMaintenanceController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
-    $routes->group('auth', function ($routes) { 
+    $routes->group('auth', function ($routes) {
         $routes->get('getUsersList', 'AuthController::getUsersList');
         $routes->post('login', 'AuthController::login');
         $routes->post('logout/(:num)', 'AuthController::logout/$1');
@@ -115,9 +140,15 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
         $routes->get('/', 'OrderController::index'); // 取得訂單列表
         $routes->get('detail/(:num)', 'OrderController::detail/$1'); // 取得訂單詳細資料
         $routes->post('update/(:num)', 'OrderController::update/$1'); // 更新訂單
-        $routes->get('history', 'OrderController::history');// 歷史紀錄
+        $routes->get('history', 'OrderController::history'); // 歷史紀錄
     });
 
     // 取得GPS
     $routes->get('gps/getOptions', 'GpsController::getOptions');
-}); 
+
+    // 上傳租賃單
+    $routes->post('rental', 'RentalController::create');
+
+    // 機械保養
+    $routes->get('machine-maintenance', 'MachineMaintenanceController::index');
+});
