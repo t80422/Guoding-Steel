@@ -13,7 +13,8 @@ class LocationModel extends Model
         'l_type', // 類型(0:倉庫、1:工地)
         'l_create_by',
         'l_update_by',
-        'l_update_at'
+        'l_update_at',
+        'l_ma_id'
     ];
 
     // 定義 l_type 常數
@@ -38,30 +39,47 @@ class LocationModel extends Model
         }
     }
 
-    public function getList($keyword, $type = null)
+    public function getList($filter = [], $page = 1)
     {
         $builder = $this->builder('locations l')
             ->join('users u1', 'u1.u_id=l.l_create_by', 'left')
             ->join('users u2', 'u2.u_id=l.l_update_by', 'left')
-            ->select('l.l_id,l.l_name,l.l_type,l.l_create_at,l.l_update_at,u1.u_name as creator,u2.u_name as updater');
+            ->join('manufacturers ma', 'ma.ma_id=l.l_ma_id', 'left')
+            ->select('l.l_id,
+                      l.l_name,
+                      l.l_type,
+                      l.l_create_at,
+                      l.l_update_at,
+                      u1.u_name as creator,
+                      u2.u_name as updater,
+                      ma.ma_name as ma_name');
 
-        if (!empty($keyword)) {
-            $builder->like('l.l_name', $keyword);
+        if (!empty($filter['keyword'])) {
+            $builder->like('l.l_name', $filter['keyword']);
         }
 
         // 新增 l_type 篩選條件
-        if (isset($type)) {
-            $builder->where('l.l_type', $type);
+        if (isset($filter['type'])) {
+            $builder->where('l.l_type', $filter['type']);
         }
 
-        $results = $builder->get()->getResultArray();
+        $builder->orderBy('l.l_id', 'DESC');
+
+        $total = $builder->countAllResults(false);
+        $perPage = 10;
+        $totalPages = ceil($total / $perPage);
+        $data = $builder->limit($perPage, ($page - 1) * $perPage)->get()->getResultArray();
 
         // 加入 l_type 的中文名稱
-        foreach ($results as &$row) {
+        foreach ($data as &$row) {
             $row['typeName'] = self::getTypeName($row['l_type']);
         }
 
-        return $results;
+        return [
+            'data' => $data,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ];
     }
 
     public function getByType($type)

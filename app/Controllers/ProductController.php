@@ -23,12 +23,19 @@ class ProductController extends BaseController
     // 列表
     public function index()
     {
-        $keyword = $this->request->getGet('keyword');
-        $data = $this->productModel->getList($keyword);
+        $filter = $this->request->getGet();
+        $page = $filter['page'] ?? 1;
 
+        $data = $this->productModel->getList($filter, $page);
+
+        $pagerData = [
+            'currentPage' => $data['currentPage'],
+            'totalPages' => $data['totalPages']
+        ];
         return view('product/index', [
-            'data' => $data,
-            'keyword' => $keyword
+            'data' => $data['data'],
+            'pager' => $pagerData,
+            'filter' => $filter
         ]);
     }
 

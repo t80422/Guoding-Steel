@@ -4,74 +4,91 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
+use App\Models\ManufacturerModel;
+use Throwable;
 
 class LocationController extends BaseController
 {
     private $locationModel;
+    private $manufacturerModel;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
+        $this->manufacturerModel = new ManufacturerModel();
     }
 
     public function index()
     {
-        $keyword = $this->request->getGet('keyword');
-        $type = $this->request->getGet('type');
+        $filter = $this->request->getGet();
+        $page = $filter['page'] ?? 1;
 
-        // 將空字串轉換為 null，以便模型正確處理
-        if ($type === '') {
-            $type = null;
-        }
+        $data = $this->locationModel->getList($filter, $page);
 
-        $data = $this->locationModel->getList($keyword, $type);
+        $pagerData = [
+            'currentPage' => $data['currentPage'],
+            'totalPages' => $data['totalPages']
+        ];
+
         return view('location/index', [
-            'data' => $data,
-            'keyword' => $keyword,
-            'type' => $type
+            'data' => $data['data'],
+            'pager' => $pagerData,
+            'filter' => $filter
         ]);
     }
 
     // 新增
     public function create()
     {
-        return view('location/form', ['isEdit' => false]);
+        $manufacturers = $this->manufacturerModel->getDropdown();
+        return view('location/form', ['isEdit' => false, 'manufacturers' => $manufacturers]);
     }
 
     // 編輯
     public function edit($id)
     {
         $data = $this->locationModel->find($id);
-        return view('location/form', ['isEdit' => true, 'data' => $data]);
+        $manufacturers = $this->manufacturerModel->getDropdown();
+        return view('location/form', ['isEdit' => true, 'data' => $data, 'manufacturers' => $manufacturers]);
     }
 
     // 儲存
     public function save()
     {
-        $data = $this->request->getPost();
-        $userId = session()->get('userId');
+        try {
+            $data = $this->request->getPost();
+            $userId = session()->get('userId');
 
-        if (!$userId) {
-            return redirect()->to(url_to('AuthController::index'))
-                ->with('error', '請先登入！');
+            if (!$userId) {
+                return redirect()->to(url_to('AuthController::index'))
+                    ->with('error', '請先登入！');
+            }
+
+            if (empty($data['l_id'])) {
+                $data['l_create_by'] = $userId;
+            } else {
+                $data['l_update_by'] = $userId;
+                $data['l_update_at'] = date('Y-m-d H:i:s');
+            }
+
+            $this->locationModel->save($data);
+
+            return redirect()->to(url_to('LocationController::index'));
+        } catch (Throwable $th) {
+            $redirectUrl = !empty($data['l_id'])
+                ? url_to('LocationController::edit', $data['l_id'])
+                : url_to('LocationController::create');
+
+            return redirect()->to($redirectUrl)
+                ->withInput()
+                ->with('error', $th->getMessage());
         }
-
-        if (empty($data['l_id'])) {
-            $data['l_create_by'] = $userId;
-        } else {
-            $data['l_update_by'] = $userId;
-            $data['l_update_at'] = date('Y-m-d H:i:s');
-        }
-
-        $this->locationModel->save($data);
-
-        return redirect()->to('location');
     }
 
     // 刪除
     public function delete($id)
     {
         $this->locationModel->delete($id);
-        return redirect()->to('location');
+        return redirect()->to(url_to('LocationController::index'));
     }
 }

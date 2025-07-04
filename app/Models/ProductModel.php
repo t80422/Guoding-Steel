@@ -17,7 +17,7 @@ class ProductModel extends Model
         'pr_weight'
     ];
 
-    public function getList($keyword)
+    public function getList($filter = [], $page = 1)
     {
         $builder = $this->builder('products pr')
             ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
@@ -26,13 +26,24 @@ class ProductModel extends Model
             ->join('users u2', 'u2.u_id=pr.pr_update_by', 'left')
             ->select('pr.pr_id, pr.pr_name, mc.mc_name, mic.mic_name, pr.pr_create_at, pr.pr_update_at, u1.u_name as creator, u2.u_name as updater, pr.pr_weight');
 
-        if (!empty($keyword)) {
-            $builder->like('pr.pr_name', $keyword);
-            $builder->orLike('mic.mic_name', $keyword);
-            $builder->orLike('mc.mc_name', $keyword);
+        if (!empty($filter['keyword'])) {
+            $builder->like('pr.pr_name', $filter['keyword']);
+            $builder->orLike('mic.mic_name', $filter['keyword']);
+            $builder->orLike('mc.mc_name', $filter['keyword']);
         }
 
-        return $builder->get()->getResultArray();
+        $builder->orderBy('pr.pr_id', 'DESC');
+
+        $total = $builder->countAllResults(false);
+        $perPage = 10;
+        $totalPages = ceil($total / $perPage);
+        $data = $builder->limit($perPage, ($page - 1) * $perPage)->get()->getResultArray();
+
+        return [
+            'data' => $data,
+            'currentPage' => $page,
+            'totalPages' => $totalPages
+        ];
     }
 
     public function getByMinorCategoryId($minorCategoryId)

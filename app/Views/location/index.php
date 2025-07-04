@@ -11,7 +11,7 @@ use App\Models\LocationModel;
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">地點管理</h3>
-        <a href="<?= url_to('LocationController::create') ?>" class="btn btn-outline-primary">
+        <a href="<?= url_to('LocationController::create') ?>" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> 新增
         </a>
     </div>
@@ -21,8 +21,12 @@ use App\Models\LocationModel;
             <div class="col-md-2">
                 <select class="form-select" id="type" name="type">
                     <option value="">全部類型</option>
-                    <option value="<?= LocationModel::TYPE_WAREHOUSE ?>" <?= (isset($type) && $type == LocationModel::TYPE_WAREHOUSE) ? 'selected' : '' ?>>倉庫</option>
-                    <option value="<?= LocationModel::TYPE_CONSTRUCTION_SITE ?>" <?= (isset($type) && $type == LocationModel::TYPE_CONSTRUCTION_SITE) ? 'selected' : '' ?>>工地</option>
+                    <option value="<?= LocationModel::TYPE_WAREHOUSE ?>" <?= (isset($type) && $type == LocationModel::TYPE_WAREHOUSE) ? 'selected' : '' ?>>
+                        倉庫
+                    </option>
+                    <option value="<?= LocationModel::TYPE_CONSTRUCTION_SITE ?>" <?= (isset($type) && $type == LocationModel::TYPE_CONSTRUCTION_SITE) ? 'selected' : '' ?>>
+                        工地
+                    </option>
                 </select>
             </div>
             <div class="col-md-10">
@@ -42,6 +46,7 @@ use App\Models\LocationModel;
                 <tr>
                     <th>名稱</th>
                     <th>類型</th>
+                    <th>廠商</th>
                     <th>建立人</th>
                     <th>建立時間</th>
                     <th>更新人</th>
@@ -59,6 +64,7 @@ use App\Models\LocationModel;
                         <tr>
                             <td><?= esc($item['l_name']) ?></td>
                             <td><?= esc($item['typeName']) ?></td>
+                            <td><?= esc($item['ma_name']) ?></td>
                             <td><?= esc($item['creator']) ?></td>
                             <td><?= esc($item['l_create_at']) ?></td>
                             <td><?= esc($item['updater']) ?></td>
@@ -78,6 +84,13 @@ use App\Models\LocationModel;
         </table>
     </div>
 </div>
+
+<!-- 分頁控件 -->
+<?= view('components/pagination', [
+    'pager' => $pager,
+    'baseUrl' => url_to('LocationController::index'),
+    'params' => $filter
+]) ?>
 
 <script src="<?= base_url('js/script.js') ?>"></script>
 

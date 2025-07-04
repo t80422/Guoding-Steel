@@ -113,6 +113,24 @@ $routes->group('machineMaintenance', function ($routes) {
     $routes->post('save', 'MachineMaintenanceController::save');
 });
 
+// 機械維修
+$routes->group('machineRepair', function ($routes) {
+    $routes->get('/', 'MachineRepairController::index');
+    $routes->get('create', 'MachineRepairController::create');
+    $routes->get('edit/(:num)', 'MachineRepairController::edit/$1');
+    $routes->get('delete/(:num)', 'MachineRepairController::delete/$1');
+    $routes->post('save', 'MachineRepairController::save');
+});
+
+// 廠商
+$routes->group('manufacturer', function ($routes) {
+    $routes->get('/', 'ManufacturerController::index');
+    $routes->get('create', 'ManufacturerController::create');
+    $routes->get('edit/(:num)', 'ManufacturerController::edit/$1');
+    $routes->get('delete/(:num)', 'ManufacturerController::delete/$1');
+    $routes->post('save', 'ManufacturerController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入
@@ -151,4 +169,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 機械保養
     $routes->get('machine-maintenance', 'MachineMaintenanceController::index');
+
+    // 機械維修
+    $routes->get('machine-repair', 'MachineRepairController::index');
 });

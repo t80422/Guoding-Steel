@@ -3,7 +3,7 @@
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><?= $isEdit ? '編輯' : '新增' ?>職位</h2>
+        <h2><?= $isEdit ? '編輯' : '新增' ?>使用者</h2>
     </div>
 
     <form action="/user/save" method="post">

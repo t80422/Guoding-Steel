@@ -67,6 +67,13 @@
     </div>
 </div>
 
+<!-- 分頁控件 -->
+<?= view('components/pagination', [
+    'pager' => $pager,
+    'baseUrl' => url_to('ProductController::index'),
+    'params' => $filter
+]) ?>
+
 <script src="<?= base_url('js/script.js') ?>"></script>
 
 <?= $this->endSection() ?>

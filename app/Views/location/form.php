@@ -41,6 +41,16 @@ use App\Models\LocationModel;
             <?php endif; ?>
         </div>
 
+        <div class="mb-3">
+            <label for="ma_id" class="form-label">廠商</label>
+            <select class="form-select" name="l_ma_id" id="ma_id" required>
+                <option value="">請選擇</option>
+                <?php foreach ($manufacturers as $manufacturer): ?>
+                    <option value="<?= $manufacturer['ma_id'] ?>" <?= (isset($data['l_ma_id']) && $data['l_ma_id'] == $manufacturer['ma_id']) ? 'selected' : '' ?>><?= $manufacturer['ma_name'] ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">保存</button>
         <a href="<?= url_to('LocationController::index') ?>" class="btn btn-secondary">取消</a>
     </form>

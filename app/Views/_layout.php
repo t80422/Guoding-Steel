@@ -7,89 +7,14 @@
     <title>國鼎鋼鐵-後台管理系統</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <style>
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
-
-        #wrapper {
-            display: flex;
-            width: 100%;
-            flex-grow: 1;
-            /* Make wrapper take remaining height */
-            transition: all 0.3s ease-in-out;
-            /* For smooth transition of content area */
-        }
-
-        #sidebar-wrapper {
-            width: 250px;
-            /* Initial width */
-            background: #343a40;
-            /* Dark background for sidebar */
-            color: #fff;
-            transition: all 0.3s ease-in-out;
-            flex-shrink: 0;
-            /* Prevent sidebar from shrinking */
-            overflow-x: hidden;
-            /* Hide content when width reduces */
-        }
-
-        #wrapper.toggled #sidebar-wrapper {
-            width: 0;
-            /* Hide sidebar when toggled */
-        }
-
-        #page-content-wrapper {
-            flex-grow: 1;
-            /* Allow content to expand */
-            padding: 20px;
-        }
-
-        @media (max-width: 768px) {
-            #sidebar-wrapper {
-                width: 0;
-                /* Hidden by default on mobile */
-            }
-
-            #wrapper.toggled #sidebar-wrapper {
-                width: 250px;
-                /* Show sidebar when toggled on mobile */
-            }
-        }
-
-        .sidebar-heading {
-            padding: 0.875rem 1.25rem;
-            font-size: 1.2rem;
-            color: #fff;
-        }
-
-        .list-group-item {
-            background-color: #343a40;
-            color: #adb5bd;
-            border: none;
-            padding: 10px 20px;
-        }
-
-        .list-group-item:hover {
-            background-color: #495057;
-            color: #fff;
-        }
-
-        .navbar-brand img {
-            height: 30px;
-            /* Adjust as needed */
-            margin-right: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="<?= base_url('css/custom.css') ?>">
 </head>
 
 <body>
     <!-- header -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-bg-color">
         <div class="container-fluid">
-            <button class="btn btn-outline-light" id="sidebarToggle">
+            <button class="btn btn-outline-dark" id="sidebarToggle">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand ms-3" href="">
@@ -113,21 +38,51 @@
     <!-- content -->
     <div id="wrapper">
         <!-- Sidebar -->
-        <div class="bg-dark border-right" id="sidebar-wrapper">
+        <div class="border-right" id="sidebar-wrapper">
             <div class="sidebar-heading">功能列</div>
             <div class="list-group list-group-flush">
-                <a href="<?= url_to('UserController::index') ?>" class="list-group-item list-group-item-action">使用者管理</a>
-                <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">職位管理</a>
-                <a href="<?= url_to('MajorCategoryController::index') ?>" class="list-group-item list-group-item-action">大分類管理</a>
-                <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">小分類管理</a>
-                <a href="<?= url_to('ProductController::index') ?>" class="list-group-item list-group-item-action">產品管理</a>
-                <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">地點管理</a>
-                <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">登入登出紀錄</a>
-                <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">訂單管理</a>
-                <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">GPS管理</a>
-                <a href="<?= url_to('RentalController::index') ?>" class="list-group-item list-group-item-action">租賃單管理</a>
-                <a href="<?= url_to('MachineController::index') ?>" class="list-group-item list-group-item-action">機械管理</a>
-                <a href="<?= url_to('MachineMaintenanceController::index') ?>" class="list-group-item list-group-item-action">機械保養管理</a>
+                <a href="<?= url_to('UserController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i>使用者管理
+                </a>
+                <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-badge"></i>職位管理
+                </a>
+                <a href="<?= url_to('MajorCategoryController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-folder"></i>大分類管理
+                </a>
+                <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-folder2"></i>小分類管理
+                </a>
+                <a href="<?= url_to('ProductController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-box"></i>產品管理
+                </a>
+                <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-geo-alt"></i>地點管理
+                </a>
+                <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-text"></i>登入登出紀錄
+                </a>
+                <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-cart"></i>訂單管理
+                </a>
+                <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-pin-map"></i>GPS管理
+                </a>
+                <a href="<?= url_to('RentalController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-clipboard-check"></i>租賃單管理
+                </a>
+                <a href="<?= url_to('MachineController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-gear"></i>機械管理
+                </a>
+                <a href="<?= url_to('MachineMaintenanceController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-tools"></i>機械保養管理
+                </a>
+                <a href="<?= url_to('MachineRepairController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-wrench"></i>機械維修管理
+                </a>
+                <a href="<?= url_to('ManufacturerController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-building"></i>廠商管理
+                </a>
             </div>
         </div>
         <!-- Page Content -->
