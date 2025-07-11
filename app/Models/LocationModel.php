@@ -88,4 +88,11 @@ class LocationModel extends Model
             ->select('l_id,l_name')
             ->findAll();
     }
+
+    public function getDropdown()
+    {
+        return $this->select('l_id, l_name')
+            ->orderBy('l_name', 'ASC')
+            ->findAll();
+    }
 }

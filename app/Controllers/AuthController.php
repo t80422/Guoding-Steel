@@ -3,29 +3,34 @@
 namespace App\Controllers;
 
 use App\Services\AuthService;
+use App\Models\UserModel;
 
 class AuthController extends BaseController
 {
     protected $authService;
+    protected $userModel;
 
     public function __construct()
     {
         $this->authService = new AuthService();
+        $this->userModel = new UserModel();
     }
 
     // 登入頁
     public function index()
     {
-        return view('login');
+        $userDropdown = $this->userModel->getDropdownByIsAdmin();
+        return view('login', [
+            'users' => $userDropdown
+        ]);
     }
 
     // 登入
     public function login()
     {
-        $userId = 1;
-        $password = $this->request->getPost('password');
-
-        $result = $this->authService->validateAndAuthenticate($userId, $password);
+        $data = $this->request->getPost();
+        $result = $this->authService->validateAndAuthenticate($data['u_id'], $data['password']);
+        $this->authService->recordLoginTime($data['u_id']);
 
         if ($result['status'] === 'success') {
             $sessionSet = $this->authService->setUserSession($result['data']);
@@ -43,6 +48,7 @@ class AuthController extends BaseController
     // 登出
     public function logout()
     {
+        $this->authService->recordLogoutTime(session()->get('userId'));
         session()->destroy();
         return redirect()->to('/');
     }

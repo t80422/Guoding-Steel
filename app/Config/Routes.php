@@ -32,6 +32,8 @@ $routes->group('user', function ($routes) {
     $routes->get('edit/(:num)', 'UserController::edit/$1');
     $routes->get('delete/(:num)', 'UserController::delete/$1');
     $routes->post('save', 'UserController::save');
+    $routes->get('locationSettings/(:num)', 'UserController::locationSettings/$1');
+    $routes->post('saveLocationSettings', 'UserController::saveLocationSettings');
 });
 
 // 大分類
@@ -130,6 +132,21 @@ $routes->group('manufacturer', function ($routes) {
     $routes->get('delete/(:num)', 'ManufacturerController::delete/$1');
     $routes->post('save', 'ManufacturerController::save');
 });
+
+// 庫存
+$routes->group('inventory', function ($routes) {
+    $routes->get('/', 'InventoryController::index');
+    $routes->get('create', 'InventoryController::create');
+    $routes->get('edit/(:num)', 'InventoryController::edit/$1');
+    $routes->get('delete/(:num)', 'InventoryController::delete/$1');
+    $routes->post('save', 'InventoryController::save');
+    // AJAX API
+    $routes->post('getMinorCategories', 'InventoryController::getMinorCategories');
+    $routes->post('getProducts', 'InventoryController::getProducts');
+});
+
+// 鋪路鋼板
+$routes->get('roadPlate', 'RoadPlateController::index');
 
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {

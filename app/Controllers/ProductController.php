@@ -42,7 +42,7 @@ class ProductController extends BaseController
     // 新增
     public function create()
     {
-        $majorCategories = $this->majorCategoryModel->getNames();
+        $majorCategories = $this->majorCategoryModel->getDropdown();
 
         return view('product/form', [
             'isEdit' => false,
@@ -60,7 +60,7 @@ class ProductController extends BaseController
                 ->with('error', '找不到該產品資料');
         }
 
-        $majorCategories = $this->majorCategoryModel->getNames();
+        $majorCategories = $this->majorCategoryModel->getDropdown();
         $mcId=$this->minorCategoryModel->find($data['pr_mic_id'])['mic_mc_id'];
 
         return view('product/form', [

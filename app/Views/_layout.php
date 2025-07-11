@@ -47,15 +47,28 @@
                 <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-person-badge"></i>職位管理
                 </a>
-                <a href="<?= url_to('MajorCategoryController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-folder"></i>大分類管理
-                </a>
-                <a href="<?= url_to('MinorCategoryController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-folder2"></i>小分類管理
-                </a>
-                <a href="<?= url_to('ProductController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-box"></i>產品管理
-                </a>
+                
+                <!-- 產品群組 -->
+                <div class="nav-dropdown">
+                    <div class="list-group-item list-group-item-action">
+                        <i class="bi bi-box"></i>產品 <i class="bi bi-chevron-right float-end"></i>
+                    </div>
+                    <div class="dropdown-menu-custom">
+                        <a href="<?= url_to('MajorCategoryController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-folder"></i>大分類管理
+                        </a>
+                        <a href="<?= url_to('MinorCategoryController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-folder2"></i>小分類管理
+                        </a>
+                        <a href="<?= url_to('ProductController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-box"></i>產品管理
+                        </a>
+                        <a href="<?= url_to('InventoryController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-boxes"></i>庫存管理
+                        </a>
+                    </div>
+                </div>
+                
                 <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-geo-alt"></i>地點管理
                 </a>
@@ -83,6 +96,9 @@
                 <a href="<?= url_to('ManufacturerController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-building"></i>廠商管理
                 </a>
+                <a href="<?= url_to('RoadPlateController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-grid-3x3"></i>鋪路鋼板
+                </a>
             </div>
         </div>
         <!-- Page Content -->
@@ -96,6 +112,19 @@
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('wrapper').classList.toggle('toggled');
+        });
+        
+        // 動態調整子選單位置
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.querySelector('.nav-dropdown');
+            const dropdownMenu = document.querySelector('.dropdown-menu-custom');
+            
+            if (dropdown && dropdownMenu) {
+                dropdown.addEventListener('mouseenter', function() {
+                    const rect = this.getBoundingClientRect();
+                    dropdownMenu.style.top = rect.top + 'px';
+                });
+            }
         });
     </script>
 </body>

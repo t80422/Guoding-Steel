@@ -15,7 +15,7 @@ class MajorCategoryController extends BaseController
     }
 
     public function getMajorCategories(){
-        $data = $this->majorCategoryModel->getNames();
+        $data = $this->majorCategoryModel->getDropdown();
         return $this->response->setJSON($data);
     }
 }

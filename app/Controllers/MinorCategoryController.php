@@ -32,7 +32,7 @@ class MinorCategoryController extends BaseController
     // 新增
     public function create()
     {
-        $majorCategories = $this->majorCategoryModel->getNames();
+        $majorCategories = $this->majorCategoryModel->getDropdown();
         return view('minorCategory/form', ['isEdit' => false, 'majorCategories' => $majorCategories]);
     }
 
@@ -40,7 +40,7 @@ class MinorCategoryController extends BaseController
     public function edit($id)
     {
         $data = $this->minorCategoryModel->find($id);
-        $majorCategories = $this->majorCategoryModel->getNames();
+        $majorCategories = $this->majorCategoryModel->getDropdown();
         return view('minorCategory/form', ['isEdit' => true, 'data' => $data, 'majorCategories' => $majorCategories]);
     }
 

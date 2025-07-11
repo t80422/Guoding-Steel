@@ -38,6 +38,15 @@
         <?php endif; ?>
         <form action="<?= url_to('AuthController::login') ?>" method="post">
             <div class="mb-3">
+                <label class="form-label">使用者</label>
+                <select class="form-select" name="u_id" required>
+                    <option value="">請選擇</option>
+                    <?php foreach ($users as $user): ?>
+                        <option value="<?= $user['u_id'] ?>"><?= $user['u_name'] ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="mb-3">
                 <label for="password" class="form-label">密碼</label>
                 <input type="password" class="form-control" name="password" required>
             </div>

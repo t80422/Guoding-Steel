@@ -28,7 +28,7 @@ class MajorCategoryModel extends Model
         return $builder->get()->getResultArray();
     }
     
-    public function getNames(){
+    public function getDropdown(){
         $builder=$this->builder('major_categories mc')
             ->select('mc.mc_id, mc.mc_name');
         return $builder->get()->getResultArray();

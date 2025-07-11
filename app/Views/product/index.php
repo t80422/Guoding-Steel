@@ -6,7 +6,7 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">產品管理</h3>
-        <a href="<?= url_to('ProductController::create') ?>" class="btn btn-outline-primary">
+        <a href="<?= url_to('ProductController::create') ?>" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> 新增
         </a>
     </div>

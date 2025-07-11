@@ -85,10 +85,14 @@ class OrderModel extends Model
             ->join('users u1', 'u1.u_id = o.o_create_by', 'left')
             ->join('users u2', 'u2.u_id = o.o_update_by', 'left')
             ->join('gps g', 'g.g_id = o.o_g_id', 'left')
+            ->join('manufacturers m1', 'm1.ma_id = l1.l_ma_id', 'left')
+            ->join('manufacturers m2', 'm2.ma_id = l2.l_ma_id', 'left')
             ->select('
                 o.*,
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
+                m1.ma_name as from_ma_name,
+                m2.ma_name as to_ma_name,
                 u1.u_name as create_name,
                 u2.u_name as update_name,
                 g.g_name as gps_name
@@ -113,6 +117,8 @@ class OrderModel extends Model
                 ->orLike('l1.l_name', $keyword)
                 ->orLike('l2.l_name', $keyword)
                 ->orLike('o.o_car_number', $keyword)
+                ->orLike('m1.ma_name', $keyword)
+                ->orLike('m2.ma_name', $keyword)
                 ->groupEnd();
         }
 
@@ -152,21 +158,48 @@ class OrderModel extends Model
     }
 
     /**
-     * 取得進行中的訂單
+     * 根據使用者地點權限取得進行中的訂單
      *
+     * @param array $userLocationIds 使用者有權限的地點ID陣列
+     * @param int $userId 使用者ID
      * @return array
      */
-    public function getByInProgress()
+    public function getByInProgressWithLocationFilter($userLocationIds = [], $userId)
     {
+        if (empty($userLocationIds)) {
+            return [];
+        }
+
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_IN_PROGRESS)
+            ->groupStart()
+                ->whereIn('o.o_from_location', $userLocationIds)
+                ->orWhereIn('o.o_to_location', $userLocationIds)
+                ->orWhere('o.o_create_by', $userId)
+            ->groupEnd()
             ->get()->getResultArray();
     }
 
-    public function getByCompleted()
+    /**
+     * 根據使用者地點權限取得已完成的訂單
+     *
+     * @param array $userLocationIds 使用者有權限的地點ID陣列
+     * @param int $userId 使用者ID
+     * @return array
+     */
+    public function getByCompletedWithLocationFilter($userLocationIds = [], $userId)
     {
+        if (empty($userLocationIds)) {
+            return [];
+        }
+
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_COMPLETED)
+            ->groupStart()
+                ->whereIn('o.o_from_location', $userLocationIds)
+                ->orWhereIn('o.o_to_location', $userLocationIds)
+                ->orWhere('o.o_create_by', $userId)
+            ->groupEnd()
             ->get()->getResultArray();
     }
 }

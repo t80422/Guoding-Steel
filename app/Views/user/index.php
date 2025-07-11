@@ -6,7 +6,7 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">使用者管理</h3>
-        <a href="<?= url_to('UserController::create') ?>" class="btn btn-outline-primary">
+        <a href="<?= url_to('UserController::create') ?>" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> 新增
         </a>
     </div>
@@ -42,6 +42,11 @@
                             <td><?= esc($item['p_name']) ?></td>
                             <td><?= esc($item['u_create_at']) ?></td>
                             <td class="text-end">
+                                <?php if ($item['u_is_admin'] == 0): ?>
+                                    <a href="<?= url_to('UserController::locationSettings', $item['u_id']) ?>" class="btn btn-sm btn-outline-info me-1" title="地點設定">
+                                        <i class="bi bi-geo-alt"></i>
+                                    </a>
+                                <?php endif; ?>
                                 <a href="<?= url_to('UserController::edit', $item['u_id']) ?>" class="btn btn-sm btn-outline-info me-1" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </a>
@@ -62,20 +67,6 @@
         'baseUrl' => url_to('UserController::index')
     ]) ?>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 刪除確認功能
-        document.querySelectorAll('.delete-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                const url = this.getAttribute('data-url');
-                if (confirm('確定要刪除此使用者嗎？此操作無法復原。')) {
-                    window.location.href = url;
-                }
-            });
-        });
-    });
-</script>
 
 <script src="<?= base_url('js/script.js') ?>"></script>
 

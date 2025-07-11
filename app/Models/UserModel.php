@@ -11,7 +11,8 @@ class UserModel extends Model
     protected $allowedFields    = [
         'u_name',
         'u_password',
-        'u_p_id'
+        'u_p_id',
+        'u_is_admin'
     ];
 
     /**
@@ -30,7 +31,7 @@ class UserModel extends Model
     {
         $builder = $this->builder('users u')
             ->join('positions p', 'p.p_id=u.u_p_id','left')
-            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at');
+            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at, u.u_is_admin');
 
         if(!empty($keyword)){
             $builder->groupStart()
@@ -51,5 +52,12 @@ class UserModel extends Model
             'currentPage' => $page,
             'totalPages' => $totalPages
         ];
+    }
+
+    public function getDropdownByIsAdmin(){
+        return $this->builder()
+            ->where('u_is_admin', 1)
+            ->select('u_id, u_name')
+            ->get()->getResultArray();
     }
 }

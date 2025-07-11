@@ -4,6 +4,7 @@ namespace App\Controllers\Api;
 
 use App\Models\OrderModel;
 use App\Models\OrderDetailModel;
+use App\Models\UserLocationModel;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Controller;
 use Exception;
@@ -16,12 +17,14 @@ class OrderController extends Controller
     protected $orderModel;
     protected $orderDetailModel;
     protected $orderService;
+    protected $userLocationModel;
 
     public function __construct()
     {
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();
         $this->orderService = new OrderService();
+        $this->userLocationModel = new UserLocationModel();
     }
 
     // 新增
@@ -82,7 +85,18 @@ class OrderController extends Controller
     public function index()
     {
         try {
-            $orders = $this->orderModel->getByInProgress();
+            // 取得使用者ID (header 取得)
+            $userId = $this->request->getHeaderLine('X-User-ID');
+            
+            if (!$userId) {
+                return $this->fail('缺少使用者身份資訊');
+            }
+
+            // 取得使用者有權限的地點ID
+            $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
+            
+            // 根據地點權限過濾訂單
+            $orders = $this->orderModel->getByInProgressWithLocationFilter($userLocationIds, $userId);
 
             $data = [];
             foreach ($orders as $order) {
@@ -196,7 +210,18 @@ class OrderController extends Controller
     public function history()
     {
         try {
-            $orders = $this->orderModel->getByCompleted();
+            // 取得使用者ID (可從 GET 參數或 header 取得)
+            $userId = $this->request->getHeaderLine('X-User-ID');
+            
+            if (!$userId) {
+                return $this->fail('缺少使用者身份資訊');
+            }
+
+            // 取得使用者有權限的地點ID
+            $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
+            
+            // 根據地點權限過濾訂單
+            $orders = $this->orderModel->getByCompletedWithLocationFilter($userLocationIds, $userId);
 
             $data = [];
             foreach ($orders as $order) {
