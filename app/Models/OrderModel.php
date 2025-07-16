@@ -134,6 +134,8 @@ class OrderModel extends Model
             $builder->where('o.o_type', $type);
         }
 
+        $builder->orderBy('o.o_date', 'DESC');
+
         $results = $builder->get()->getResultArray();
 
         foreach ($results as &$row) {

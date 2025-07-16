@@ -6,7 +6,6 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2><?= $isEdit ? '編輯' : '新增' ?>庫存</h2>
     </div>
-
     <!-- 顯示錯誤訊息 -->
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -14,7 +13,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif; ?>
-
+    <!-- 表單 -->
     <form action="<?= url_to('InventoryController::save') ?>" method="post">
         <?php if ($isEdit): ?>
             <input type="hidden" name="i_id" value="<?= $data['i_id'] ?? old('i_id') ?>">
@@ -91,7 +90,7 @@
         <?php if ($isEdit): ?>
         <div class="mb-3">
             <label for="i_qty" class="form-label">目前數量</label>
-            <input type="number" class="form-control" id="i_qty" name="i_qty" value="<?= old('i_qty', $data['i_qty'] ?? 0) ?>" required min="0">
+            <input type="number" class="form-control" id="i_qty" name="i_qty" value="<?= old('i_qty', $data['i_qty'] ?? 0) ?>" required min="0" readonly>
             <div class="form-text">修改初始庫存時，目前數量會自動調整</div>
         </div>
         <?php else: ?>

@@ -9,6 +9,8 @@ use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Controller;
 use Exception;
 use App\Libraries\OrderService;
+use App\Libraries\FileManager;
+use App\Services\InventoryService;
 
 class OrderController extends Controller
 {
@@ -18,6 +20,8 @@ class OrderController extends Controller
     protected $orderDetailModel;
     protected $orderService;
     protected $userLocationModel;
+    protected $fileManager;
+    protected $inventoryService;
 
     public function __construct()
     {
@@ -25,6 +29,8 @@ class OrderController extends Controller
         $this->orderDetailModel = new OrderDetailModel();
         $this->orderService = new OrderService();
         $this->userLocationModel = new UserLocationModel();
+        $this->fileManager = new FileManager(WRITEPATH . 'uploads/signatures/');
+        $this->inventoryService = new InventoryService();
     }
 
     // 新增
@@ -39,18 +45,13 @@ class OrderController extends Controller
             $jsonOrder = json_decode($data['order'], true);
             $jsonDetails = json_decode($data['details'], true);
 
-            //todo: 改成使用FileManager
-            // 處理檔案上傳
+            // 處理檔案上傳 - 使用 FileManager
             $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
-            $newFileNames = []; // 初始化新檔案名稱陣列
+            $uploadedFiles = $this->fileManager->uploadFiles($signatureKeys, $files);
+            
+            // 將上傳的檔案名稱加入到訂單資料中
             foreach ($signatureKeys as $key) {
-                if (isset($files[$key]) && $files[$key]->isValid() && !$files[$key]->hasMoved()) {
-                    $file = $files[$key];
-                    $jsonOrder[$key] = $this->orderService->uploadSignature($file);
-                    $newFileNames[] = $jsonOrder[$key]; // 記錄新檔案名稱
-                } else {
-                    $jsonOrder[$key] = null; // 如果沒有上傳檔案，確保欄位為空
-                }
+                $jsonOrder[$key] = $uploadedFiles[$key];
             }
 
             // 狀態
@@ -67,14 +68,17 @@ class OrderController extends Controller
 
             $this->orderDetailModel->insertBatch($jsonDetails);
 
+            // 更新庫存
+            $this->inventoryService->updateInventoryForOrder($orderId, 'CREATE');
+
             $this->orderModel->db->transComplete();
 
             return $this->respondCreated(null);
         } catch (Exception $e) {
             $this->orderModel->db->transRollback();
             // 如果新增失敗，刪除已上傳的檔案
-            foreach ($newFileNames as $fileName) {
-                $this->orderService->deleteSignature($fileName);
+            if (isset($uploadedFiles)) {
+                $this->fileManager->deleteFiles($uploadedFiles);
             }
             log_message('error', $e->getMessage());
             return $this->fail('新增失敗');
@@ -159,27 +163,29 @@ class OrderController extends Controller
                 return $this->failNotFound('訂單不存在');
             }
 
+            // 保存舊的訂單明細用於庫存回復
+            $oldOrderDetails = $this->orderDetailModel->getByOrderId($id);
+
             $data = $this->request->getPost();
             $files = $this->request->getFiles();
 
             $jsonOrder = json_decode($data['order'], true);
             $jsonDetails = json_decode($data['details'], true);
 
-            //todo: 改成使用FileManager
-            // 處理檔案上傳
+            // 處理檔案上傳 - 使用 FileManager
             $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
+            $filesToDelete = []; // 記錄需要刪除的舊檔案
+            
             foreach ($signatureKeys as $key) {
                 if (isset($files[$key]) && $files[$key]->isValid() && !$files[$key]->hasMoved()) {
-                    // 如果有新檔案上傳，先刪除舊檔案
+                    // 如果有新檔案上傳，先記錄要刪除的舊檔案
                     if (!empty($order[$key])) {
-                        $this->orderService->deleteSignature($order[$key]);
+                        $filesToDelete[] = $order[$key];
                     }
-                    $file = $files[$key];
-                    $jsonOrder[$key] = $this->orderService->uploadSignature($file);
                 } else if (array_key_exists($key, $jsonOrder) && $jsonOrder[$key] === null) {
                     // 如果前端傳送 null，表示要刪除簽名
                     if (!empty($order[$key])) {
-                        $this->orderService->deleteSignature($order[$key]);
+                        $filesToDelete[] = $order[$key];
                     }
                     $jsonOrder[$key] = null;
                 } else {
@@ -189,12 +195,30 @@ class OrderController extends Controller
                     }
                 }
             }
+            
+            // 刪除舊檔案
+            if (!empty($filesToDelete)) {
+                $this->fileManager->deleteFiles($filesToDelete);
+            }
+            
+            // 上傳新檔案
+            $uploadedFiles = $this->fileManager->uploadFiles($signatureKeys, $files);
+            
+            // 將新上傳的檔案名稱更新到訂單資料中
+            foreach ($signatureKeys as $key) {
+                if ($uploadedFiles[$key] !== null) {
+                    $jsonOrder[$key] = $uploadedFiles[$key];
+                }
+            }
 
-            $jsonDetails['o_update_at'] = date('Y-m-d H:i:s');
+            $jsonOrder['o_update_at'] = date('Y-m-d H:i:s');
             $this->orderModel->update($id, $jsonOrder);
 
             // 呼叫 OrderService 處理明細的增、改、刪
-            $this->orderService->updateOrderDetails($id, $jsonDetails);
+            $this->orderService->updateOrderDetails((int)$id, $jsonDetails);
+
+            // 更新庫存
+            $this->inventoryService->updateInventoryForOrder($id, 'UPDATE', $order, $oldOrderDetails);
 
             $this->orderModel->db->transComplete();
 

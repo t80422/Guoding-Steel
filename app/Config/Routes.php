@@ -148,6 +148,13 @@ $routes->group('inventory', function ($routes) {
 // 鋪路鋼板
 $routes->get('roadPlate', 'RoadPlateController::index');
 
+// Excel匯入
+$routes->group('excel', function ($routes) {
+    $routes->get('/', 'ExcelController::index');
+    $routes->post('import', 'ExcelController::import');
+    $routes->post('save', 'ExcelController::save');
+});
+
 // API
 $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes) {
     // 登入

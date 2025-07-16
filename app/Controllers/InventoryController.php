@@ -3,27 +3,27 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\InventoryModel;
 use App\Models\MajorCategoryModel;
 use App\Models\MinorCategoryModel;
 use App\Models\ProductModel;
 use App\Models\LocationModel;
+use App\Services\InventoryService;
 
 class InventoryController extends BaseController
 {
-    private $inventoryModel;
     private $majorCategoryModel;
     private $minorCategoryModel;
     private $productModel;
     private $locationModel;
+    private $inventoryService;
 
     public function __construct()
     {
-        $this->inventoryModel = new InventoryModel();
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->minorCategoryModel = new MinorCategoryModel();
         $this->productModel = new ProductModel();
         $this->locationModel = new LocationModel();
+        $this->inventoryService = new InventoryService();
     }
 
     // 列表
@@ -32,7 +32,7 @@ class InventoryController extends BaseController
         $filter = $this->request->getGet();
         $page = $filter['page'] ?? 1;
 
-        $datas = $this->inventoryModel->getList($filter, $page);
+        $datas = $this->inventoryService->getInventoryList($filter, $page);
 
         $pagerData = [
             'currentPage' => $datas['currentPage'],
@@ -61,7 +61,7 @@ class InventoryController extends BaseController
     // 編輯
     public function edit($id)
     {
-        $data = $this->inventoryModel->getInfoById($id);
+        $data = $this->inventoryService->getInventoryInfo($id);
         return view('inventory/form', [
             'isEdit' => true, 
             'data' => $data
@@ -95,7 +95,7 @@ class InventoryController extends BaseController
     // 刪除
     public function delete($id)
     {
-        $this->inventoryModel->delete($id);
+        $this->inventoryService->deleteInventory($id);
         return redirect()->to(url_to('InventoryController::index'))->with('success', '刪除成功');
     }
 
@@ -111,20 +111,7 @@ class InventoryController extends BaseController
                     ->with('error', '請先登入！');
             }
 
-            if (isset($data['i_id']) && !empty($data['i_id'])) {
-                // 更新
-                $data['i_update_by'] = $userId;
-                $data['i_update_at'] = date('Y-m-d H:i:s');
-            } else {
-                // 新增 - 檢查地點和產品是否重複
-                if ($this->inventoryModel->isDuplicateLocationProduct($data['i_pr_id'], $data['i_l_id'])) {
-                    throw new \Exception("此地點和產品的組合已存在庫存記錄！");
-                }
-                
-                $data['i_create_by'] = $userId;
-            }
-            
-            $this->inventoryModel->save($data);
+            $this->inventoryService->saveInventory($data);
             return redirect()->to(url_to('InventoryController::index'))
                 ->with('success', '儲存成功！');
                 

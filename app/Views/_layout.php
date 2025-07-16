@@ -63,12 +63,11 @@
                         <a href="<?= url_to('ProductController::index') ?>" class="dropdown-item-custom">
                             <i class="bi bi-box"></i>產品管理
                         </a>
-                        <a href="<?= url_to('InventoryController::index') ?>" class="dropdown-item-custom">
-                            <i class="bi bi-boxes"></i>庫存管理
-                        </a>
                     </div>
                 </div>
-                
+                <a href="<?= url_to('InventoryController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-boxes"></i>庫存管理
+                </a>
                 <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-geo-alt"></i>地點管理
                 </a>
@@ -98,6 +97,9 @@
                 </a>
                 <a href="<?= url_to('RoadPlateController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-grid-3x3"></i>鋪路鋼板
+                </a>
+                <a href="<?= url_to('ExcelController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-earmark-excel"></i>匯入Excel
                 </a>
             </div>
         </div>
