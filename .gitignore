@@ -7,9 +7,6 @@
 .env.production
 .env.testing
 
-# Composer specific
-vendor/
-
 # Writable directories - CI4's temporary files, caches, logs, etc.
 # Keep the index.html files to ensure directory structure is maintained in Git
 writable/cache/*
