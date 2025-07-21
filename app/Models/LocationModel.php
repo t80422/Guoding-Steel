@@ -13,8 +13,7 @@ class LocationModel extends Model
         'l_type', // 類型(0:倉庫、1:工地)
         'l_create_by',
         'l_update_by',
-        'l_update_at',
-        'l_ma_id'
+        'l_update_at'
     ];
 
     // 定義 l_type 常數
@@ -42,17 +41,9 @@ class LocationModel extends Model
     public function getList($filter = [], $page = 1)
     {
         $builder = $this->builder('locations l')
-            ->join('users u1', 'u1.u_id=l.l_create_by', 'left')
+            ->join('users u1', 'u1.u_id=l.l_create_by')
             ->join('users u2', 'u2.u_id=l.l_update_by', 'left')
-            ->join('manufacturers ma', 'ma.ma_id=l.l_ma_id', 'left')
-            ->select('l.l_id,
-                      l.l_name,
-                      l.l_type,
-                      l.l_create_at,
-                      l.l_update_at,
-                      u1.u_name as creator,
-                      u2.u_name as updater,
-                      ma.ma_name as ma_name');
+            ->select('l.l_id, l.l_name, l.l_type, l.l_create_at, l.l_update_at, u1.u_name as creator, u2.u_name as updater');
 
         if (!empty($filter['keyword'])) {
             $builder->like('l.l_name', $filter['keyword']);
@@ -89,9 +80,27 @@ class LocationModel extends Model
             ->findAll();
     }
 
+    /**
+     * 取得地點選項
+     *
+     * @return array
+     */
     public function getDropdown()
     {
         return $this->select('l_id, l_name')
+            ->orderBy('l_name', 'ASC')
+            ->findAll();
+    }
+
+    /**
+     * 取得工地選項
+     *
+     * @return array
+     */
+    public function getConstructionSiteDropdown()
+    {
+        return $this->where('l_type', self::TYPE_CONSTRUCTION_SITE)
+            ->select('l_id, l_name')
             ->orderBy('l_name', 'ASC')
             ->findAll();
     }

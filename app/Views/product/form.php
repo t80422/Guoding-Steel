@@ -7,14 +7,7 @@
         <h2><?= $isEdit ? '編輯' : '新增' ?>產品</h2>
     </div>
 
-    <!-- 顯示成功/錯誤訊息 -->
-    <?php if (session()->getFlashdata('message')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('message') ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
+    <!-- 錯誤訊息 -->
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <?= session()->getFlashdata('error') ?>

@@ -46,7 +46,6 @@ use App\Models\LocationModel;
                 <tr>
                     <th>名稱</th>
                     <th>類型</th>
-                    <th>廠商</th>
                     <th>建立人</th>
                     <th>建立時間</th>
                     <th>更新人</th>
@@ -64,7 +63,6 @@ use App\Models\LocationModel;
                         <tr>
                             <td><?= esc($item['l_name']) ?></td>
                             <td><?= esc($item['typeName']) ?></td>
-                            <td><?= esc($item['ma_name']) ?></td>
                             <td><?= esc($item['creator']) ?></td>
                             <td><?= esc($item['l_create_at']) ?></td>
                             <td><?= esc($item['updater']) ?></td>

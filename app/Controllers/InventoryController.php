@@ -68,30 +68,6 @@ class InventoryController extends BaseController
         ]);
     }
 
-    // 取得小分類 (AJAX)
-    public function getMinorCategories()
-    {
-        $mcId = $this->request->getPost('mc_id');
-        if (!$mcId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => '大分類ID不能為空']);
-        }
-
-        $minorCategories = $this->minorCategoryModel->getNames($mcId);
-        return $this->response->setJSON(['status' => 'success', 'data' => $minorCategories]);
-    }
-
-    // 取得品名 (AJAX)
-    public function getProducts()
-    {
-        $micId = $this->request->getPost('mic_id');
-        if (!$micId) {
-            return $this->response->setJSON(['status' => 'error', 'message' => '小分類ID不能為空']);
-        }
-
-        $products = $this->productModel->getByMinorCategoryId($micId);
-        return $this->response->setJSON(['status' => 'success', 'data' => $products]);
-    }
-
     // 刪除
     public function delete($id)
     {

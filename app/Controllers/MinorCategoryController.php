@@ -72,4 +72,11 @@ class MinorCategoryController extends BaseController
         $this->minorCategoryModel->delete($id);
         return redirect()->to(url_to('MinorCategoryController::index'));
     }
+
+    // 取得小分類
+    public function getMinorCategories($mcId)
+    {
+        $minorCategories = $this->minorCategoryModel->getNames($mcId);
+        return $this->response->setJSON(['status' => 'success', 'data' => $minorCategories]);
+    }
 }
