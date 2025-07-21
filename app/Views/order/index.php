@@ -33,7 +33,7 @@
                     </div>
                     <div class="col-md-4">
                         <label for="keyword" class="form-label">關鍵字</label>
-                        <input type="text" class="form-control" id="keyword" name="keyword" placeholder="輸入出發地、目的地、車號、廠商" value="<?= esc($keyword ?? '') ?>">
+                        <input type="text" class="form-control" id="keyword" name="keyword" placeholder="輸入出發地、目的地、車號" value="<?= esc($keyword ?? '') ?>">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary me-2">
@@ -55,9 +55,7 @@
                     <th>訂單日期</th>
                     <th>訂單狀態</th>
                     <th>訂單類型</th>
-                    <th>出發地廠商</th>
                     <th>出發地</th>
-                    <th>目的地廠商</th>
                     <th>目的地</th>
                     <th>車號</th>
                     <th>GPS</th>
@@ -112,9 +110,7 @@
                                 ?>
                                 <span class="badge <?= $typeClass ?>"><?= $typeText ?></span>
                             </td>
-                            <td><?= esc($item['from_ma_name']) ?></td>
                             <td><?= esc($item['from_location_name']) ?></td>
-                            <td><?= esc($item['to_ma_name']) ?></td>
                             <td><?= esc($item['to_location_name']) ?></td>
                             <td><?= esc($item['o_car_number']) ?></td>
                             <td><?= esc($item['gps_name']) ?></td>

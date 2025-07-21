@@ -10,12 +10,10 @@ use Throwable;
 class LocationController extends BaseController
 {
     private $locationModel;
-    private $manufacturerModel;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
-        $this->manufacturerModel = new ManufacturerModel();
     }
 
     public function index()
@@ -40,16 +38,14 @@ class LocationController extends BaseController
     // 新增
     public function create()
     {
-        $manufacturers = $this->manufacturerModel->getDropdown();
-        return view('location/form', ['isEdit' => false, 'manufacturers' => $manufacturers]);
+        return view('location/form', ['isEdit' => false]);
     }
 
     // 編輯
     public function edit($id)
     {
         $data = $this->locationModel->find($id);
-        $manufacturers = $this->manufacturerModel->getDropdown();
-        return view('location/form', ['isEdit' => true, 'data' => $data, 'manufacturers' => $manufacturers]);
+        return view('location/form', ['isEdit' => true, 'data' => $data]);
     }
 
     // 儲存

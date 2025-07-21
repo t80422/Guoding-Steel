@@ -210,7 +210,9 @@
                                                     </button>
                                                 </td>
                                                 <td class="align-middle">
-                                                    <input type="hidden" name="details[<?= $index ?>][od_id]" value="<?= $detail['od_id'] ?? '' ?>">
+                                                    <?php if ($isEdit && !empty($detail['od_id'])): ?>
+                                                    <input type="hidden" name="details[<?= $index ?>][od_id]" value="<?= $detail['od_id'] ?>">
+                                                    <?php endif; ?>
                                                     <input type="hidden" name="details[<?= $index ?>][od_pr_id]" value="<?= $detail['od_pr_id'] ?? '' ?>">
                                                     <input type="hidden" class="product-weight-per-unit" value="<?= $detail['pr_weight_per_unit'] ?? 0 ?>">
                                                     <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
@@ -246,7 +248,6 @@
                                                 </button>
                                             </td>
                                             <td class="align-middle">
-                                                <input type="hidden" name="details[0][od_id]" value="">
                                                 <input type="hidden" name="details[0][od_pr_id]" value="">
                                                 <input type="hidden" class="product-weight-per-unit" value="0">
                                                 <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
@@ -476,80 +477,10 @@
     </div>
 </div>
 
-<!-- 產品選擇 Modal -->
-<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title" id="productModalLabel">選擇產品</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- 步驟指示器 -->
-                <div class="d-flex justify-content-center mb-4">
-                    <div class="d-flex align-items-center">
-                        <div class="step-indicator active" id="step1Indicator">
-                            <span class="step-number">1</span>
-                            <span class="step-text">大分類</span>
-                        </div>
-                        <div class="step-connector"></div>
-                        <div class="step-indicator" id="step2Indicator">
-                            <span class="step-number">2</span>
-                            <span class="step-text">小分類</span>
-                        </div>
-                        <div class="step-connector"></div>
-                        <div class="step-indicator" id="step3Indicator">
-                            <span class="step-number">3</span>
-                            <span class="step-text">產品</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 步驟內容 -->
-                <div class="step-content">
-                    <!-- 步驟 1: 選擇大分類 -->
-                    <div class="step-pane active" id="step1">
-                        <h6 class="mb-3 text-center text-muted">請選擇大分類</h6>
-                        <div class="row g-2" id="majorCategoryList">
-                            <div class="col-12 text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">載入中...</span>
-                                </div>
-                                <div class="mt-2 text-muted">載入大分類中...</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 步驟 2: 選擇小分類 -->
-                    <div class="step-pane" id="step2">
-                        <div class="d-flex align-items-center mb-3">
-                            <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="backToStep1">
-                                <i class="bi bi-arrow-left"></i> 返回
-                            </button>
-                            <h6 class="mb-0 text-muted">請選擇小分類</h6>
-                        </div>
-                        <div class="row g-2" id="minorCategoryList">
-                            <!-- 動態載入小分類 -->
-                        </div>
-                    </div>
-
-                    <!-- 步驟 3: 選擇產品 -->
-                    <div class="step-pane" id="step3">
-                        <div class="d-flex align-items-center mb-3">
-                            <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="backToStep2">
-                                <i class="bi bi-arrow-left"></i> 返回
-                            </button>
-                            <h6 class="mb-0 text-muted">請選擇產品</h6>
-                        </div>
-                        <div class="list-group" id="productList">
-                            <!-- 動態載入產品 -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<?= $this->include('components/product_selector', [
+    'modalId' => 'productModal',
+    'fieldPrefix' => 'od'
+]) ?>
 
 <style>
 /* ===== 現代化卡片樣式 ===== */
@@ -595,14 +526,14 @@
     margin-bottom: 8px;
 }
 
-/* ===== 地點和產品選擇器樣式 ===== */
-.location-selector, .product-selector {
+/* ===== 地點選擇器樣式 ===== */
+.location-selector {
     transition: all 0.3s ease;
     border-radius: 8px;
     border: 1.5px solid #dee2e6;
 }
 
-.location-selector:hover, .product-selector:hover {
+.location-selector:hover {
     border-color: var(--bs-primary);
     box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.15);
     transform: translateY(-1px);
@@ -635,55 +566,7 @@
     background-color: #f8f9fa !important;
 }
 
-/* ===== 產品選擇模態框樣式 ===== */
-#productModal .category-card {
-    color: #212529 !important;
-    background-color: #ffffff !important;
-}
 
-#productModal .category-card h6 {
-    color: #495057 !important;
-    font-weight: 600;
-}
-
-#productModal .category-card:hover h6 {
-    color: var(--bs-primary) !important;
-}
-
-#productModal .product-item {
-    color: #212529 !important;
-    background-color: #ffffff !important;
-}
-
-#productModal .product-item:hover {
-    color: #495057 !important;
-    background-color: #f8f9fa !important;
-    border-color: var(--bs-primary) !important;
-}
-
-#productModal .product-item h6 {
-    color: inherit !important;
-    font-weight: 500;
-}
-
-#productModal .list-group-item-action {
-    color: #212529 !important;
-}
-
-#productModal .list-group-item-action:hover {
-    color: #495057 !important;
-    background-color: #f8f9fa !important;
-}
-
-.border-dashed {
-    border-style: dashed !important;
-    border-color: #adb5bd !important;
-}
-
-.product-selector.border-dashed:hover {
-    border-style: solid !important;
-    border-color: var(--bs-primary) !important;
-}
 
 /* ===== 簽名區域樣式 ===== */
 .signature-container {
@@ -816,156 +699,7 @@
     background-color: #f8f9fa;
 }
 
-/* ===== 步驟指示器優化 ===== */
-.step-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    width: 80px;
-}
 
-.step-number {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e9ecef 0%, #f8f9fa 100%);
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    border: 2px solid #dee2e6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.step-indicator.active .step-number {
-    background: linear-gradient(135deg, var(--bs-primary) 0%, #4a7c4a 100%);
-    color: white;
-    border-color: var(--bs-primary);
-    transform: scale(1.1);
-}
-
-.step-indicator.completed .step-number {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    border-color: #28a745;
-}
-
-.step-text {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #6c757d;
-    font-weight: 500;
-    text-align: center;
-}
-
-.step-indicator.active .step-text {
-    color: var(--bs-primary);
-    font-weight: 600;
-}
-
-.step-connector {
-    flex-grow: 1;
-    height: 2px;
-    background: linear-gradient(90deg, #dee2e6 0%, #f8f9fa 100%);
-    margin: 0 8px;
-    position: relative;
-    top: -1.25rem;
-}
-
-/* ===== 步驟內容動畫 ===== */
-.step-pane {
-    display: none;
-}
-
-.step-pane.active {
-    display: block;
-    animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* ===== 分類卡片現代化樣式 ===== */
-.category-card {
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.category-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(87, 145, 87, 0.1), transparent);
-    transition: left 0.5s;
-}
-
-.category-card:hover::before {
-    left: 100%;
-}
-
-.category-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(87, 145, 87, 0.2);
-    border-color: var(--bs-primary);
-}
-
-.category-card h6 {
-    margin: 0;
-    color: #495057;
-    font-weight: 600;
-    font-size: 14px;
-    z-index: 1;
-    position: relative;
-}
-
-.category-card:hover h6 {
-    color: var(--bs-primary);
-}
-
-/* ===== 產品列表現代化樣式 ===== */
-.product-item {
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    margin-bottom: 4px;
-}
-
-.product-item:hover {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    transform: translateX(8px);
-    border-color: var(--bs-primary);
-}
-
-.product-item h6 {
-    font-size: 14px;
-    font-weight: 500;
-    margin: 0;
-}
 
 /* ===== 響應式優化 ===== */
 @media (max-width: 768px) {
@@ -1012,9 +746,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     let currentTargetField = 'from';
     let detailIndex = document.querySelectorAll('#detailTableBody tr').length;
-    let currentTargetIndex = 0;
-    let selectedMajorCategory = null;
-    let selectedMinorCategory = null;
 
     // 圖片放大功能
     window.openImageModal = function(imageSrc, title) {
@@ -1130,7 +861,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </button>
             </td>
             <td class="align-middle">
-                <input type="hidden" name="details[${index}][od_id]" value="">
                 <input type="hidden" name="details[${index}][od_pr_id]" value="">
                 <input type="hidden" class="product-weight-per-unit" value="0">
                 <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
@@ -1191,212 +921,14 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateRowWeight(row);
     });
 
-    // 產品選擇功能
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.product-selector')) {
-            const selector = e.target.closest('.product-selector');
-            currentTargetIndex = selector.dataset.targetIndex;
-            resetProductModal();
-            loadMajorCategories();
-        }
+    // 初始化產品選擇器
+    const productSelector = window.createProductSelector({
+        modalId: 'productModal',
+        fieldPrefix: 'od'
     });
 
-    // 重置產品選擇Modal
-    function resetProductModal() {
-        selectedMajorCategory = null;
-        selectedMinorCategory = null;
-
-        document.querySelectorAll('.step-indicator').forEach(indicator => {
-            indicator.classList.remove('active', 'completed');
-        });
-        document.getElementById('step1Indicator').classList.add('active');
-
-        document.querySelectorAll('.step-pane').forEach(pane => {
-            pane.classList.remove('active');
-        });
-        document.getElementById('step1').classList.add('active');
-    }
-
-    // 載入大分類
-    function loadMajorCategories() {
-        const majorCategoryList = document.getElementById('majorCategoryList');
-        majorCategoryList.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">載入中...</span>
-                </div>
-                <p class="mt-2" style="color: #6c757d !important;">載入大分類中...</p>
-            </div>
-        `;
-
-        fetch('<?= base_url('api/majorCategory/getMajorCategories') ?>')
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(category => {
-                    html += `
-                        <div class="col-6 col-md-4 col-lg-3 mb-3">
-                            <div class="category-card" data-major-id="${category.mc_id}" style="color: #212529 !important; background-color: #ffffff !important;">
-                                <h6 style="color: #495057 !important; font-weight: 600;">${category.mc_name}</h6>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                if (html === '') {
-                    html = '<div class="col-12 text-center py-4" style="color: #6c757d !important;">沒有可用的大分類</div>';
-                }
-
-                majorCategoryList.innerHTML = html;
-
-                document.querySelectorAll('.category-card[data-major-id]').forEach(card => {
-                    card.addEventListener('click', function() {
-                        selectedMajorCategory = this.dataset.majorId;
-                        goToStep(2);
-                        loadMinorCategories(selectedMajorCategory);
-                    });
-                });
-            })
-            .catch(error => {
-                console.error('Error loading major categories:', error);
-                majorCategoryList.innerHTML = '<div class="col-12 text-center py-4" style="color: #dc3545 !important;">載入失敗</div>';
-            });
-    }
-
-    // 載入小分類
-    function loadMinorCategories(majorCategoryId) {
-        const minorCategoryList = document.getElementById('minorCategoryList');
-        minorCategoryList.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">載入中...</span>
-                </div>
-                <p class="mt-2" style="color: #6c757d !important;">載入小分類中...</p>
-            </div>
-        `;
-
-        fetch(`<?= base_url('api/minorCategory/getMinorCategories') ?>/${majorCategoryId}`)
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(category => {
-                    html += `
-                        <div class="col-6 col-md-4 col-lg-3 mb-3">
-                            <div class="category-card" data-minor-id="${category.mic_id}" style="color: #212529 !important; background-color: #ffffff !important;">
-                                <h6 style="color: #495057 !important; font-weight: 600;">${category.mic_name}</h6>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                if (html === '') {
-                    html = '<div class="col-12 text-center py-4" style="color: #6c757d !important;">沒有可用的小分類</div>';
-                }
-
-                minorCategoryList.innerHTML = html;
-
-                document.querySelectorAll('.category-card[data-minor-id]').forEach(card => {
-                    card.addEventListener('click', function() {
-                        selectedMinorCategory = this.dataset.minorId;
-                        goToStep(3);
-                        loadProducts(selectedMinorCategory);
-                    });
-                });
-            })
-            .catch(error => {
-                console.error('Error loading minor categories:', error);
-                minorCategoryList.innerHTML = '<div class="col-12 text-center py-4" style="color: #dc3545 !important;">載入失敗</div>';
-            });
-    }
-
-    // 載入產品
-    function loadProducts(minorCategoryId) {
-        const productList = document.getElementById('productList');
-        productList.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">載入中...</span>
-                </div>
-                <p class="mt-2" style="color: #6c757d !important;">載入產品中...</p>
-            </div>
-        `;
-
-        fetch(`<?= base_url('api/product/getProducts') ?>/${minorCategoryId}`)
-            .then(response => response.json())
-            .then(data => {
-                let html = '';
-                data.forEach(product => {
-                    html += `
-                        <button type="button" class="list-group-item list-group-item-action product-item" 
-                                data-product-id="${product.pr_id}" 
-                                data-product-name="${product.pr_name}"
-                                data-weight-per-unit="${product.pr_weight_per_unit || 0}"
-                                style="color: #212529 !important; background-color: #ffffff !important;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0" style="color: inherit !important; font-weight: 500;">${product.pr_name}</h6>
-                                <i class="bi bi-chevron-right text-muted"></i>
-                            </div>
-                        </button>
-                    `;
-                });
-
-                if (html === '') {
-                    html = '<div class="text-center py-4" style="color: #6c757d !important;">沒有可用的產品</div>';
-                }
-
-                productList.innerHTML = html;
-
-                document.querySelectorAll('.product-item[data-product-id]').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const productId = this.dataset.productId;
-                        const productName = this.dataset.productName;
-                        const weightPerUnit = this.dataset.weightPerUnit;
-
-                        const targetRow = document.querySelector(`tr[data-index="${currentTargetIndex}"]`);
-                        if (targetRow) {
-                            targetRow.querySelector('input[name*="[od_pr_id]"]').value = productId;
-                            const productText = targetRow.querySelector('.product-text');
-                            productText.textContent = productName;
-                            productText.classList.remove('text-muted');
-                            targetRow.querySelector('.product-weight-per-unit').value = weightPerUnit;
-                            calculateRowWeight(targetRow);
-                        }
-
-                        bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-                    });
-                });
-            })
-            .catch(error => {
-                console.error('Error loading products:', error);
-                productList.innerHTML = '<div class="text-center py-4" style="color: #dc3545 !important;">載入失敗</div>';
-            });
-    }
-
-    // 步驟切換功能
-    function goToStep(stepNumber) {
-        document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
-            indicator.classList.remove('active', 'completed');
-            if (index < stepNumber - 1) {
-                indicator.classList.add('completed');
-            } else if (index === stepNumber - 1) {
-                indicator.classList.add('active');
-            }
-        });
-
-        document.querySelectorAll('.step-pane').forEach(pane => {
-            pane.classList.remove('active');
-        });
-        document.getElementById(`step${stepNumber}`).classList.add('active');
-    }
-
-    // 返回按鈕事件
-    document.getElementById('backToStep1').addEventListener('click', function() {
-        goToStep(1);
-    });
-
-    document.getElementById('backToStep2').addEventListener('click', function() {
-        goToStep(2);
-    });
+    // 使重量計算函數全域可用，供產品選擇器調用
+    window.calculateRowWeight = calculateRowWeight;
 
     // 平滑滾動到錨點
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

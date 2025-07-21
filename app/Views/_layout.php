@@ -47,7 +47,7 @@
                 <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-person-badge"></i>職位管理
                 </a>
-                
+
                 <!-- 產品群組 -->
                 <div class="nav-dropdown">
                     <div class="list-group-item list-group-item-action">
@@ -83,15 +83,23 @@
                 <a href="<?= url_to('RentalController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-clipboard-check"></i>租賃單管理
                 </a>
-                <a href="<?= url_to('MachineController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-gear"></i>機械管理
-                </a>
-                <a href="<?= url_to('MachineMaintenanceController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-tools"></i>機械保養管理
-                </a>
-                <a href="<?= url_to('MachineRepairController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-wrench"></i>機械維修管理
-                </a>
+                <!-- 機械群組 -->
+                <div class="nav-dropdown">
+                    <div class="list-group-item list-group-item-action">
+                        <i class="bi bi-gear"></i>機械 <i class="bi bi-chevron-right float-end"></i>
+                    </div>
+                    <div class="dropdown-menu-custom">
+                        <a href="<?= url_to('MachineController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-gear"></i>機械管理
+                        </a>
+                        <a href="<?= url_to('MachineMaintenanceController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-tools"></i>機械保養管理
+                        </a>
+                        <a href="<?= url_to('MachineRepairController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-wrench"></i>機械維修管理
+                        </a>
+                    </div>
+                </div>
                 <a href="<?= url_to('ManufacturerController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-building"></i>廠商管理
                 </a>
@@ -100,6 +108,12 @@
                 </a>
                 <a href="<?= url_to('ExcelController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-file-earmark-excel"></i>匯入Excel
+                </a>
+                <a href="<?= url_to('ManufacturerInventoryController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-boxes"></i>租賃庫存管理
+                </a>
+                <a href="<?= url_to('RentalController::index_order') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-cart"></i>租賃訂單管理
                 </a>
             </div>
         </div>
@@ -118,15 +132,18 @@
         
         // 動態調整子選單位置
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdown = document.querySelector('.nav-dropdown');
-            const dropdownMenu = document.querySelector('.dropdown-menu-custom');
+            const dropdowns = document.querySelectorAll('.nav-dropdown');
             
-            if (dropdown && dropdownMenu) {
-                dropdown.addEventListener('mouseenter', function() {
-                    const rect = this.getBoundingClientRect();
-                    dropdownMenu.style.top = rect.top + 'px';
-                });
-            }
+            dropdowns.forEach(function(dropdown) {
+                const dropdownMenu = dropdown.querySelector('.dropdown-menu-custom');
+                
+                if (dropdownMenu) {
+                    dropdown.addEventListener('mouseenter', function() {
+                        const rect = this.getBoundingClientRect();
+                        dropdownMenu.style.top = rect.top + 'px';
+                    });
+                }
+            });
         });
     </script>
 </body>

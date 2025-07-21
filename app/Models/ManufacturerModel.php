@@ -72,8 +72,8 @@ class ManufacturerModel extends Model
      */
     public function getDropdown()
     {
-        return $this->builder('manufacturers ma')
-            ->select('ma.ma_id, ma.ma_name')
+        return $this->builder()
+            ->select('ma_id, ma_name')
             ->get()->getResultArray();
     }
 }

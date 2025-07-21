@@ -6,7 +6,6 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 
-
 $routes->get('/', 'AuthController::index');
 
 // 登入
@@ -52,6 +51,7 @@ $routes->group('minorCategory', function ($routes) {
     $routes->get('edit/(:num)', 'MinorCategoryController::edit/$1');
     $routes->get('delete/(:num)', 'MinorCategoryController::delete/$1');
     $routes->post('save', 'MinorCategoryController::save');
+    $routes->get('getMinorCategories/(:num)', 'MinorCategoryController::getMinorCategories/$1');
 });
 
 // 產品
@@ -140,19 +140,34 @@ $routes->group('inventory', function ($routes) {
     $routes->get('edit/(:num)', 'InventoryController::edit/$1');
     $routes->get('delete/(:num)', 'InventoryController::delete/$1');
     $routes->post('save', 'InventoryController::save');
-    // AJAX API
-    $routes->post('getMinorCategories', 'InventoryController::getMinorCategories');
-    $routes->post('getProducts', 'InventoryController::getProducts');
 });
 
 // 鋪路鋼板
 $routes->get('roadPlate', 'RoadPlateController::index');
+
+// 租賃訂單管理
+$routes->group('rentalOrder', function ($routes) {
+    $routes->get('/', 'RentalController::index_order');
+    $routes->get('create', 'RentalController::createOrder');
+    $routes->get('edit/(:num)', 'RentalController::editOrder/$1');
+    $routes->get('delete/(:num)', 'RentalController::deleteOrder/$1');
+    $routes->post('save', 'RentalController::saveOrder');
+});
 
 // Excel匯入
 $routes->group('excel', function ($routes) {
     $routes->get('/', 'ExcelController::index');
     $routes->post('import', 'ExcelController::import');
     $routes->post('save', 'ExcelController::save');
+});
+
+// 廠商庫存
+$routes->group('manufacturerInventory', function ($routes) {
+    $routes->get('/', 'ManufacturerInventoryController::index');
+    $routes->get('create', 'ManufacturerInventoryController::create');
+    $routes->get('edit/(:num)', 'ManufacturerInventoryController::edit/$1');
+    $routes->get('delete/(:num)', 'ManufacturerInventoryController::delete/$1');
+    $routes->post('save', 'ManufacturerInventoryController::save');
 });
 
 // API

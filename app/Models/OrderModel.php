@@ -85,14 +85,10 @@ class OrderModel extends Model
             ->join('users u1', 'u1.u_id = o.o_create_by', 'left')
             ->join('users u2', 'u2.u_id = o.o_update_by', 'left')
             ->join('gps g', 'g.g_id = o.o_g_id', 'left')
-            ->join('manufacturers m1', 'm1.ma_id = l1.l_ma_id', 'left')
-            ->join('manufacturers m2', 'm2.ma_id = l2.l_ma_id', 'left')
             ->select('
                 o.*,
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
-                m1.ma_name as from_ma_name,
-                m2.ma_name as to_ma_name,
                 u1.u_name as create_name,
                 u2.u_name as update_name,
                 g.g_name as gps_name
@@ -117,8 +113,6 @@ class OrderModel extends Model
                 ->orLike('l1.l_name', $keyword)
                 ->orLike('l2.l_name', $keyword)
                 ->orLike('o.o_car_number', $keyword)
-                ->orLike('m1.ma_name', $keyword)
-                ->orLike('m2.ma_name', $keyword)
                 ->groupEnd();
         }
 

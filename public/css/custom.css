@@ -228,3 +228,15 @@ body {
         top: 100%;
     }
 } 
+
+/* ===== 導覽列 Logo 與文字尺寸調整 ===== */
+.navbar-brand img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.navbar-brand {
+    font-size: 2rem;
+    line-height: 40px;
+} 

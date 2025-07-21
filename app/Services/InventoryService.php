@@ -64,7 +64,7 @@ class InventoryService
         }
 
         $orderDetails = $this->orderDetailModel->getByOrderId($orderId);
-        
+
         foreach ($orderDetails as $detail) {
             // 出庫地點減少庫存
             $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], -$detail['od_qty']);
@@ -140,7 +140,6 @@ class InventoryService
     {
         // 確保庫存記錄存在
         $this->ensureInventoryExists($productId, $locationId);
-
         // 取得當前庫存
         $inventory = $this->inventoryModel
             ->where('i_pr_id', $productId)
