@@ -6,6 +6,9 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">訂單管理</h3>
+        <a href="<?= url_to('OrderController::print') ?>" class="btn btn-primary">
+            <i class="bi bi-printer"></i> 列印
+        </a>
     </div>
     <!-- 搜尋列 -->
     <div class="card mb-4">

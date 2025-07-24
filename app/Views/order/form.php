@@ -47,13 +47,13 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold">訂單類型</label>
                                 <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="o_type" id="o_type_0" value="0" 
-                                           autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?> required>
+                                    <input type="radio" class="btn-check" name="o_type" id="o_type_0" value="0"
+                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?> required>
                                     <label class="btn btn-outline-primary" for="o_type_0">
                                         <i class="bi bi-box-arrow-in-down me-1"></i>進倉庫
                                     </label>
-                                    <input type="radio" class="btn-check" name="o_type" id="o_type_1" value="1" 
-                                           autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '1' ? 'checked' : '' ?> required>
+                                    <input type="radio" class="btn-check" name="o_type" id="o_type_1" value="1"
+                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '1' ? 'checked' : '' ?> required>
                                     <label class="btn btn-outline-primary" for="o_type_1">
                                         <i class="bi bi-box-arrow-up me-1"></i>出倉庫
                                     </label>
@@ -66,9 +66,9 @@
                                     <i class="bi bi-geo-alt me-1"></i>出發地
                                 </label>
                                 <input type="hidden" name="o_from_location" value="<?= old('o_from_location', $data['order']['o_from_location'] ?? '') ?>" required>
-                                <div class="form-control location-selector d-flex justify-content-between align-items-center" 
-                                     id="fromLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal" 
-                                     data-target-field="from" style="cursor: pointer; min-height: 45px;">
+                                <div class="form-control location-selector d-flex justify-content-between align-items-center"
+                                    id="fromLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal"
+                                    data-target-field="from" style="cursor: pointer; min-height: 45px;">
                                     <span id="fromLocationText" class="text-muted">
                                         <?= $isEdit && isset($data['order']['from_location_name']) ? $data['order']['from_location_name'] : '請選擇出發地點' ?>
                                     </span>
@@ -80,9 +80,9 @@
                                     <i class="bi bi-pin-map me-1"></i>目的地
                                 </label>
                                 <input type="hidden" name="o_to_location" value="<?= old('o_to_location', $data['order']['o_to_location'] ?? '') ?>" required>
-                                <div class="form-control location-selector d-flex justify-content-between align-items-center" 
-                                     id="toLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal" 
-                                     data-target-field="to" style="cursor: pointer; min-height: 45px;">
+                                <div class="form-control location-selector d-flex justify-content-between align-items-center"
+                                    id="toLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal"
+                                    data-target-field="to" style="cursor: pointer; min-height: 45px;">
                                     <span id="toLocationText" class="text-muted">
                                         <?= $isEdit && isset($data['order']['to_location_name']) ? $data['order']['to_location_name'] : '請選擇目的地點' ?>
                                     </span>
@@ -95,8 +95,8 @@
                                 <label class="form-label fw-bold" for="o_date">
                                     <i class="bi bi-calendar3 me-1"></i>訂單日期
                                 </label>
-                                <input type="date" class="form-control" name="o_date" id="o_date" 
-                                       value="<?= old('o_date', $data['order']['o_date'] ?? '') ?>" required>
+                                <input type="date" class="form-control" name="o_date" id="o_date"
+                                    value="<?= old('o_date', $data['order']['o_date'] ?? '') ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="o_g_id" class="form-label fw-bold">
@@ -117,17 +117,17 @@
                                 <label for="o_car_number" class="form-label fw-bold">
                                     <i class="bi bi-truck me-1"></i>車號
                                 </label>
-                                <input type="text" class="form-control" name="o_car_number" id="o_car_number" 
-                                       value="<?= old('o_car_number', $data['order']['o_car_number'] ?? '') ?>" 
-                                       placeholder="請輸入車牌號碼" required>
+                                <input type="text" class="form-control" name="o_car_number" id="o_car_number"
+                                    value="<?= old('o_car_number', $data['order']['o_car_number'] ?? '') ?>"
+                                    placeholder="請輸入車牌號碼" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="o_driver_phone" class="form-label fw-bold">
                                     <i class="bi bi-telephone me-1"></i>司機電話
                                 </label>
-                                <input type="text" class="form-control" name="o_driver_phone" id="o_driver_phone" 
-                                       value="<?= old('o_driver_phone', $data['order']['o_driver_phone'] ?? '') ?>" 
-                                       placeholder="請輸入聯絡電話" required>
+                                <input type="text" class="form-control" name="o_driver_phone" id="o_driver_phone"
+                                    value="<?= old('o_driver_phone', $data['order']['o_driver_phone'] ?? '') ?>"
+                                    placeholder="請輸入聯絡電話" required>
                             </div>
 
                             <!-- 作業時間 -->
@@ -135,15 +135,15 @@
                                 <label for="o_loading_time" class="form-label fw-bold">
                                     <i class="bi bi-clock me-1"></i>上料時間
                                 </label>
-                                <input type="datetime-local" class="form-control" name="o_loading_time" id="o_loading_time" 
-                                       value="<?= old('o_loading_time', $data['order']['o_loading_time'] ?? '') ?>" required>
+                                <input type="datetime-local" class="form-control" name="o_loading_time" id="o_loading_time"
+                                    value="<?= old('o_loading_time', $data['order']['o_loading_time'] ?? '') ?>" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="o_unloading_time" class="form-label fw-bold">
                                     <i class="bi bi-clock me-1"></i>下料時間
                                 </label>
-                                <input type="datetime-local" class="form-control" name="o_unloading_time" id="o_unloading_time" 
-                                       value="<?= old('o_unloading_time', $data['order']['o_unloading_time'] ?? '') ?>" required>
+                                <input type="datetime-local" class="form-control" name="o_unloading_time" id="o_unloading_time"
+                                    value="<?= old('o_unloading_time', $data['order']['o_unloading_time'] ?? '') ?>" required>
                             </div>
 
                             <!-- 氣體資訊 -->
@@ -151,17 +151,17 @@
                                 <label for="o_oxygen" class="form-label fw-bold">
                                     <i class="bi bi-droplet me-1"></i>氧氣(公斤)
                                 </label>
-                                <input type="number" class="form-control" name="o_oxygen" id="o_oxygen" 
-                                       value="<?= old('o_oxygen', $data['order']['o_oxygen'] ?? '') ?>" 
-                                       placeholder="0" step="0.01" min="0" required>
+                                <input type="number" class="form-control" name="o_oxygen" id="o_oxygen"
+                                    value="<?= old('o_oxygen', $data['order']['o_oxygen'] ?? '') ?>"
+                                    placeholder="0" step="0.01" min="0" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="o_acetylene" class="form-label fw-bold">
                                     <i class="bi bi-fire me-1"></i>乙炔(公斤)
                                 </label>
-                                <input type="number" class="form-control" name="o_acetylene" id="o_acetylene" 
-                                       value="<?= old('o_acetylene', $data['order']['o_acetylene'] ?? '') ?>" 
-                                       placeholder="0" step="0.01" min="0" required>
+                                <input type="number" class="form-control" name="o_acetylene" id="o_acetylene"
+                                    value="<?= old('o_acetylene', $data['order']['o_acetylene'] ?? '') ?>"
+                                    placeholder="0" step="0.01" min="0" required>
                             </div>
 
                             <!-- 備註 -->
@@ -169,8 +169,8 @@
                                 <label for="o_remark" class="form-label fw-bold">
                                     <i class="bi bi-chat-text me-1"></i>備註說明
                                 </label>
-                                <textarea class="form-control" name="o_remark" id="o_remark" rows="3" 
-                                          placeholder="請輸入備註說明..."><?= old('o_remark', $data['order']['o_remark'] ?? '') ?></textarea>
+                                <textarea class="form-control" name="o_remark" id="o_remark" rows="3"
+                                    placeholder="請輸入備註說明..."><?= old('o_remark', $data['order']['o_remark'] ?? '') ?></textarea>
                             </div>
                         </div>
                     </div>
@@ -211,12 +211,12 @@
                                                 </td>
                                                 <td class="align-middle">
                                                     <?php if ($isEdit && !empty($detail['od_id'])): ?>
-                                                    <input type="hidden" name="details[<?= $index ?>][od_id]" value="<?= $detail['od_id'] ?>">
+                                                        <input type="hidden" name="details[<?= $index ?>][od_id]" value="<?= $detail['od_id'] ?>">
                                                     <?php endif; ?>
                                                     <input type="hidden" name="details[<?= $index ?>][od_pr_id]" value="<?= $detail['od_pr_id'] ?? '' ?>">
                                                     <input type="hidden" class="product-weight-per-unit" value="<?= $detail['pr_weight_per_unit'] ?? 0 ?>">
-                                                    <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
-                                                         data-bs-target="#productModal" data-target-index="<?= $index ?>" style="cursor: pointer;">
+                                                    <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
+                                                        data-bs-target="#productModal" data-target-index="<?= $index ?>" style="cursor: pointer;">
                                                         <span class="product-text"><?= isset($detail['pr_name']) ? esc($detail['pr_name']) : '請選擇產品' ?></span>
                                                     </div>
                                                 </td>
@@ -250,8 +250,8 @@
                                             <td class="align-middle">
                                                 <input type="hidden" name="details[0][od_pr_id]" value="">
                                                 <input type="hidden" class="product-weight-per-unit" value="0">
-                                                <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
-                                                     data-bs-target="#productModal" data-target-index="0" style="cursor: pointer;">
+                                                <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
+                                                    data-bs-target="#productModal" data-target-index="0" style="cursor: pointer;">
                                                     <span class="product-text text-muted">請選擇產品</span>
                                                 </div>
                                             </td>
@@ -301,8 +301,8 @@
                                         <div class="signature-container">
                                             <?php if (!empty($data['order']['o_driver_signature'])): ?>
                                                 <div class="signature-preview" onclick="openImageModal('<?= base_url('order/serveSignature/' . $data['order']['o_driver_signature']) ?>', '司機簽名')">
-                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_driver_signature']) ?>" 
-                                                         alt="司機簽名" class="signature-image">
+                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_driver_signature']) ?>"
+                                                        alt="司機簽名" class="signature-image">
                                                     <div class="signature-overlay">
                                                         <i class="bi bi-zoom-in"></i>
                                                     </div>
@@ -327,8 +327,8 @@
                                         <div class="signature-container">
                                             <?php if (!empty($data['order']['o_from_signature'])): ?>
                                                 <div class="signature-preview" onclick="openImageModal('<?= base_url('order/serveSignature/' . $data['order']['o_from_signature']) ?>', '發貨方簽名')">
-                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_from_signature']) ?>" 
-                                                         alt="發貨方簽名" class="signature-image">
+                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_from_signature']) ?>"
+                                                        alt="發貨方簽名" class="signature-image">
                                                     <div class="signature-overlay">
                                                         <i class="bi bi-zoom-in"></i>
                                                     </div>
@@ -353,8 +353,8 @@
                                         <div class="signature-container">
                                             <?php if (!empty($data['order']['o_to_signature'])): ?>
                                                 <div class="signature-preview" onclick="openImageModal('<?= base_url('order/serveSignature/' . $data['order']['o_to_signature']) ?>', '收貨方簽名')">
-                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_to_signature']) ?>" 
-                                                         alt="收貨方簽名" class="signature-image">
+                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_to_signature']) ?>"
+                                                        alt="收貨方簽名" class="signature-image">
                                                     <div class="signature-overlay">
                                                         <i class="bi bi-zoom-in"></i>
                                                     </div>
@@ -483,378 +483,380 @@
 ]) ?>
 
 <style>
-/* ===== 現代化卡片樣式 ===== */
-.card {
-    border-radius: 12px;
-    transition: all 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(87, 145, 87, 0.15) !important;
-}
-
-.card-header {
-    border-radius: 12px 12px 0 0 !important;
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
-}
-
-.card-title {
-    color: #495057;
-    font-weight: 600;
-}
-
-/* ===== 表單元素現代化樣式 ===== */
-.form-control, .form-select {
-    border-radius: 8px;
-    border: 1.5px solid #dee2e6;
-    padding: 12px 16px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.25);
-    transform: translateY(-1px);
-}
-
-.form-label.fw-bold {
-    color: #495057;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-/* ===== 地點選擇器樣式 ===== */
-.location-selector {
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    border: 1.5px solid #dee2e6;
-}
-
-.location-selector:hover {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.15);
-    transform: translateY(-1px);
-}
-
-/* ===== 地點選擇模態框樣式 ===== */
-#locationModal .location-option {
-    color: #212529 !important;
-    background-color: #ffffff !important;
-    border: 1px solid #dee2e6 !important;
-}
-
-#locationModal .location-option:hover {
-    color: #495057 !important;
-    background-color: #f8f9fa !important;
-    border-color: var(--bs-primary) !important;
-}
-
-#locationModal .location-option span {
-    color: inherit !important;
-    font-weight: 500;
-}
-
-#locationModal .list-group-item-action {
-    color: #212529 !important;
-}
-
-#locationModal .list-group-item-action:hover {
-    color: #495057 !important;
-    background-color: #f8f9fa !important;
-}
-
-
-
-/* ===== 簽名區域樣式 ===== */
-.signature-container {
-    position: relative;
-    width: 100%;
-    height: 120px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #f8f9fa;
-    border: 2px solid #e9ecef;
-}
-
-.signature-preview {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.signature-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: all 0.3s ease;
-}
-
-.signature-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(87, 145, 87, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
-    color: white;
-    font-size: 24px;
-}
-
-.signature-preview:hover .signature-overlay {
-    opacity: 1;
-}
-
-.signature-preview:hover .signature-image {
-    transform: scale(1.05);
-}
-
-.signature-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #6c757d;
-}
-
-.signature-placeholder i {
-    font-size: 24px;
-    margin-bottom: 8px;
-    opacity: 0.5;
-}
-
-.signature-placeholder span {
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.signature-item {
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.signature-item:hover {
-    background: #e9ecef;
-}
-
-/* ===== 資訊項目樣式 ===== */
-.info-item {
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 6px;
-    border-left: 4px solid var(--bs-primary);
-}
-
-/* ===== 按鈕組現代化樣式 ===== */
-.btn-group .btn {
-    border-radius: 8px;
-    font-weight: 500;
-    padding: 10px 20px;
-}
-
-.btn-group .btn:first-child {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-}
-
-.btn-group .btn:last-child {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
-
-/* ===== 表格現代化樣式 ===== */
-.table {
-    border-radius: 0 0 12px 12px;
-    overflow: hidden;
-}
-
-.table thead th {
-    background: linear-gradient(135deg, #EBF1EC 0%, #d4edda 100%) !important;
-    border: none;
-    font-weight: 600;
-    color: #495057;
-    font-size: 13px;
-    padding: 16px 12px;
-}
-
-.table tbody td {
-    padding: 12px;
-    vertical-align: middle;
-    border-color: #f1f3f4;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-
-
-/* ===== 響應式優化 ===== */
-@media (max-width: 768px) {
-    .container-fluid {
-        padding-left: 15px;
-        padding-right: 15px;
+    /* ===== 現代化卡片樣式 ===== */
+    .card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
     }
-    
-    .card-body {
-        padding: 20px !important;
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(87, 145, 87, 0.15) !important;
     }
-    
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    }
+
+    .card-title {
+        color: #495057;
+        font-weight: 600;
+    }
+
+    /* ===== 表單元素現代化樣式 ===== */
+    .form-control,
+    .form-select {
+        border-radius: 8px;
+        border: 1.5px solid #dee2e6;
+        padding: 12px 16px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.25);
+        transform: translateY(-1px);
+    }
+
+    .form-label.fw-bold {
+        color: #495057;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    /* ===== 地點選擇器樣式 ===== */
+    .location-selector {
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        border: 1.5px solid #dee2e6;
+    }
+
+    .location-selector:hover {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.15);
+        transform: translateY(-1px);
+    }
+
+    /* ===== 地點選擇模態框樣式 ===== */
+    #locationModal .location-option {
+        color: #212529 !important;
+        background-color: #ffffff !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    #locationModal .location-option:hover {
+        color: #495057 !important;
+        background-color: #f8f9fa !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    #locationModal .location-option span {
+        color: inherit !important;
+        font-weight: 500;
+    }
+
+    #locationModal .list-group-item-action {
+        color: #212529 !important;
+    }
+
+    #locationModal .list-group-item-action:hover {
+        color: #495057 !important;
+        background-color: #f8f9fa !important;
+    }
+
+
+
+    /* ===== 簽名區域樣式 ===== */
     .signature-container {
-        height: 100px;
-    }
-    
-    .d-flex.gap-2 {
-        flex-direction: column;
-    }
-    
-    .d-flex.gap-2 .btn {
+        position: relative;
         width: 100%;
+        height: 120px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
     }
-}
 
-/* ===== 模態框優化 ===== */
-.modal-content {
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-}
+    .signature-preview {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+    }
 
-.modal-header {
-    border-radius: 16px 16px 0 0;
-}
+    .signature-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: all 0.3s ease;
+    }
 
-#modalImage {
-    max-height: 70vh;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
+    .signature-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(87, 145, 87, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        color: white;
+        font-size: 24px;
+    }
+
+    .signature-preview:hover .signature-overlay {
+        opacity: 1;
+    }
+
+    .signature-preview:hover .signature-image {
+        transform: scale(1.05);
+    }
+
+    .signature-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #6c757d;
+    }
+
+    .signature-placeholder i {
+        font-size: 24px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .signature-placeholder span {
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .signature-item {
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .signature-item:hover {
+        background: #e9ecef;
+    }
+
+    /* ===== 資訊項目樣式 ===== */
+    .info-item {
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border-left: 4px solid var(--bs-primary);
+    }
+
+    /* ===== 按鈕組現代化樣式 ===== */
+    .btn-group .btn {
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 10px 20px;
+    }
+
+    .btn-group .btn:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .btn-group .btn:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+
+    /* ===== 表格現代化樣式 ===== */
+    .table {
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background: linear-gradient(135deg, #EBF1EC 0%, #d4edda 100%) !important;
+        border: none;
+        font-weight: 600;
+        color: #495057;
+        font-size: 13px;
+        padding: 16px 12px;
+    }
+
+    .table tbody td {
+        padding: 12px;
+        vertical-align: middle;
+        border-color: #f1f3f4;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+
+
+    /* ===== 響應式優化 ===== */
+    @media (max-width: 768px) {
+        .container-fluid {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .card-body {
+            padding: 20px !important;
+        }
+
+        .signature-container {
+            height: 100px;
+        }
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+    }
+
+    /* ===== 模態框優化 ===== */
+    .modal-content {
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        border-radius: 16px 16px 0 0;
+    }
+
+    #modalImage {
+        max-height: 70vh;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentTargetField = 'from';
-    let detailIndex = document.querySelectorAll('#detailTableBody tr').length;
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentTargetField = 'from';
+        let detailIndex = document.querySelectorAll('#detailTableBody tr').length;
 
-    // 圖片放大功能
-    window.openImageModal = function(imageSrc, title) {
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('imageModalLabel').textContent = title;
-        new bootstrap.Modal(document.getElementById('imageModal')).show();
-    };
+        // 圖片放大功能
+        window.openImageModal = function(imageSrc, title) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModalLabel').textContent = title;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        };
 
-    // 處理地點選擇器點擊
-    document.querySelectorAll('.location-selector').forEach(selector => {
-        selector.addEventListener('click', function() {
-            const targetField = this.dataset.targetField;
-            currentTargetField = targetField;
+        // 處理地點選擇器點擊
+        document.querySelectorAll('.location-selector').forEach(selector => {
+            selector.addEventListener('click', function() {
+                const targetField = this.dataset.targetField;
+                currentTargetField = targetField;
 
-            const modalTitle = document.getElementById('locationModalLabel');
-            if (targetField === 'from') {
-                modalTitle.textContent = '選擇出發地';
-            } else if (targetField === 'to') {
-                modalTitle.textContent = '選擇目的地';
-            }
-
-            loadLocations();
-        });
-    });
-
-    // 載入所有地點資料
-    function loadLocations() {
-        const originList = document.getElementById('originList');
-        const constructionList = document.getElementById('constructionList');
-
-        originList.innerHTML = '<div class="text-muted text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>載入中...</div>';
-        constructionList.innerHTML = '<div class="text-muted text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>載入中...</div>';
-
-        Promise.all([
-                fetch('<?= base_url('api/location/getLocations/0') ?>'),
-                fetch('<?= base_url('api/location/getLocations/1') ?>')
-            ])
-            .then(responses => Promise.all(responses.map(response => response.json())))
-            .then(([warehouseData, constructionData]) => {
-                let originHtml = '';
-                warehouseData.forEach(location => {
-                    originHtml += `
-                        <button type="button" class="list-group-item list-group-item-action location-option d-flex justify-content-between align-items-center" 
-                                data-location-id="${location.l_id}" data-location-name="${location.l_name}">
-                            <span>${location.l_name}</span>
-                            <i class="bi bi-chevron-right text-muted"></i>
-                        </button>`;
-                });
-
-                if (originHtml === '') {
-                    originHtml = '<div class="text-muted text-center py-3">沒有可用的倉庫</div>';
+                const modalTitle = document.getElementById('locationModalLabel');
+                if (targetField === 'from') {
+                    modalTitle.textContent = '選擇出發地';
+                } else if (targetField === 'to') {
+                    modalTitle.textContent = '選擇目的地';
                 }
-                originList.innerHTML = originHtml;
 
-                let constructionHtml = '';
-                constructionData.forEach(location => {
-                    constructionHtml += `
-                        <button type="button" class="list-group-item list-group-item-action location-option d-flex justify-content-between align-items-center" 
-                                data-location-id="${location.l_id}" data-location-name="${location.l_name}">
-                            <span>${location.l_name}</span>
-                            <i class="bi bi-chevron-right text-muted"></i>
-                        </button>`;
-                });
-
-                if (constructionHtml === '') {
-                    constructionHtml = '<div class="text-muted text-center py-3">沒有可用的工地</div>';
-                }
-                constructionList.innerHTML = constructionHtml;
-
-                // 重新綁定地點選擇事件
-                document.querySelectorAll('#originList .location-option, #constructionList .location-option').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const locationId = this.dataset.locationId;
-                        const locationName = this.dataset.locationName;
-
-                        if (currentTargetField === 'from') {
-                            document.querySelector('input[name="o_from_location"]').value = locationId;
-                            document.getElementById('fromLocationText').textContent = locationName;
-                            document.getElementById('fromLocationText').classList.remove('text-muted');
-                        } else {
-                            document.querySelector('input[name="o_to_location"]').value = locationId;
-                            document.getElementById('toLocationText').textContent = locationName;
-                            document.getElementById('toLocationText').classList.remove('text-muted');
-                        }
-
-                        bootstrap.Modal.getInstance(document.getElementById('locationModal')).hide();
-                    });
-                });
-            })
-            .catch(error => {
-                console.error('Error loading locations:', error);
-                originList.innerHTML = '<div class="text-danger text-center py-3">載入失敗</div>';
-                constructionList.innerHTML = '<div class="text-danger text-center py-3">載入失敗</div>';
+                loadLocations();
             });
-    }
+        });
 
-    // 新增明細行
-    document.getElementById('addDetailBtn').addEventListener('click', function() {
-        const tbody = document.getElementById('detailTableBody');
-        const newRow = createDetailRow(detailIndex);
-        tbody.appendChild(newRow);
-        detailIndex++;
-    });
+        // 載入所有地點資料
+        function loadLocations() {
+            const originList = document.getElementById('originList');
+            const constructionList = document.getElementById('constructionList');
 
-    // 創建新的明細行
-    function createDetailRow(index) {
-        const row = document.createElement('tr');
-        row.setAttribute('data-index', index);
-        row.innerHTML = `
+            originList.innerHTML = '<div class="text-muted text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>載入中...</div>';
+            constructionList.innerHTML = '<div class="text-muted text-center py-3"><div class="spinner-border spinner-border-sm me-2"></div>載入中...</div>';
+
+            Promise.all([
+                    fetch('<?= base_url('api/location/getLocations/0') ?>'),
+                    fetch('<?= base_url('api/location/getLocations/1') ?>')
+                ])
+                .then(responses => Promise.all(responses.map(response => response.json())))
+                .then(([warehouseData, constructionData]) => {
+                    let originHtml = '';
+                    warehouseData.forEach(location => {
+                        originHtml += `
+                        <button type="button" class="list-group-item list-group-item-action location-option d-flex justify-content-between align-items-center" 
+                                data-location-id="${location.l_id}" data-location-name="${location.l_name}">
+                            <span>${location.l_name}</span>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </button>`;
+                    });
+
+                    if (originHtml === '') {
+                        originHtml = '<div class="text-muted text-center py-3">沒有可用的倉庫</div>';
+                    }
+                    originList.innerHTML = originHtml;
+
+                    let constructionHtml = '';
+                    constructionData.forEach(location => {
+                        constructionHtml += `
+                        <button type="button" class="list-group-item list-group-item-action location-option d-flex justify-content-between align-items-center" 
+                                data-location-id="${location.l_id}" data-location-name="${location.l_name}">
+                            <span>${location.l_name}</span>
+                            <i class="bi bi-chevron-right text-muted"></i>
+                        </button>`;
+                    });
+
+                    if (constructionHtml === '') {
+                        constructionHtml = '<div class="text-muted text-center py-3">沒有可用的工地</div>';
+                    }
+                    constructionList.innerHTML = constructionHtml;
+
+                    // 重新綁定地點選擇事件
+                    document.querySelectorAll('#originList .location-option, #constructionList .location-option').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const locationId = this.dataset.locationId;
+                            const locationName = this.dataset.locationName;
+
+                            if (currentTargetField === 'from') {
+                                document.querySelector('input[name="o_from_location"]').value = locationId;
+                                document.getElementById('fromLocationText').textContent = locationName;
+                                document.getElementById('fromLocationText').classList.remove('text-muted');
+                            } else {
+                                document.querySelector('input[name="o_to_location"]').value = locationId;
+                                document.getElementById('toLocationText').textContent = locationName;
+                                document.getElementById('toLocationText').classList.remove('text-muted');
+                            }
+
+                            bootstrap.Modal.getInstance(document.getElementById('locationModal')).hide();
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading locations:', error);
+                    originList.innerHTML = '<div class="text-danger text-center py-3">載入失敗</div>';
+                    constructionList.innerHTML = '<div class="text-danger text-center py-3">載入失敗</div>';
+                });
+        }
+
+        // 新增明細行
+        document.getElementById('addDetailBtn').addEventListener('click', function() {
+            const tbody = document.getElementById('detailTableBody');
+            const newRow = createDetailRow(detailIndex);
+            tbody.appendChild(newRow);
+            detailIndex++;
+        });
+
+        // 創建新的明細行
+        function createDetailRow(index) {
+            const row = document.createElement('tr');
+            row.setAttribute('data-index', index);
+            row.innerHTML = `
             <td class="text-center align-middle">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
                     <i class="bi bi-trash"></i>
@@ -885,65 +887,65 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
 
-        bindDetailEvents(row);
-        return row;
-    }
+            bindDetailEvents(row);
+            return row;
+        }
 
-    // 綁定明細行事件
-    function bindDetailEvents(row) {
-        row.querySelector('.remove-detail').addEventListener('click', function() {
-            if (document.querySelectorAll('#detailTableBody tr').length > 1) {
-                row.remove();
-            } else {
-                alert('至少需要保留一個明細項目');
-            }
+        // 綁定明細行事件
+        function bindDetailEvents(row) {
+            row.querySelector('.remove-detail').addEventListener('click', function() {
+                if (document.querySelectorAll('#detailTableBody tr').length > 1) {
+                    row.remove();
+                } else {
+                    alert('至少需要保留一個明細項目');
+                }
+            });
+
+            row.querySelectorAll('.quantity-input, .length-input').forEach(input => {
+                input.addEventListener('input', () => calculateRowWeight(row));
+            });
+        }
+
+        function calculateRowWeight(row) {
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const length = parseFloat(row.querySelector('.length-input').value) || 0;
+            const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
+
+            const totalWeight = quantity * length * weightPerUnit;
+
+            const weightInput = row.querySelector('.weight-input');
+            weightInput.value = totalWeight.toFixed(2);
+        }
+
+        // 初始化現有明細行的事件
+        document.querySelectorAll('#detailTableBody tr').forEach(row => {
+            bindDetailEvents(row);
+            calculateRowWeight(row);
         });
 
-        row.querySelectorAll('.quantity-input, .length-input').forEach(input => {
-            input.addEventListener('input', () => calculateRowWeight(row));
+        // 初始化產品選擇器
+        const productSelector = window.createProductSelector({
+            modalId: 'productModal',
+            fieldPrefix: 'od'
         });
-    }
 
-    function calculateRowWeight(row) {
-        const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
-        const length = parseFloat(row.querySelector('.length-input').value) || 0;
-        const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
-        
-        const totalWeight = quantity * length * weightPerUnit;
-        
-        const weightInput = row.querySelector('.weight-input');
-        weightInput.value = totalWeight.toFixed(2);
-    }
+        // 使重量計算函數全域可用，供產品選擇器調用
+        window.calculateRowWeight = calculateRowWeight;
 
-    // 初始化現有明細行的事件
-    document.querySelectorAll('#detailTableBody tr').forEach(row => {
-        bindDetailEvents(row);
-        calculateRowWeight(row);
-    });
-
-    // 初始化產品選擇器
-    const productSelector = window.createProductSelector({
-        modalId: 'productModal',
-        fieldPrefix: 'od'
-    });
-
-    // 使重量計算函數全域可用，供產品選擇器調用
-    window.calculateRowWeight = calculateRowWeight;
-
-    // 平滑滾動到錨點
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
+        // 平滑滾動到錨點
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
         });
     });
-});
 </script>
 
 <?= $this->endSection() ?>

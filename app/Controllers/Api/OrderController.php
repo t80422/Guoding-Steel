@@ -36,6 +36,7 @@ class OrderController extends Controller
     // 新增
     public function create()
     {
+        $this->orderModel->db->transException(true);
         $this->orderModel->db->transStart();
 
         try {
@@ -82,6 +83,8 @@ class OrderController extends Controller
             }
             log_message('error', $e->getMessage());
             return $this->fail('新增失敗');
+        }finally{
+            $this->orderModel->db->transException(false);
         }
     }
 
@@ -100,7 +103,7 @@ class OrderController extends Controller
             $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
             
             // 根據地點權限過濾訂單
-            $orders = $this->orderModel->getByInProgressWithLocationFilter($userLocationIds, $userId);
+            $orders = $this->orderModel->getByInProgressWithLocationFilter($userId, $userLocationIds);
 
             $data = [];
             foreach ($orders as $order) {
@@ -155,6 +158,7 @@ class OrderController extends Controller
     // 更新
     public function update($id = null)
     {
+        $this->orderModel->db->transException(true);
         $this->orderModel->db->transStart();
         try {
             $order = $this->orderModel->find($id);
@@ -227,6 +231,8 @@ class OrderController extends Controller
             $this->orderModel->db->transRollback();
             log_message('error', $e->getMessage());
             return $this->fail('更新失敗');
+        }finally{
+            $this->orderModel->db->transException(false);
         }
     }
 
@@ -245,7 +251,7 @@ class OrderController extends Controller
             $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
             
             // 根據地點權限過濾訂單
-            $orders = $this->orderModel->getByCompletedWithLocationFilter($userLocationIds, $userId);
+            $orders = $this->orderModel->getByCompletedWithLocationFilter($userId, $userLocationIds);
 
             $data = [];
             foreach ($orders as $order) {

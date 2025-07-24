@@ -79,6 +79,7 @@ $routes->group('order', function ($routes) {
     $routes->post('save', 'OrderController::save');
     $routes->get('delete/(:num)', 'OrderController::delete/$1');
     $routes->get('serveSignature/(:segment)', 'OrderController::serveSignature/$1', ['as' => 'signature_image']);
+    $routes->get('print', 'OrderController::print');
 });
 
 // GPS

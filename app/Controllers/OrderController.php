@@ -170,4 +170,10 @@ class OrderController extends BaseController
             return redirect()->to(url_to('OrderController::index'))->with('error', '刪除失敗');
         }
     }
+
+    // 列印
+    public function print()
+    {
+        return view('print/warehouse_form');
+    }
 }

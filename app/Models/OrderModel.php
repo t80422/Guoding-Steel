@@ -160,7 +160,7 @@ class OrderModel extends Model
      * @param int $userId 使用者ID
      * @return array
      */
-    public function getByInProgressWithLocationFilter($userLocationIds = [], $userId)
+    public function getByInProgressWithLocationFilter($userId,$userLocationIds = [])
     {
         if (empty($userLocationIds)) {
             return [];
@@ -183,7 +183,7 @@ class OrderModel extends Model
      * @param int $userId 使用者ID
      * @return array
      */
-    public function getByCompletedWithLocationFilter($userLocationIds = [], $userId)
+    public function getByCompletedWithLocationFilter($userId, $userLocationIds = [])
     {
         if (empty($userLocationIds)) {
             return [];
