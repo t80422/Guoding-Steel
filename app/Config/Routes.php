@@ -80,6 +80,7 @@ $routes->group('order', function ($routes) {
     $routes->get('delete/(:num)', 'OrderController::delete/$1');
     $routes->get('serveSignature/(:segment)', 'OrderController::serveSignature/$1', ['as' => 'signature_image']);
     $routes->get('print', 'OrderController::print');
+    $routes->get('getDetail/(:num)', 'OrderController::getDetail/$1');
 });
 
 // GPS
@@ -169,6 +170,22 @@ $routes->group('manufacturerInventory', function ($routes) {
     $routes->get('edit/(:num)', 'ManufacturerInventoryController::edit/$1');
     $routes->get('delete/(:num)', 'ManufacturerInventoryController::delete/$1');
     $routes->post('save', 'ManufacturerInventoryController::save');
+});
+
+// 施工項目
+$routes->group('projectItem', function ($routes) {
+    $routes->get('/', 'ProjectItemController::index');
+    $routes->get('create', 'ProjectItemController::create');
+    $routes->get('edit/(:num)', 'ProjectItemController::edit/$1');
+    $routes->get('delete/(:num)', 'ProjectItemController::delete/$1');
+    $routes->post('save', 'ProjectItemController::save');
+    $routes->get('getItems', 'ProjectItemController::getItems');
+});
+
+// 訂單明細施工項目
+$routes->group('orderDetailProjectItem', function ($routes) {
+    $routes->get('getDetail/(:num)', 'OrderDetailProjectItemController::getDetail/$1');
+    $routes->post('save', 'OrderDetailProjectItemController::save');
 });
 
 // API

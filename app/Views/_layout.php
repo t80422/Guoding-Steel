@@ -41,13 +41,6 @@
         <div class="border-right" id="sidebar-wrapper">
             <div class="sidebar-heading">功能列</div>
             <div class="list-group list-group-flush">
-                <a href="<?= url_to('UserController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-people"></i>使用者管理
-                </a>
-                <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-person-badge"></i>職位管理
-                </a>
-
                 <!-- 產品群組 -->
                 <div class="nav-dropdown">
                     <div class="list-group-item list-group-item-action">
@@ -65,24 +58,6 @@
                         </a>
                     </div>
                 </div>
-                <a href="<?= url_to('InventoryController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-boxes"></i>庫存管理
-                </a>
-                <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-geo-alt"></i>地點管理
-                </a>
-                <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-file-text"></i>登入登出紀錄
-                </a>
-                <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-cart"></i>訂單管理
-                </a>
-                <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-pin-map"></i>GPS管理
-                </a>
-                <a href="<?= url_to('RentalController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-clipboard-check"></i>租賃單管理
-                </a>
                 <!-- 機械群組 -->
                 <div class="nav-dropdown">
                     <div class="list-group-item list-group-item-action">
@@ -100,6 +75,44 @@
                         </a>
                     </div>
                 </div>
+                <!-- 租賃群組 -->
+                <div class="nav-dropdown">
+                    <div class="list-group-item list-group-item-action">
+                        <i class="bi bi-clipboard-check"></i>租賃 <i class="bi bi-chevron-right float-end"></i>
+                    </div>
+                    <div class="dropdown-menu-custom">
+                        <a href="<?= url_to('RentalController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-clipboard-check"></i>租賃單管理
+                        </a>
+                        <a href="<?= url_to('ManufacturerInventoryController::index') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-boxes"></i>租賃庫存管理
+                        </a>
+                        <a href="<?= url_to('RentalController::index_order') ?>" class="dropdown-item-custom">
+                            <i class="bi bi-cart"></i>租賃訂單管理
+                        </a>
+                    </div>
+                </div>
+                <a href="<?= url_to('UserController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-people"></i>使用者管理
+                </a>
+                <a href="<?= url_to('PositionController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-person-badge"></i>職位管理
+                </a>
+                <a href="<?= url_to('InventoryController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-boxes"></i>庫存管理
+                </a>
+                <a href="<?= url_to('LocationController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-geo-alt"></i>地點管理
+                </a>
+                <a href="<?= url_to('AuthController::authLogs') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-text"></i>登入登出紀錄
+                </a>
+                <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-cart"></i>訂單管理
+                </a>
+                <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-pin-map"></i>GPS管理
+                </a>
                 <a href="<?= url_to('ManufacturerController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-building"></i>廠商管理
                 </a>
@@ -109,11 +122,8 @@
                 <a href="<?= url_to('ExcelController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-file-earmark-excel"></i>匯入Excel
                 </a>
-                <a href="<?= url_to('ManufacturerInventoryController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-boxes"></i>租賃庫存管理
-                </a>
-                <a href="<?= url_to('RentalController::index_order') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-cart"></i>租賃訂單管理
+                <a href="<?= url_to('ProjectItemController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-list-ul"></i>施工項目
                 </a>
             </div>
         </div>
@@ -129,14 +139,14 @@
         document.getElementById('sidebarToggle').addEventListener('click', function() {
             document.getElementById('wrapper').classList.toggle('toggled');
         });
-        
+
         // 動態調整子選單位置
         document.addEventListener('DOMContentLoaded', function() {
             const dropdowns = document.querySelectorAll('.nav-dropdown');
-            
+
             dropdowns.forEach(function(dropdown) {
                 const dropdownMenu = dropdown.querySelector('.dropdown-menu-custom');
-                
+
                 if (dropdownMenu) {
                     dropdown.addEventListener('mouseenter', function() {
                         const rect = this.getBoundingClientRect();

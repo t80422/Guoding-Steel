@@ -68,6 +68,9 @@ use App\Models\LocationModel;
                             <td><?= esc($item['updater']) ?></td>
                             <td><?= esc($item['l_update_at']) ?></td>
                             <td class="text-end">
+                                <a href="" class="btn btn-sm btn-outline-secondary me-1" title="用料情況">
+                                    <i class="bi bi-clipboard-data"></i>
+                                </a>
                                 <a href="<?= url_to('LocationController::edit', $item['l_id']) ?>" class="btn btn-sm btn-outline-info me-1" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </a>

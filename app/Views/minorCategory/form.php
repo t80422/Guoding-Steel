@@ -14,11 +14,6 @@
         <div class="mb-3">
             <label for="micName" class="form-label">名稱</label>
             <input type="text" class="form-control" name="mic_name" value="<?= old('mic_name', $data['mic_name'] ?? '') ?>" required>
-            <?php if (isset(session()->getFlashdata('errors')['mic_name'])): ?>
-                <div class="text-danger mt-1">
-                    <?= session()->getFlashdata('errors')['mic_name'] ?>
-                </div>
-            <?php endif; ?>
         </div>
 
         <div class="mb-3">
@@ -31,11 +26,6 @@
                     </option>
                 <?php endforeach; ?>
             </select>
-            <?php if (isset(session()->getFlashdata('errors')['mic_mc_id'])): ?>
-                <div class="text-danger mt-1">
-                    <?= session()->getFlashdata('errors')['mic_mc_id'] ?>
-                </div>
-            <?php endif; ?>
         </div>
 
         <button type="submit" class="btn btn-primary">保存</button>

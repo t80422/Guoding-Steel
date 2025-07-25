@@ -176,4 +176,10 @@ class OrderController extends BaseController
     {
         return view('print/warehouse_form');
     }
+
+    // 取得訂單明細
+    public function getDetail($id){
+        $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
+        return $this->response->setJSON($orderDetails);
+    }
 }

@@ -183,9 +183,15 @@
                             <h5 class="card-title mb-0">
                                 <i class="bi bi-list-ul me-2 text-primary"></i>訂單明細
                             </h5>
-                            <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
-                                <i class="bi bi-plus-lg me-1"></i>新增明細
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
+                                    data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
+                                    <i class="bi bi-table me-1"></i>項目數量表
+                                </button>
+                                <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>新增明細
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -194,10 +200,10 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th class="text-center" style="width: 5%;">操作</th>
-                                        <th style="width: 45%;">產品</th>
+                                        <th style="width: 50%;">產品</th>
                                         <th style="width: 15%;">數量</th>
                                         <th style="width: 15%;">長度(m)</th>
-                                        <th style="width: 20%;">重量(kg)</th>
+                                        <th style="width: 15%;">重量(kg)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailTableBody">
@@ -477,6 +483,11 @@
     </div>
 </div>
 
+<?= view('components/item_quantity_table', [
+    'orderId' => $data['order']['o_id'] ?? 0
+]) ?>
+
+<!-- 產品選擇器 -->
 <?= $this->include('components/product_selector', [
     'modalId' => 'productModal',
     'fieldPrefix' => 'od'
