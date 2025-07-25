@@ -70,6 +70,7 @@ $routes->group('location', function ($routes) {
     $routes->get('edit/(:num)', 'LocationController::edit/$1');
     $routes->get('delete/(:num)', 'LocationController::delete/$1');
     $routes->post('save', 'LocationController::save');
+    $routes->get('materialUsage/(:num)', 'LocationController::materialUsage/$1');
 });
 
 // 訂單

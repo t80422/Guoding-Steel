@@ -4,16 +4,18 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
-use App\Models\ManufacturerModel;
+use App\Models\OrderModel;
 use Throwable;
 
 class LocationController extends BaseController
 {
     private $locationModel;
+    private $orderModel;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
+        $this->orderModel = new OrderModel();
     }
 
     public function index()
@@ -86,5 +88,21 @@ class LocationController extends BaseController
     {
         $this->locationModel->delete($id);
         return redirect()->to(url_to('LocationController::index'));
+    }
+
+    // 工地用料情況
+    public function materialUsage($id)
+    {
+        $location = $this->locationModel->find($id);
+        
+        // 取得詳細用料情況（包含工地項目和產品明細）
+        $materialData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($id);
+        
+        return view('location/material_usage', [
+            'location' => $location,
+            'orders' => $materialData['orders'],
+            'all_projects' => $materialData['all_projects'],
+            'all_products' => $materialData['all_products']
+        ]);
     }
 }
