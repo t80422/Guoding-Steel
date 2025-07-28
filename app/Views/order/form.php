@@ -6,7 +6,7 @@
     <!-- 頁面標題區 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-0 text-gray-800">訂單管理</h1>
+            <h1 class="h3 mb-0 text-gray-800">料單管理</h1>
         </div>
         <div class="d-flex gap-2">
             <a href="<?= url_to('OrderController::index') ?>" class="btn btn-outline-secondary">
@@ -223,7 +223,11 @@
                                                     <input type="hidden" class="product-weight-per-unit" value="<?= $detail['pr_weight_per_unit'] ?? 0 ?>">
                                                     <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
                                                         data-bs-target="#productModal" data-target-index="<?= $index ?>" style="cursor: pointer;">
-                                                        <span class="product-text"><?= isset($detail['pr_name']) ? esc($detail['pr_name']) : '請選擇產品' ?></span>
+                                                        <span class="product-text">
+                                                            <?= isset($detail['pr_name']) ?
+                                                                esc($detail['mic_name'] != $detail['pr_name'] ? $detail['mic_name'] . ' ' . $detail['pr_name']
+                                                                    : $detail['pr_name']) : '請選擇產品' ?>
+                                                        </span>
                                                     </div>
                                                 </td>
                                                 <td class="align-middle">
@@ -483,6 +487,7 @@
     </div>
 </div>
 
+<!-- 項目數量表 -->
 <?= view('components/item_quantity_table', [
     'orderId' => $data['order']['o_id'] ?? 0
 ]) ?>

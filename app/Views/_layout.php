@@ -108,7 +108,7 @@
                     <i class="bi bi-file-text"></i>登入登出紀錄
                 </a>
                 <a href="<?= url_to('OrderController::index') ?>" class="list-group-item list-group-item-action">
-                    <i class="bi bi-cart"></i>訂單管理
+                    <i class="bi bi-cart"></i>料單管理
                 </a>
                 <a href="<?= url_to('GpsController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-pin-map"></i>GPS管理

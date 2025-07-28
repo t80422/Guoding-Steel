@@ -167,6 +167,11 @@ class OrderController extends Controller
                 return $this->failNotFound('訂單不存在');
             }
 
+            $userId = $this->request->getHeaderLine('X-User-ID');
+            if (empty($userId)) {
+                return $this->fail('缺少使用者識別資訊，請重新登入後再試。');
+            }
+
             // 保存舊的訂單明細用於庫存回復
             $oldOrderDetails = $this->orderDetailModel->getByOrderId($id);
 
@@ -216,6 +221,13 @@ class OrderController extends Controller
             }
 
             $jsonOrder['o_update_at'] = date('Y-m-d H:i:s');
+            $jsonOrder['o_update_by'] = $userId;
+            // 判斷三個簽名檔案是否都有上傳（不為空且不為 null）
+            $jsonOrder['o_status'] = (
+                !empty($jsonOrder['o_driver_signature']) &&
+                !empty($jsonOrder['o_from_signature']) &&
+                !empty($jsonOrder['o_to_signature'])
+            ) ? OrderModel::STATUS_COMPLETED : OrderModel::STATUS_IN_PROGRESS;
             $this->orderModel->update($id, $jsonOrder);
 
             // 呼叫 OrderService 處理明細的增、改、刪

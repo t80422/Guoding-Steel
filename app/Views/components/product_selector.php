@@ -285,6 +285,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
             this.currentTargetIndex = 0;
             this.selectedMajorCategory = null;
             this.selectedMinorCategory = null;
+            this.selectedMinorCategoryName = null; // 暫存小分類名稱
 
             this.init();
         }
@@ -314,6 +315,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
         resetModal() {
             this.selectedMajorCategory = null;
             this.selectedMinorCategory = null;
+            this.selectedMinorCategoryName = null;
 
             document.querySelectorAll(`#${this.modalId} .step-indicator`).forEach(indicator => {
                 indicator.classList.remove('active', 'completed');
@@ -335,8 +337,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                     <span class="visually-hidden">載入中...</span>
                 </div>
                 <p class="mt-2 text-muted">載入大分類中...</p>
-            </div>
-        `;
+            </div>`;
 
             fetch('<?= base_url('index.php/api/majorCategory/getMajorCategories') ?>')
                 .then(response => response.json())
@@ -381,8 +382,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                     <span class="visually-hidden">載入中...</span>
                 </div>
                 <p class="mt-2 text-muted">載入小分類中...</p>
-            </div>
-        `;
+            </div>`;
 
             fetch(`<?= base_url('index.php/api/minorCategory/getMinorCategories') ?>/${majorCategoryId}`)
                 .then(response => response.json())
@@ -407,6 +407,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                     document.querySelectorAll(`#${this.modalId}MinorCategoryList .category-card[data-minor-id]`).forEach(card => {
                         card.addEventListener('click', () => {
                             this.selectedMinorCategory = card.dataset.minorId;
+                            this.selectedMinorCategoryName = card.querySelector('h6').textContent; // 暫存小分類名稱
                             this.goToStep(3);
                             this.loadProducts(this.selectedMinorCategory);
                         });
@@ -427,8 +428,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                     <span class="visually-hidden">載入中...</span>
                 </div>
                 <p class="mt-2 text-muted">載入產品中...</p>
-            </div>
-        `;
+            </div>`;
 
             fetch(`<?= base_url('index.php/api/product/getProducts') ?>/${minorCategoryId}`)
                 .then(response => response.json())
@@ -476,7 +476,12 @@ $fieldPrefix = $fieldPrefix ?? 'od';
             if (targetRow) {
                 targetRow.querySelector(`input[name*="[${this.productIdField}]"]`).value = productId;
                 const productText = targetRow.querySelector('.product-text');
-                productText.textContent = productName;
+                
+                // 在表單中顯示組合名稱：小分類名稱 + 產品名稱
+                const displayName = this.selectedMinorCategoryName && this.selectedMinorCategoryName !== productName 
+                    ? `${this.selectedMinorCategoryName} ${productName}` 
+                    : productName;
+                productText.textContent = displayName;
                 productText.classList.remove('text-muted');
                 targetRow.querySelector('.product-weight-per-unit').value = weightPerUnit;
 

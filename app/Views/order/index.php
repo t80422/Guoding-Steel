@@ -5,10 +5,7 @@
 <div class="container py-4">
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0 fw-bold">訂單管理</h3>
-        <a href="<?= url_to('OrderController::print') ?>" class="btn btn-primary">
-            <i class="bi bi-printer"></i> 列印
-        </a>
+        <h3 class="mb-0 fw-bold">料單管理</h3>
     </div>
     <!-- 搜尋列 -->
     <div class="card mb-4">
@@ -121,6 +118,9 @@
                             <td><?= esc($item['o_acetylene']) ?></td>
                             <td><?= esc($item['o_remark']) ?></td>
                             <td class="text-end">
+                                <button class="btn btn-sm btn-outline-info" onclick="window.open('<?= url_to('OrderController::print', $item['o_id']) ?>', '_blank')" title="列印">
+                                    <i class="bi bi-printer"></i>
+                                </button>
                                 <button class="btn btn-sm btn-outline-info" onclick="window.location.href='<?= url_to('OrderController::edit', $item['o_id']) ?>'" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>

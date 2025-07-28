@@ -345,14 +345,19 @@ $orderId = $orderId ?? 0;
                             <i class="bi bi-info-circle me-2"></i>
                             此訂單暫無明細資料
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             } else {
                 // 渲染產品行
                 orderDetails.forEach(orderDetail => {
+                    console.log(orderDetail);
+                    // 組合顯示名稱：小分類名稱 + 產品名稱
+                    const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name 
+                        ? `${orderDetail.mic_name} ${orderDetail.pr_name}` 
+                        : (orderDetail.od_pr_name || orderDetail.pr_name);
+                    
                     tableHtml += `
                         <tr>
-                            <td class="product-name">${orderDetail.od_pr_name || orderDetail.pr_name}</td>
+                            <td class="product-name">${displayName}</td>
                             <td class="total-quantity">${orderDetail.od_qty || 0}</td>
                             <td class="total-length">${orderDetail.od_length || 0}</td>
                     `;
