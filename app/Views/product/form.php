@@ -56,7 +56,7 @@
 
         <div class="mb-3">
             <label for="prWeight" class="form-label">重量</label>
-            <input type="number" class="form-control" name="pr_weight" value="<?= old('pr_weight', $data['pr_weight'] ?? '') ?>" required>
+            <input type="number" class="form-control" name="pr_weight" value="<?= old('pr_weight', $data['pr_weight'] ?? '') ?>" step="0.1">
         </div>
 
         <button type="submit" class="btn btn-primary">保存</button>
