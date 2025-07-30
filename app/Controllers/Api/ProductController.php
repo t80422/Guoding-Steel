@@ -23,6 +23,7 @@ class ProductController extends BaseController
                 'pr_id' => $item['pr_id'],
                 'pr_name' => $item['pr_name'],
                 'pr_weight' => $item['pr_weight'],
+                'pr_is_length' => $item['pr_is_length'],
             ];
         }
         return $this->response->setJSON($data);
