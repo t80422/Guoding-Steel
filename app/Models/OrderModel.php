@@ -194,9 +194,10 @@ class OrderModel extends Model
      * 取得特定地點的詳細用料情況 (包含工地項目和產品明細)
      *
      * @param int $locationId 地點ID
+     * @param array $searchParams 搜尋參數
      * @return array
      */
-    public function getMaterialDetailsWithProjectsByLocation($locationId)
+    public function getMaterialDetailsWithProjectsByLocation($locationId, $searchParams = [])
     {
         $builder = $this->db->table('orders o')
             ->join('locations l1', 'l1.l_id = o.o_from_location', 'left')
@@ -223,8 +224,31 @@ class OrderModel extends Model
             ->groupStart()
                 ->where('o.o_from_location', $locationId)
                 ->orWhere('o.o_to_location', $locationId)
-            ->groupEnd()
-            ->orderBy('o.o_date', 'DESC')
+            ->groupEnd();
+
+        // 加入搜尋條件
+        if (!empty($searchParams['start_date'])) {
+            $builder->where('o.o_date >=', $searchParams['start_date']);
+        }
+        
+        if (!empty($searchParams['end_date'])) {
+            $builder->where('o.o_date <=', $searchParams['end_date']);
+        }
+        
+        if (isset($searchParams['type'])) {
+            $builder->where('o.o_type', $searchParams['type']);
+        }
+        
+        if (!empty($searchParams['keyword'])) {
+            $keyword = $searchParams['keyword'];
+            $builder->groupStart()
+                ->like('o.o_car_number', $keyword)
+                ->orLike('l1.l_name', $keyword)
+                ->orLike('l2.l_name', $keyword)
+            ->groupEnd();
+        }
+
+        $builder->orderBy('o.o_date', 'DESC')
             ->orderBy('o.o_id', 'ASC');
 
         $rawResults = $builder->get()->getResultArray();

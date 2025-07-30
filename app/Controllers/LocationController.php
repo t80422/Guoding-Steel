@@ -95,14 +95,23 @@ class LocationController extends BaseController
     {
         $location = $this->locationModel->find($id);
         
+        // 取得搜尋參數
+        $searchParams = [
+            'start_date' => $this->request->getGet('start_date'),
+            'end_date' => $this->request->getGet('end_date'),
+            'type' => $this->request->getGet('type'),
+            'keyword' => $this->request->getGet('keyword')
+        ];
+
         // 取得詳細用料情況（包含工地項目和產品明細）
-        $materialData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($id);
+        $materialData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($id, $searchParams);
         
         return view('location/material_usage', [
             'location' => $location,
             'orders' => $materialData['orders'],
             'all_projects' => $materialData['all_projects'],
-            'all_products' => $materialData['all_products']
+            'all_products' => $materialData['all_products'],
+            'searchParams' => $this->request->getGet() // 傳遞所有 GET 參數給 view
         ]);
     }
 }

@@ -49,7 +49,7 @@ class PositionController extends BaseController
                 ->with('error', '請先登入！');
         }
         
-        if ($data['p_id']) {
+        if (isset($data['p_id'])) {
             $data['p_update_by'] = $userId;
             $data['p_update_at'] = date('Y-m-d H:i:s');
         } else {

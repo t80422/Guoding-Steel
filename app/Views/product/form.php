@@ -59,6 +59,13 @@
             <input type="number" class="form-control" name="pr_weight" value="<?= old('pr_weight', $data['pr_weight'] ?? '') ?>" step="0.1">
         </div>
 
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="prIsLength" name="pr_is_length" value="1" <?= (old('pr_is_length', $data['pr_is_length'] ?? 0) == 1) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="prIsLength">是否需要長度</label>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary">保存</button>
         <a href="<?= url_to('ProductController::index') ?>" class="btn btn-secondary">取消</a>
     </form>
@@ -73,7 +80,7 @@
         function loadMinorCategories(majorCategoryId, selectedMinorCategoryId = null) {
             minorCategorySelect.innerHTML = '<option value="">請選擇</option>'; // Clear current options
             if (majorCategoryId) {
-                fetch(`/index.php/api/minorCategory/getMinorCategories/${majorCategoryId}`)
+                fetch(`<?= base_url('api/minorCategory/getMinorCategories') ?>/${majorCategoryId}`)
                     .then(response => response.json())
                     .then(data => {
                         data.forEach(item => {

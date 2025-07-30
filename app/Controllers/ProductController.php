@@ -82,6 +82,9 @@ class ProductController extends BaseController
                 ->with('error', '請先登入！');
         }
 
+        // 處理 checkbox：如果沒有被勾選，設定為 0
+        $data['pr_is_length'] = $data['pr_is_length'] ?? 0;
+
         if (empty($data['pr_id'])) {
             $data['pr_create_by'] = $userId;
         } else {

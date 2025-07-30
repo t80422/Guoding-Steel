@@ -86,7 +86,6 @@ class OrderController extends BaseController
 
         try {
             $data = $this->request->getPost();
-            log_message('debug', print_r($data, true));
             $userId = session()->get('userId');
     
             if (!$userId) {

@@ -13,7 +13,59 @@
 
     <!-- 工地資訊 -->
     <div class="alert alert-info mb-4">
-        <strong>工地名稱：</strong> <?= esc($location['l_name'] ?? '示例工地A') ?>
+        <strong>工地名稱：</strong> <?= esc($location['l_name']) ?>
+    </div>
+
+    <!-- 搜尋表單 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">搜尋條件</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="start_date" class="form-label">開始日期</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" 
+                               value="<?= esc($searchParams['start_date'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="end_date" class="form-label">結束日期</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" 
+                               value="<?= esc($searchParams['end_date'] ?? '') ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="type" class="form-label">類型</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="">全部</option>
+                            <option value="<?= \App\Models\OrderModel::TYPE_IN_WAREHOUSE ?>" 
+                                    <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_IN_WAREHOUSE ? 'selected' : '' ?>>
+                                進倉庫
+                            </option>
+                            <option value="<?= \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ?>" 
+                                    <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ? 'selected' : '' ?>>
+                                出倉庫
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="keyword" class="form-label">關鍵字</label>
+                        <input type="text" class="form-control" id="keyword" name="keyword" 
+                               placeholder="車號或倉庫名稱" value="<?= esc($searchParams['keyword'] ?? '') ?>">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-search me-1"></i> 搜尋
+                        </button>
+                        <a href="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i> 清除
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- 用料統計表 -->
@@ -21,16 +73,29 @@
         <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th rowspan="2" class="text-center align-middle">車號</th>
-                    <th rowspan="2" class="text-center align-middle">日期</th>
-                    <th rowspan="2" class="text-center align-middle">倉庫</th>
-                    <th rowspan="2" class="text-center align-middle">類型</th>
+                    <th rowspan="3" class="text-center align-middle">車號</th>
+                    <th rowspan="3" class="text-center align-middle">日期</th>
+                    <th rowspan="3" class="text-center align-middle">倉庫</th>
+                    <th rowspan="3" class="text-center align-middle">類型</th>
                     <?php if (!empty($all_projects)): ?>
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php $productCount = count($all_products[$projectName] ?? []); ?>
                             <?php if ($productCount > 0): ?>
-                                <th colspan="<?= $productCount ?>" class="text-center"><?= esc($projectName) ?></th>
+                                <th colspan="<?= $productCount * 2 ?>" class="text-center"><?= esc($projectName) ?></th>
                             <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tr>
+                <tr>
+                    <?php if (!empty($all_projects)): ?>
+                        <?php foreach ($all_projects as $projectName): ?>
+                                                                <?php if (!empty($all_products[$projectName])): ?>
+                                        <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
+                                            <th colspan="2" class="text-center" style="min-width: 120px;">
+                                                <?= esc($productInfo['display_name']) ?>
+                                            </th>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tr>
@@ -39,9 +104,8 @@
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php if (!empty($all_products[$projectName])): ?>
                                 <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
-                                    <th class="text-center" style="min-width: 80px;">
-                                        <?= esc($productInfo['display_name']) ?>
-                                    </th>
+                                    <th class="text-center border-end" style="min-width: 60px;">數量</th>
+                                    <th class="text-center" style="min-width: 60px;">米數</th>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         <?php endforeach; ?>
@@ -53,7 +117,7 @@
                 // 計算總欄位數（固定欄位 + 動態產品欄位）
                 $totalCols = 4; // 車號、日期、倉庫、類型
                 foreach ($all_projects as $projectName) {
-                    $totalCols += count($all_products[$projectName] ?? []);
+                    $totalCols += count($all_products[$projectName] ?? []) * 2; // 每個產品佔用2欄（數量+米數）
                 }
                 ?>
                 
@@ -78,13 +142,19 @@
                             <?php foreach ($all_projects as $projectName): ?>
                                 <?php if (!empty($all_products[$projectName])): ?>
                                     <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
+                                        <?php 
+                                        $productData = $order['projects'][$projectName][$productKey] ?? null;
+                                        ?>
+                                        <td class="text-center border-end">
+                                            <?php if ($productData && $productData['quantity'] > 0): ?>
+                                                <span class="fw-bold text-primary"><?= $productData['quantity'] ?></span>
+                                            <?php else: ?>
+                                                <span class="text-muted">-</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td class="text-center">
-                                            <?php 
-                                            $productData = $order['projects'][$projectName][$productKey] ?? null;
-                                            if ($productData && $productData['quantity'] > 0): 
-                                            ?>
-                                                <div class="fw-bold text-primary"><?= $productData['quantity'] ?></div>
-                                                <small class="text-muted"><?= esc($productData['length']) ?></small>
+                                            <?php if ($productData && $productData['quantity'] > 0): ?>
+                                                <span class="text-muted small"><?= esc($productData['length']) ?></span>
                                             <?php else: ?>
                                                 <span class="text-muted">-</span>
                                             <?php endif; ?>
@@ -124,12 +194,12 @@
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php if (!empty($all_products[$projectName])): ?>
                                 <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
-                                    <td class="text-center">
+                                    <td colspan="2" class="text-center">
                                         <?php 
                                         $total = $totals[$projectName][$productKey] ?? 0;
                                         if ($total != 0): 
                                         ?>
-                                            <span class="<?= $total > 0 ? 'text-success' : 'text-danger' ?>">
+                                            <span class="<?= $total > 0 ? 'text-success' : 'text-danger' ?> fw-bold">
                                                 <?= $total > 0 ? '+' . $total : $total ?>
                                             </span>
                                         <?php else: ?>

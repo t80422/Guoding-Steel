@@ -46,32 +46,59 @@ $currentParams = $params ?? $_GET ?? [];
                 <?php endif; ?>
             </li>
             
-            <!-- 最首頁 -->
-            <?php if ($pager['currentPage'] > 3): ?>
+            <!-- 頁碼顯示邏輯 -->
+            <?php 
+            $maxButtons = 7; // 減少顯示的按鈕數以避免混亂
+            $currentPage = $pager['currentPage'];
+            $totalPages = $pager['totalPages'];
+            
+            // 計算頁碼範圍
+            $startPage = max(1, $currentPage - floor($maxButtons / 2));
+            $endPage = min($totalPages, $startPage + $maxButtons - 1);
+            
+            // 如果結束頁碼小於最大按鈕數，調整開始頁碼
+            if ($endPage - $startPage + 1 < $maxButtons && $totalPages >= $maxButtons) {
+                $startPage = max(1, $endPage - $maxButtons + 1);
+            }
+            
+            // 判斷是否需要顯示首頁和省略號
+            $showFirstPage = $startPage > 1;
+            $showFirstEllipsis = $startPage > 2;
+            
+            // 判斷是否需要顯示末頁和省略號
+            $showLastPage = $endPage < $totalPages;
+            $showLastEllipsis = $endPage < $totalPages - 1;
+            
+            // 如果顯示首頁會與主範圍重疊，調整範圍
+            if ($showFirstPage && $startPage == 2) {
+                $startPage = 1;
+                $showFirstPage = false;
+                $showFirstEllipsis = false;
+            }
+            
+            // 如果顯示末頁會與主範圍重疊，調整範圍
+            if ($showLastPage && $endPage == $totalPages - 1) {
+                $endPage = $totalPages;
+                $showLastPage = false;
+                $showLastEllipsis = false;
+            }
+            ?>
+            
+            <!-- 首頁 -->
+            <?php if ($showFirstPage): ?>
                 <li class="page-item">
                     <a class="page-link" href="<?= buildPagingUrl($baseUrl, 1, $currentParams) ?>">1</a>
                 </li>
-                <?php if ($pager['currentPage'] > 4): ?>
+                <?php if ($showFirstEllipsis): ?>
                     <li class="page-item disabled">
                         <span class="page-link">...</span>
                     </li>
                 <?php endif; ?>
             <?php endif; ?>
             
-            <!-- 頁碼（最多顯示10個） -->
-            <?php 
-            $maxButtons = 10;
-            $startPage = max(1, $pager['currentPage'] - floor($maxButtons / 2));
-            $endPage = min($pager['totalPages'], $startPage + $maxButtons - 1);
-            
-            // 如果結束頁碼小於最大按鈕數，調整開始頁碼
-            if ($endPage - $startPage + 1 < $maxButtons) {
-                $startPage = max(1, $endPage - $maxButtons + 1);
-            }
-            ?>
-            
+            <!-- 主要頁碼範圍 -->
             <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
-                <?php if ($i == $pager['currentPage']): ?>
+                <?php if ($i == $currentPage): ?>
                     <li class="page-item active" aria-current="page">
                         <span class="page-link"><?= $i ?></span>
                     </li>
@@ -82,15 +109,15 @@ $currentParams = $params ?? $_GET ?? [];
                 <?php endif; ?>
             <?php endfor; ?>
             
-            <!-- 最末頁 -->
-            <?php if ($pager['currentPage'] < $pager['totalPages'] - 2): ?>
-                <?php if ($pager['currentPage'] < $pager['totalPages'] - 3): ?>
+            <!-- 末頁 -->
+            <?php if ($showLastPage): ?>
+                <?php if ($showLastEllipsis): ?>
                     <li class="page-item disabled">
                         <span class="page-link">...</span>
                     </li>
                 <?php endif; ?>
                 <li class="page-item">
-                    <a class="page-link" href="<?= buildPagingUrl($baseUrl, $pager['totalPages'], $currentParams) ?>"><?= $pager['totalPages'] ?></a>
+                    <a class="page-link" href="<?= buildPagingUrl($baseUrl, $totalPages, $currentParams) ?>"><?= $totalPages ?></a>
                 </li>
             <?php endif; ?>
 

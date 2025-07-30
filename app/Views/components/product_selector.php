@@ -339,7 +339,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                 <p class="mt-2 text-muted">載入大分類中...</p>
             </div>`;
 
-            fetch('<?= base_url('index.php/api/majorCategory/getMajorCategories') ?>')
+            fetch('<?= base_url('api/majorCategory/getMajorCategories') ?>')
                 .then(response => response.json())
                 .then(data => {
                     let html = '';
@@ -384,7 +384,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                 <p class="mt-2 text-muted">載入小分類中...</p>
             </div>`;
 
-            fetch(`<?= base_url('index.php/api/minorCategory/getMinorCategories') ?>/${majorCategoryId}`)
+            fetch(`<?= base_url('api/minorCategory/getMinorCategories') ?>/${majorCategoryId}`)
                 .then(response => response.json())
                 .then(data => {
                     let html = '';
@@ -430,7 +430,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                 <p class="mt-2 text-muted">載入產品中...</p>
             </div>`;
 
-            fetch(`<?= base_url('index.php/api/product/getProducts') ?>/${minorCategoryId}`)
+            fetch(`<?= base_url('api/product/getProducts') ?>/${minorCategoryId}`)
                 .then(response => response.json())
                 .then(data => {
                     let html = '';

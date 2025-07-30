@@ -14,7 +14,8 @@ class ProductModel extends Model
         'pr_update_by',
         'pr_update_at',
         'pr_mic_id',
-        'pr_weight'
+        'pr_weight',
+        'pr_is_length'
     ];
 
     public function getList($filter = [], $page = 1)
