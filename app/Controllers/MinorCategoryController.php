@@ -5,16 +5,18 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\MinorCategoryModel;
 use App\Models\MajorCategoryModel;
+use App\Services\ProductService;
 
 class MinorCategoryController extends BaseController
 {
     protected $minorCategoryModel;
     protected $majorCategoryModel;
-
+    protected $productService;
     public function __construct()
     {
         $this->minorCategoryModel = new MinorCategoryModel();
         $this->majorCategoryModel = new MajorCategoryModel();
+        $this->productService = new ProductService();
     }
 
     // 列表
@@ -55,13 +57,21 @@ class MinorCategoryController extends BaseController
                 ->with('error', '請先登入！');
         }
 
-        if(empty($data['mic_id'])){
+        // 新增
+        if (empty($data['mic_id'])) {
             $data['mic_create_by'] = $userId;
-        }else{
+            $micId = $this->minorCategoryModel->insert($data);
+
+            // 無型號
+            if (isset($data['auto_create_product']) && $data['auto_create_product'] == 1) {
+                $this->productService->createNoModelProduct($micId, $userId, $data['mic_name']);
+            }
+        } else {
+            // 編輯
             $data['mic_update_by'] = $userId;
             $data['mic_update_at'] = date('Y-m-d H:i:s');
+            $this->minorCategoryModel->update($data['mic_id'], $data);
         }
-        $this->minorCategoryModel->save($data);
 
         return redirect()->to(url_to('MinorCategoryController::index'));
     }

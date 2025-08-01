@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\ProductModel;
 use App\Models\MajorCategoryModel;
 use App\Models\MinorCategoryModel;
+use App\Services\ProductService;
 
 class ProductController extends BaseController
 {
     protected $productModel;
     protected $majorCategoryModel;
     protected $minorCategoryModel;
+    protected $productService;
 
     public function __construct()
     {
         $this->productModel = new ProductModel();
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->minorCategoryModel = new MinorCategoryModel();
+        $this->productService = new ProductService();
     }
 
     // 列表
@@ -82,16 +85,7 @@ class ProductController extends BaseController
                 ->with('error', '請先登入！');
         }
 
-        // 處理 checkbox：如果沒有被勾選，設定為 0
-        $data['pr_is_length'] = $data['pr_is_length'] ?? 0;
-
-        if (empty($data['pr_id'])) {
-            $data['pr_create_by'] = $userId;
-        } else {
-            $data['pr_update_by'] = $userId;
-            $data['pr_update_at'] = date('Y-m-d H:i:s');
-        }
-        $this->productModel->save($data);
+        $this->productService->save($data, $userId);
 
         return redirect()->to(url_to('ProductController::index'));
     }

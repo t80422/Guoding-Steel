@@ -38,7 +38,7 @@
             <tbody>
                 <?php if (empty($data)): ?>
                     <tr>
-                        <td colspan="6" class="text-center">查無資料</td>
+                        <td colspan="9" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($data as $item): ?>

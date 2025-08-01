@@ -27,7 +27,18 @@
                 <?php endforeach; ?>
             </select>
         </div>
-
+    
+        <?php if(!$isEdit): ?>
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="auto_create_product" id="autoCreateProduct" value="1" <?= old('auto_create_product', $data['auto_create_product'] ?? '') ? 'checked' : '' ?>>
+                <label class="form-check-label" for="autoCreateProduct">無型號</label>
+                <div class="form-text text-muted">
+                    勾選後會自動新增產品
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
         <button type="submit" class="btn btn-primary">保存</button>
         <a href="<?= url_to('MinorCategoryController::index') ?>" class="btn btn-secondary">取消</a>
     </form>

@@ -18,8 +18,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand ms-3" href="">
-                <img src="/images/國鼎LOGO.jpg" alt="Company Logo">
-                國鼎鋼鐵
+                <img src="/images/國鼎LOGO.png" alt="Company Logo">
+                國鼎鋼鐵股份有限公司
             </a>
             <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
                 <ul class="navbar-nav">

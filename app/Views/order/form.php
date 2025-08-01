@@ -45,7 +45,7 @@
                         <div class="row g-3">
                             <!-- 訂單類型 -->
                             <div class="col-12">
-                                <label class="form-label fw-bold">訂單類型</label>
+                                <label class="form-label fw-bold">料單類型</label>
                                 <div class="btn-group w-100" role="group">
                                     <input type="radio" class="btn-check" name="o_type" id="o_type_0" value="0"
                                         autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?> required>
@@ -93,7 +93,7 @@
                             <!-- 日期時間 -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold" for="o_date">
-                                    <i class="bi bi-calendar3 me-1"></i>訂單日期
+                                    <i class="bi bi-calendar3 me-1"></i>料單日期
                                 </label>
                                 <input type="date" class="form-control" name="o_date" id="o_date"
                                     value="<?= old('o_date', $data['order']['o_date'] ?? '') ?>" required>
@@ -181,7 +181,7 @@
                     <div class="card-header bg-light border-0 py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">
-                                <i class="bi bi-list-ul me-2 text-primary"></i>訂單明細
+                                <i class="bi bi-list-ul me-2 text-primary"></i>料單明細
                             </h5>
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"

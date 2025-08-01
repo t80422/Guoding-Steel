@@ -23,7 +23,8 @@ class RentalOrderModel extends Model
         'ro_memo',
         'ro_create_by',
         'ro_update_by',
-        'ro_update_at'
+        'ro_update_at',
+        'ro_number'
     ];
 
     public const TYPE_IN = 0; // 進工地
