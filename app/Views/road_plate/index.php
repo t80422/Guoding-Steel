@@ -17,7 +17,7 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-md-2">
                         <label for="keyword" class="form-label">關鍵字</label>
-                        <input type="text" class="form-control" id="keyword" name="keyword" placeholder="輸入廠商、地點" value="<?= esc($filter['keyword'] ?? '') ?>">
+                        <input type="text" class="form-control" id="keyword" name="keyword" placeholder="輸入地點" value="<?= esc($filter['keyword'] ?? '') ?>">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary me-2">
@@ -36,7 +36,6 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>廠商</th>
                     <th>地點</th>
                     <th>數量</th>
                 </tr>
@@ -44,12 +43,11 @@
             <tbody>
                 <?php if (empty($data)): ?>
                     <tr>
-                        <td colspan="3" class="text-center">查無資料</td>
+                        <td colspan="2" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($data as $item): ?>
                         <tr>
-                            <td><?= esc($item['ma_name']) ?></td>
                             <td><?= esc($item['l_name']) ?></td>
                             <td><?= esc($item['i_qty']) ?></td>
                         </tr>

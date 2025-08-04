@@ -89,15 +89,13 @@ class InventoryModel extends Model
     {
         $builder = $this->builder('inventories i')
             ->join('locations l', 'l.l_id = i.i_l_id')
-            ->join('manufacturers ma', 'ma.ma_id = l.l_ma_id')
             ->join('products pr', 'pr.pr_id = i.i_pr_id')
-            ->select('i.i_qty, l.l_name, ma.ma_name')
+            ->select('i.i_qty, l.l_name')
             ->where('pr.pr_name', '鋪路鋼板')
             ->orderBy('i.i_id', 'DESC');
 
         if (!empty($filter['keyword'])) {
             $builder->groupStart()
-                ->like('ma.ma_name', $filter['keyword'])
                 ->orLike('l.l_name', $filter['keyword'])
                 ->groupEnd();
         }
