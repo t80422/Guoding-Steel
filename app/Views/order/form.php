@@ -205,7 +205,7 @@
                                         <th style="width: 50%;">產品</th>
                                         <th style="width: 15%;">數量</th>
                                         <th style="width: 15%;">長度(m)</th>
-                                        <th style="width: 15%;">重量(kg)</th>
+                                        <th style="width: 15%;">重量(噸)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailTableBody">
@@ -245,10 +245,10 @@
                                                         step="0.01" min="0" required>
                                                 </td>
                                                 <td class="align-middle">
-                                                    <input type="number" class="form-control-plaintext weight-input fw-bold text-primary"
+                                                    <input type="hidden" class="weight-input-kg" 
                                                         name="details[<?= $index ?>][od_weight]"
-                                                        value="<?= $detail['od_weight'] ?>"
-                                                        step="0.01" min="0" readonly>
+                                                        value="<?= $detail['od_weight'] ?>">
+                                                    <span class="fw-bold text-primary weight-display-ton"></span>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
@@ -278,9 +278,9 @@
                                                     step="0.01" min="0" required>
                                             </td>
                                             <td class="align-middle">
-                                                <input type="number" class="form-control-plaintext weight-input fw-bold text-primary"
-                                                    name="details[0][od_weight]"
-                                                    step="0.01" min="0" readonly>
+                                                <input type="hidden" class="weight-input-kg" 
+                                                    name="details[0][od_weight]">
+                                                <span class="fw-bold text-primary weight-display-ton"></span>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
@@ -940,13 +940,23 @@
 
         function calculateRowWeight(row) {
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
-            const length = parseFloat(row.querySelector('.length-input').value) || 0;
             const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
 
-            const totalWeight = quantity * length * weightPerUnit;
+            // 明細總重量（公斤）：pr_weight × 數量（與長度無關）
+            const totalWeightKg = quantity * weightPerUnit;
 
-            const weightInput = row.querySelector('.weight-input');
-            weightInput.value = totalWeight.toFixed(2);
+            // 存回 kg 至隱藏欄位，維持後端入庫單位
+            const weightInputKg = row.querySelector('.weight-input-kg');
+            if (weightInputKg) {
+                weightInputKg.value = totalWeightKg.toFixed(2);
+            }
+
+            // 顯示噸（kg / 1000），小數 2 位
+            const weightDisplayTon = row.querySelector('.weight-display-ton');
+            if (weightDisplayTon) {
+                const ton = totalWeightKg / 1000;
+                weightDisplayTon.textContent = ton.toFixed(2);
+            }
         }
 
         // 初始化現有明細行的事件

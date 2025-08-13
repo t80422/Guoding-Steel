@@ -84,7 +84,7 @@
                     </div>
                 </td>
                 <td class="text-end align-top" style="width:20%;">
-                    NO.&nbsp;<?= esc( '') ?><br>
+                    NO.&nbsp;<?= esc($order['o_number'] ) ?><br>
                     大溪&nbsp;03-3802339<br>
                     苗栗&nbsp;037-990009
                 </td>
@@ -134,7 +134,7 @@
                 <?php endif; ?>
             </tbody>
         </table>
-        <!-- 明細列 -->
+        <!-- 明細列（序號 + 內容） -->
         <table class="borderless mb-1">
             <?php
             $detailRows = $details ?? [];
@@ -143,9 +143,7 @@
             ?>
                 <tr>
                     <td style="width:5%; text-align:left;"><?= $label ?></td>
-                    <td class="dashed" style="width:55%; text-align:left;"><?= esc($d['spec'] ?? '') ?></td>
-                    <td class="dashed" style="width:15%;"><?= esc($d['unit'] ?? '') ?></td>
-                    <td class="dashed" style="width:15%;"><?= esc($d['qty'] ?? '') ?></td>
+                    <td class="dashed" style="width:95%; text-align:left;"><?= esc($d['spec'] ?? '') ?></td>
                 </tr>
             <?php endforeach; ?>
         </table>

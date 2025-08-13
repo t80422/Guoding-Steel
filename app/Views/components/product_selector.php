@@ -439,7 +439,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                         <button type="button" class="list-group-item list-group-item-action product-item" 
                                 data-product-id="${product.pr_id}" 
                                 data-product-name="${product.pr_name}"
-                                data-weight-per-unit="${product.pr_weight_per_unit || 0}">
+                                data-weight-per-unit="${product.pr_weight || 0}">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">${product.pr_name}</h6>
                                 <i class="bi bi-chevron-right text-muted"></i>

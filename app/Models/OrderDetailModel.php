@@ -27,7 +27,7 @@ class OrderDetailModel extends Model
         return $this->builder('order_details od')
             ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
             ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
-            ->select('od.*, p.pr_name, mic.mic_name')
+            ->select('od.*, p.pr_name, mic.mic_name, p.pr_weight AS pr_weight_per_unit')
             ->where('od.od_o_id', $orderId)
             ->get()->getResultArray();
     }
@@ -88,5 +88,115 @@ class OrderDetailModel extends Model
             $map[(int) $row['pr_id']] = (int) $row['total_qty'];
         }
         return $map;
+    }
+
+    /**
+     * 取得列印用的明細（僅依 order_details 彙整）
+     * - 以 pr_id 分組，排序依 pr_id 升冪
+     * - 組內以 od_length 合併相同長度為單一片段，排序由小到大
+     * - total_count = Σ od_qty
+     * - total_length = Σ (od_length × od_qty)
+     * - 整數不顯示小數，否則四捨五入至 1 位小數
+     * - 規格字首：mic_name + 空白 + pr_name
+     * - 回傳格式：[['spec' => '...'], ...]
+     *
+     * @param int $orderId
+     * @return array<int,array{spec:string}>
+     */
+    public function getDetailsForPrint(int $orderId): array
+    {
+        $rows = $this->builder('order_details od')
+            ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
+            ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
+            ->select('p.pr_id, p.pr_name, mic.mic_name, od.od_length, od.od_qty')
+            ->where('od.od_o_id', $orderId)
+            ->get()
+            ->getResultArray();
+
+        // 依產品分組
+        $groups = [];
+        foreach ($rows as $row) {
+            $prId = (int) ($row['pr_id'] ?? 0);
+            if (!isset($groups[$prId])) {
+                $groups[$prId] = [
+                    'pr_id' => $prId,
+                    'pr_name' => (string) ($row['pr_name'] ?? ''),
+                    'mic_name' => (string) ($row['mic_name'] ?? ''),
+                    // length_counts: key => ['value' => float, 'count' => int]
+                    'length_counts' => [],
+                    'total_count' => 0,
+                    'total_length' => 0.0,
+                ];
+            }
+
+            $lengthVal = (float) ($row['od_length'] ?? 0);
+            $qtyVal = (int) ($row['od_qty'] ?? 0);
+
+            // 以原始長度數值作為 key，為避免浮點誤差，正規化為最多 6 位小數字串
+            $lengthKey = rtrim(rtrim(number_format($lengthVal, 6, '.', ''), '0'), '.');
+            if ($lengthKey === '') {
+                $lengthKey = '0';
+            }
+
+            if (!isset($groups[$prId]['length_counts'][$lengthKey])) {
+                $groups[$prId]['length_counts'][$lengthKey] = [
+                    'value' => $lengthVal,
+                    'count' => 0,
+                ];
+            }
+            // 合併相同長度為單一片段，count 為該長度的總支數（以 od_qty 加總）
+            $groups[$prId]['length_counts'][$lengthKey]['count'] += $qtyVal;
+
+            // 總支數：Σ od_qty
+            $groups[$prId]['total_count'] += $qtyVal;
+            // 總長度：Σ (od_length × od_qty)
+            $groups[$prId]['total_length'] += ($lengthVal * $qtyVal);
+        }
+
+        // 數字格式化：整數不顯示小數，否則 1 位小數
+        $formatNumber = static function (float $num): string {
+            if (floor($num) == $num) {
+                return (string) ((int) $num);
+            }
+            return number_format($num, 1, '.', '');
+        };
+
+        // 依 pr_id 升冪輸出
+        ksort($groups);
+
+        $formatted = [];
+        foreach ($groups as $group) {
+            // 組內長度由小到大
+            $lengthEntries = array_values($group['length_counts']);
+            usort($lengthEntries, function ($a, $b) {
+                if ($a['value'] == $b['value']) {
+                    return 0;
+                }
+                return ($a['value'] < $b['value']) ? -1 : 1;
+            });
+
+            $parts = [];
+            foreach ($lengthEntries as $entry) {
+                $lenStr = $formatNumber((float) $entry['value']) . 'm';
+                if ((int) $entry['count'] > 1) {
+                    $lenStr .= '*' . (int) $entry['count'];
+                }
+                $parts[] = $lenStr;
+            }
+
+            $prefix = trim(($group['mic_name'] ?? '') . ' ' . ($group['pr_name'] ?? ''));
+            $summary = '計 ' . (int) $group['total_count'] . '支, ' . $formatNumber((float) $group['total_length']) . 'M';
+            $spec = $prefix;
+            if (!empty($parts)) {
+                $spec .= ' / ' . implode('/', $parts);
+            }
+            $spec .= ' ' . $summary;
+
+            $formatted[] = [
+                'spec' => $spec,
+            ];
+        }
+
+        return $formatted;
     }
 }

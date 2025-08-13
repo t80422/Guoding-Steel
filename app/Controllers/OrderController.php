@@ -69,6 +69,7 @@ class OrderController extends BaseController
         }
 
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
+        log_message('debug', print_r($orderDetails, true));
         $gpsOptions = $this->gpsModel->getOptions();
 
         $data = [
@@ -236,8 +237,8 @@ class OrderController extends BaseController
             $itemsGrid[] = $row;
         }
 
-        // 取得項目明細統計
-        $projectItemDetails = $this->orderDetailProjectItemModel->getProjectItemsDetailForPrint($orderId);
+        // 取得項目明細統計（改由 OrderDetailModel 提供）
+        $projectItemDetails = $this->orderDetailModel->getDetailsForPrint((int)$orderId);
 
         return view('print/warehouse_form', [
             'order' => $order,
