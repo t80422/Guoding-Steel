@@ -22,10 +22,11 @@ class InventoryModel extends Model
     {
         $builder = $this->builder('inventories i')
             ->join('products pr', 'pr.pr_id = i.i_pr_id', 'left')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
             ->join('locations l', 'l.l_id = i.i_l_id', 'left')
             ->join('users u1', 'u1.u_id = i.i_create_by', 'left')
             ->join('users u2', 'u2.u_id = i.i_update_by', 'left')
-            ->select('i.*, pr.pr_name as productName, l.l_name as locationName, u1.u_name as creator, u2.u_name as updater');
+            ->select('i.*, pr.pr_name as productName, mic.mic_name, l.l_name as locationName, u1.u_name as creator, u2.u_name as updater');
 
         if (!empty($filter['p_name'])) {
             $builder->like('pr.pr_name', $filter['p_name']);

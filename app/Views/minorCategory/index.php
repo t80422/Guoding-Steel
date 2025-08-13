@@ -26,6 +26,7 @@
                 <tr>
                     <th>名稱</th>
                     <th>大分類</th>
+                    <th>單位</th>
                     <th>建立人</th>
                     <th>建立時間</th>
                     <th>更新人</th>
@@ -43,6 +44,7 @@
                         <tr>
                             <td><?= esc($item['mic_name']) ?></td>
                             <td><?= esc($item['mc_name']) ?></td>
+                            <td><?= esc($item['mic_unit']) ?></td>
                             <td><?= esc($item['creator']) ?></td>
                             <td><?= esc($item['mic_create_at']) ?></td>
                             <td><?= esc($item['updater']) ?></td>

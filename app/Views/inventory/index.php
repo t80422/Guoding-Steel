@@ -44,8 +44,10 @@
             <thead class="table-light">
                 <tr>
                     <th>地點</th>
+                    <th>小分類</th>
                     <th>品名</th>
                     <th>庫存</th>
+                    <th>總米數</th>
                     <th>建立者</th>
                     <th>建立時間</th>
                     <th>更新者</th>
@@ -62,8 +64,10 @@
                     <?php foreach ($data as $item): ?>
                         <tr>
                             <td><?= esc($item['locationName']) ?></td>
+                            <td><?= esc($item['mic_name']) ?></td>
                             <td><?= esc($item['productName']) ?></td>
                             <td><?= esc($item['i_qty']) ?></td>
+                            <td><?= esc($item['totalMeters']) ?></td>
                             <td><?= esc($item['creator']) ?></td>
                             <td><?= esc($item['i_create_at']) ?></td>
                             <td><?= esc($item['updater']) ?></td>

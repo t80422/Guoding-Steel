@@ -184,76 +184,66 @@ class OrderController extends BaseController
         if (!$order) {
             throw new PageNotFoundException('找不到該訂單: ' . $orderId);
         }
-        $orderDetails = $this->orderDetailModel->getDetailByOrderId($orderId);
+        // 動態產生材料規格清單
+        $allProducts = $this->productModel->getAllForPrint();
+        $qtyByPrId = $this->orderDetailModel->getOrderProductQuantities((int) $orderId);
 
-        $staticItems = [
-            ['中間樁','支','覆工板','塊','鋪路鋼板','片'],
-            ['支撐料','支','構台角鐵','支','不鏽鋼花板','片'],
-            ['圍令','支','構台帽','個','踢腳板','片'],
-            ['短料','個','千斤頂','個','樓梯','座'],
-            ['三角架','支','千斤頂保護蓋','片','組合樓梯','組'],
-            ['大U','支','長螺絲','顆','平台踏板','個'],
-            ['小U','支','短螺絲','顆','帆布','支'],
-            ['大小U角鐵','支','膨脹螺絲','顆','襯片','捆'],
-            ['角鐵','支','安全母索','捆','竹片','把'],
-            ['PC連接板','片','母索立柱','支','夾板','片'],
-            ['斜撐','支','GIP錏管','支','PGB錶、土壓計','台'],
-            ['斜撐頭(大)','個','錏管帽蓋','個','油壓機','台'],
-            ['斜撐頭(小)','個','C型夾','個','手動加壓機','台'],
-            ['加勁盒','個','萬向活扣','個','操作油','桶'],
-            ['車輪檔','座','活扣保護蓋','個','鐵籠','個'],
-        ];
+        $itemsA = [];
+        $itemsB = [];
+        foreach ($allProducts as $p) {
+            $prId = (int) ($p['pr_id'] ?? 0);
+            $prName = (string) ($p['pr_name'] ?? '');
+            $prUnit = (string) ($p['pr_unit'] ?? '');
+            $micName = (string) ($p['mic_name'] ?? '');
 
-        $itemMap = [];
-        foreach ($staticItems as $r_idx => $row) {
-            if (isset($row[0])) $itemMap[$row[0]] = ['row' => $r_idx, 'col' => 0];
-            if (isset($row[2])) $itemMap[$row[2]] = ['row' => $r_idx, 'col' => 1];
-            if (isset($row[4])) $itemMap[$row[4]] = ['row' => $r_idx, 'col' => 2];
-        }
-        
-        $quantities = array_map(fn($row) => array_fill(0, 3, ''), $staticItems);
-        $displayNames = array_map(fn($row) => array_fill(0, 3, ''), $staticItems); // 用於記錄顯示名稱
+            $isSameName = ($prName === $micName);
+            $hasQty = array_key_exists($prId, $qtyByPrId);
 
-        // 處理訂單明細
-        foreach ($orderDetails as $item) {
-            $minorCategoryName = $item['mic_name']; // 小分類名稱
-            $productName = $item['pr_name'];       // 產品名稱
-
-            if (isset($itemMap[$minorCategoryName])) {
-                // 匹配成功
-                $pos = $itemMap[$minorCategoryName];
-                
-                // 累加數量（處理同一產品多個規格的情況）
-                if (empty($quantities[$pos['row']][$pos['col']])) {
-                    $quantities[$pos['row']][$pos['col']] = 0;
+            if (!$isSameName) {
+                if ($hasQty) {
+                    $itemsA[] = [
+                        'name' => trim($micName . ' ' . $prName),
+                        'unit' => $prUnit,
+                        'qty'  => $qtyByPrId[$prId] ?? ''
+                    ];
                 }
-                $quantities[$pos['row']][$pos['col']] += (int)$item['od_qty'];
-
-                // 決定顯示名稱（只設定一次，避免重複覆蓋）
-                if (empty($displayNames[$pos['row']][$pos['col']])) {
-                    if ($minorCategoryName === $productName) {
-                        // 簡單產品：mic_name = pr_name，只顯示一次
-                        $displayNames[$pos['row']][$pos['col']] = $minorCategoryName;
-                    } else {
-                        // 複雜產品：顯示 mic_name + pr_name
-                        $displayNames[$pos['row']][$pos['col']] = $minorCategoryName . $productName;
-                    }
-                }
+            } else {
+                $itemsB[] = [
+                    'name' => $prName,
+                    'unit' => $prUnit,
+                    'qty'  => $qtyByPrId[$prId] ?? ''
+                ];
             }
         }
 
-        // 取得項目明細統計（取代原本的 $otherDetails）
+        // 合併 A（不同名且有明細）在前，B（同名全列）在後
+        $items = array_merge($itemsA, $itemsB);
+
+        // 轉成三欄網格
+        $itemsGrid = [];
+        $row = [];
+        foreach ($items as $idx => $item) {
+            $row[] = $item;
+            if (count($row) === 3) {
+                $itemsGrid[] = $row;
+                $row = [];
+            }
+        }
+        if (count($row) > 0) {
+            while (count($row) < 3) {
+                $row[] = null; // 補滿三欄
+            }
+            $itemsGrid[] = $row;
+        }
+
+        // 取得項目明細統計
         $projectItemDetails = $this->orderDetailProjectItemModel->getProjectItemsDetailForPrint($orderId);
 
-        $data = [
-            'order'       => $order,
-            'staticItems' => $staticItems,
-            'quantities'  => $quantities,
-            'displayNames'=> $displayNames,
-            'details'     => $projectItemDetails,
-        ];
-
-        return view('print/warehouse_form', $data);
+        return view('print/warehouse_form', [
+            'order' => $order,
+            'itemsGrid' => $itemsGrid,
+            'details' => $projectItemDetails,
+        ]);
     }
 
     // 取得訂單明細

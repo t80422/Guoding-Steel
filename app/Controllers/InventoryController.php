@@ -4,24 +4,18 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\MajorCategoryModel;
-use App\Models\MinorCategoryModel;
-use App\Models\ProductModel;
 use App\Models\LocationModel;
 use App\Services\InventoryService;
 
 class InventoryController extends BaseController
 {
     private $majorCategoryModel;
-    private $minorCategoryModel;
-    private $productModel;
     private $locationModel;
     private $inventoryService;
 
     public function __construct()
     {
         $this->majorCategoryModel = new MajorCategoryModel();
-        $this->minorCategoryModel = new MinorCategoryModel();
-        $this->productModel = new ProductModel();
         $this->locationModel = new LocationModel();
         $this->inventoryService = new InventoryService();
     }

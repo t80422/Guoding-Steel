@@ -52,4 +52,20 @@ class ProductModel extends Model
         return $this->where('pr_mic_id', $minorCategoryId)
         ->findAll();
     }
+
+    /**
+     * 取得列印所需的所有產品資料（含小分類與單位），依小分類名稱、產品名稱升冪排序
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public function getAllForPrint()
+    {
+        return $this->builder('products pr')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
+            ->select('pr.pr_id, pr.pr_name, pr.pr_unit, mic.mic_id, mic.mic_name')
+            ->orderBy('mic.mic_name', 'ASC')
+            ->orderBy('pr.pr_name', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
 }

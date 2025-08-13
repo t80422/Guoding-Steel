@@ -120,4 +120,35 @@ class RentalOrderModel extends Model
             ->where('ro.ro_id', $id)
             ->get()->getRowArray();
     }
+
+    /**
+     * 依地點與產品彙總租賃單的長度總和（僅進工地 ro_type=0，不乘數量，無日期篩選）
+     *
+     * @param int[] $locationIds ro_l_id 清單
+     * @param int[] $productIds rod_pr_id 清單
+     * @return array<int,array{location_id:int,product_id:int,total_length:float}>
+     */
+    public function getLengthSumsByLocationAndProduct(array $locationIds, array $productIds): array
+    {
+        if (empty($locationIds) || empty($productIds)) {
+            return [];
+        }
+
+        $builder = $this->db->table('rental_orders ro')
+            ->join('rental_order_details rod', 'rod.rod_ro_id = ro.ro_id')
+            ->select('ro.ro_l_id AS location_id, rod.rod_pr_id AS product_id, COALESCE(SUM(rod.rod_length), 0) AS total_length', false)
+            ->where('ro.ro_type', self::TYPE_IN)
+            ->whereIn('ro.ro_l_id', $locationIds)
+            ->whereIn('rod.rod_pr_id', $productIds)
+            ->groupBy('ro.ro_l_id, rod.rod_pr_id');
+
+        $rows = $builder->get()->getResultArray();
+
+        foreach ($rows as &$row) {
+            $row['location_id'] = (int) $row['location_id'];
+            $row['product_id'] = (int) $row['product_id'];
+            $row['total_length'] = (float) $row['total_length'];
+        }
+        return $rows;
+    }
 }

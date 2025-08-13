@@ -17,7 +17,7 @@
             <button class="btn btn-outline-dark" id="sidebarToggle">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <a class="navbar-brand ms-3" href="">
+            <a class="navbar-brand d-flex align-items-center gap-2 ms-3" href="<?= url_to('HomeController::index') ?>">
                 <img src="/images/國鼎LOGO.png" alt="Company Logo">
                 國鼎鋼鐵股份有限公司
             </a>
@@ -134,6 +134,7 @@
             </div>
         </div>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', function() {

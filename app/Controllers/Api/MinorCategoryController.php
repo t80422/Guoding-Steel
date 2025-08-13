@@ -16,7 +16,7 @@ class MinorCategoryController extends BaseController
 
     public function getMinorCategoriesByMajorCategory($majorCategoryId)
     {
-        $data = $this->minorCategoryModel->getNames($majorCategoryId);
+        $data = $this->minorCategoryModel->getInfo($majorCategoryId);
         return $this->response->setJSON($data);
     }
 }

@@ -1,10 +1,20 @@
 <?php
 
 /**
- * 項目數量表模態框
- * @param int $orderId 訂單ID
+ * 項目數量表模態框（參數化支援 訂單/租賃）
+ *
+ * 可用參數（向後相容）：
+ * - orderId: 舊版參數（僅訂單），等同 documentId
+ * - documentType: 'order' | 'rental'，預設 'order'
+ * - documentId: 單據 ID（o_id/ro_id），預設為 $orderId
+ * - detailUrl: 取得明細的 API URL
+ * - assignmentGetUrl: 取得已有配置的 API URL
+ * - assignmentSaveUrl: 儲存配置的 API URL
+ * - detailIdKey: 明細主鍵欄位鍵名（訂單: od_id；租賃: rod_id）
+ * - qtyField: 明細數量欄位鍵名（訂單: od_qty；租賃: rod_qty）
+ * - lengthField: 明細長度欄位鍵名（訂單: od_length；租賃: rod_length）
+ * - payloadFieldMap: ['detail' => ..., 'pi' => ..., 'qty' => ...] 儲存 payload 用的鍵名
  */
-$orderId = $orderId ?? 0;
 ?>
 
 <!-- 項目數量表模態框 -->
@@ -251,12 +261,12 @@ $orderId = $orderId ?? 0;
                 .then(projectItemsData => {
                     itemQuantityData.projectItems = projectItemsData;
                     
-                    // 2. 取得訂單明細
-                    return fetch('<?= url_to('OrderController::getDetail', $orderId) ?>');
+                    // 2. 取得單據明細（訂單/租賃）
+                    return fetch('<?= $detailUrl ?>');
                 })
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('請求訂單明細失敗');
+                        throw new Error('請求單據明細失敗');
                     }
                     return response.json();
                 })
@@ -264,7 +274,7 @@ $orderId = $orderId ?? 0;
                     itemQuantityData.orderDetails = orderDetailsData;
                     
                     // 3. 取得已有的項目數量資料
-                    return fetch('<?= url_to('OrderDetailProjectItemController::getDetail', $orderId) ?>');
+                    return fetch('<?= $assignmentGetUrl ?>');
                 })
                 .then(response => {
                     if (!response.ok) {
@@ -275,10 +285,13 @@ $orderId = $orderId ?? 0;
                 .then(quantityResult => {
                     itemQuantityData.existingQuantities = quantityResult.data || [];
                     
-                    // 建立原始數量索引 (od_id + "_" + pi_id)
+                    // 建立原始數量索引 (detailId + "_" + pi_id)
+                    const DETAIL_KEY = '<?= $payloadFieldMap['detail'] ?>';
+                    const PI_KEY = '<?= $payloadFieldMap['pi'] ?>';
+                    const QTY_KEY = '<?= $payloadFieldMap['qty'] ?>';
                     itemQuantityData.existingQuantities.forEach(item => {
-                        const key = `${item.odpi_od_id}_${item.odpi_pi_id}`;
-                        originalQuantities[key] = parseInt(item.odpi_qty) || 0;
+                        const key = `${item[DETAIL_KEY]}_${item[PI_KEY]}`;
+                        originalQuantities[key] = parseInt(item[QTY_KEY]) || 0;
                     });
                     
                     // 4. 所有數據都載入完成，開始渲染
@@ -311,10 +324,7 @@ $orderId = $orderId ?? 0;
                 return;
             }
 
-            const {
-                projectItems,
-                orderDetails
-            } = itemQuantityData;
+            const { projectItems, orderDetails } = itemQuantityData;
 
             let tableHtml = `
                 <div class="table-responsive">
@@ -337,19 +347,18 @@ $orderId = $orderId ?? 0;
                         <tbody>
             `;
 
-            // 處理產品數據 - 如果沒有訂單明細，顯示提示訊息
+            // 處理產品數據 - 如果沒有明細，顯示提示訊息
             if (!orderDetails || orderDetails.length === 0) {
                 tableHtml += `
                     <tr>
                         <td colspan="${3 + projectItems.length}" class="text-center text-muted py-4">
                             <i class="bi bi-info-circle me-2"></i>
-                            此訂單暫無明細資料
+                            此單據暫無明細資料
                         </td>
                     </tr>`;
             } else {
                 // 渲染產品行
                 orderDetails.forEach(orderDetail => {
-                    console.log(orderDetail);
                     // 組合顯示名稱：小分類名稱 + 產品名稱
                     const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name 
                         ? `${orderDetail.mic_name} ${orderDetail.pr_name}` 
@@ -358,21 +367,21 @@ $orderId = $orderId ?? 0;
                     tableHtml += `
                         <tr>
                             <td class="product-name">${displayName}</td>
-                            <td class="total-quantity">${orderDetail.od_qty || 0}</td>
-                            <td class="total-length">${orderDetail.od_length || 0}</td>
+                            <td class="total-quantity">${orderDetail['<?= $qtyField ?>'] || 0}</td>
+                            <td class="total-length">${orderDetail['<?= $lengthField ?>'] || 0}</td>
                     `;
 
                     // 渲染每個分類的數量欄位
                     projectItems.forEach(projectItem => {
-                        const key = `${orderDetail.od_id}_${projectItem.pi_id}`;
+                        const key = `${orderDetail['<?= $detailIdKey ?>']}_${projectItem.pi_id}`;
                         const existingQty = originalQuantities[key] || 0;
-                        const maxQty = orderDetail.od_qty || 0;
+                        const maxQty = orderDetail['<?= $qtyField ?>'] || 0;
                         
                         tableHtml += `
                             <td class="category-cell">
                                 <input type="number" 
                                        class="form-control category-input" 
-                                       data-od-id="${orderDetail.od_id}" 
+                                       data-detail-id="${orderDetail['<?= $detailIdKey ?>']}" 
                                        data-pi-id="${projectItem.pi_id}"
                                        data-max-qty="${maxQty}"
                                        value="${existingQty}" 
@@ -412,11 +421,11 @@ $orderId = $orderId ?? 0;
 
         // 驗證單行數量總和
         function validateRowQuantity(changedInput) {
-            const odId = changedInput.dataset.odId;
+            const detailId = changedInput.dataset.detailId;
             const maxQty = parseInt(changedInput.dataset.maxQty) || 0;
             
             // 找到同一行的所有input
-            const rowInputs = document.querySelectorAll(`#itemQuantityModal .category-input[data-od-id="${odId}"]`);
+            const rowInputs = document.querySelectorAll(`#itemQuantityModal .category-input[data-detail-id="${detailId}"]`);
             let totalAssigned = 0;
             
             rowInputs.forEach(input => {
@@ -483,9 +492,9 @@ $orderId = $orderId ?? 0;
                 // 檢查每一行是否有驗證錯誤
                 const processedRows = new Set();
                 categoryInputs.forEach(input => {
-                    const odId = input.dataset.odId;
-                    if (!processedRows.has(odId)) {
-                        processedRows.add(odId);
+                    const detailId = input.dataset.detailId;
+                    if (!processedRows.has(detailId)) {
+                        processedRows.add(detailId);
                         if (!validateRowQuantity(input)) {
                             hasValidationError = true;
                         }
@@ -505,31 +514,31 @@ $orderId = $orderId ?? 0;
                 };
 
                 categoryInputs.forEach(input => {
-                    const odId = input.dataset.odId;
+                    const detailId = input.dataset.detailId;
                     const piId = input.dataset.piId;
-                    const key = `${odId}_${piId}`;
+                    const key = `${detailId}_${piId}`;
                     const originalQty = originalQuantities[key] || 0;
                     const newQty = parseInt(input.value) || 0;
 
                     if (originalQty === 0 && newQty > 0) {
                         // 新增：原本沒有，現在有值
                         operations.create.push({
-                            odpi_od_id: odId,
-                            odpi_pi_id: piId,
-                            odpi_qty: newQty
+                            '<?= $payloadFieldMap['detail'] ?>': detailId,
+                            '<?= $payloadFieldMap['pi'] ?>': piId,
+                            '<?= $payloadFieldMap['qty'] ?>': newQty
                         });
                     } else if (originalQty > 0 && newQty > 0 && originalQty !== newQty) {
                         // 更新：原本有值，現在也有值，但數量不同
                         operations.update.push({
-                            odpi_od_id: odId,
-                            odpi_pi_id: piId,
-                            odpi_qty: newQty
+                            '<?= $payloadFieldMap['detail'] ?>': detailId,
+                            '<?= $payloadFieldMap['pi'] ?>': piId,
+                            '<?= $payloadFieldMap['qty'] ?>': newQty
                         });
                     } else if (originalQty > 0 && newQty === 0) {
                         // 刪除：原本有值，現在變成0
                         operations.delete.push({
-                            odpi_od_id: odId,
-                            odpi_pi_id: piId
+                            '<?= $payloadFieldMap['detail'] ?>': detailId,
+                            '<?= $payloadFieldMap['pi'] ?>': piId
                         });
                     }
                 });
@@ -549,7 +558,7 @@ $orderId = $orderId ?? 0;
                 saveButton.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>儲存中...';
 
                 // 發送數據到後端
-                fetch('<?= url_to('OrderDetailProjectItemController::save') ?>', {
+                fetch('<?= $assignmentSaveUrl ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -570,9 +579,9 @@ $orderId = $orderId ?? 0;
 
                     // 更新原始數量記錄
                     categoryInputs.forEach(input => {
-                        const odId = input.dataset.odId;
+                        const detailId = input.dataset.detailId;
                         const piId = input.dataset.piId;
-                        const key = `${odId}_${piId}`;
+                        const key = `${detailId}_${piId}`;
                         const newQty = parseInt(input.value) || 0;
                         
                         if (newQty > 0) {

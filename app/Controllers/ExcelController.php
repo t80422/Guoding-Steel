@@ -6,6 +6,14 @@ use CodeIgniter\HTTP\Files\UploadedFile;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ReaderException;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use App\Services\ExcelImportService;
+use App\Models\OrderModel;
+use App\Models\OrderDetailModel;
+use App\Models\OrderDetailProjectItemModel;
+use App\Models\RentalOrderModel;
+use App\Models\RentalOrderDetailModel;
+use App\Models\RentalDetailProjectItemModel;
+use App\Services\InventoryService;
 
 class ExcelController extends BaseController
 {
@@ -16,7 +24,7 @@ class ExcelController extends BaseController
         return view('excel/index');
     }
 
-    // 匯入Excel
+    // 匯入Excel（新版）
     public function import()
     {
         try {
@@ -43,25 +51,23 @@ class ExcelController extends BaseController
                 ]);
             }
 
-            // 讀取Excel檔案到記憶體
-            $excelResult = $this->readExcelFile($file);
+            // 使用 Service 解析新版格式
+            $service = new ExcelImportService();
+            $result = $service->parse($file);
 
-            if (!$excelResult['success']) {
+            if (!$result['success']) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => $excelResult['message']
+                    'errors' => $result['errors'] ?? []
                 ]);
             }
 
-            // 將處理後的資料暫存到記憶體（session）
-            $this->storeDataInMemory($excelResult['data'], $file->getClientName());
-
-            // 總結統計資料回傳給前端顯示
-            $summaryData = $this->getSummaryData($excelResult['data']);
+            // 暫存於 session
+            $this->storeDataInMemory($result['data'], $file->getClientName());
 
             return $this->response->setJSON([
                 'success' => true,
-                'data' => $summaryData
+                'data' => $result['summary'] ?? []
             ]);
         } catch (\Exception $e) {
             return $this->response->setJSON([
@@ -338,7 +344,7 @@ class ExcelController extends BaseController
         ];
     }
 
-    // 儲存匯入的資料
+    // 儲存匯入的資料（寫入 orders / rental_orders，重建明細與庫存）
     public function save()
     {
         try {
@@ -352,16 +358,154 @@ class ExcelController extends BaseController
                 ]);
             }
 
-            // 您在此處理資料庫儲存邏輯
-            $result = $this->saveDataToDatabase($memoryData['data']);
+            $db = \Config\Database::connect();
+            $db->transStart();
 
-            // 清除記憶體中的暫存資料
+            $orderModel = new OrderModel();
+            $orderDetailModel = new OrderDetailModel();
+            $odpiModel = new OrderDetailProjectItemModel();
+            $rentalModel = new RentalOrderModel();
+            $rentalDetailModel = new RentalOrderDetailModel();
+            $rodpiModel = new RentalDetailProjectItemModel();
+            $inventoryService = new InventoryService();
+
+            $created = 0; $updated = 0;
+
+            $data = $memoryData['data'] ?? [];
+            $orders = $data['orders'] ?? [];
+            $rentals = $data['rentals'] ?? [];
+
+            // Orders 寫入
+            foreach ($orders as $o) {
+                $header = $o['header'];
+                $details = $o['details'];
+
+                // 以 o_number 決定新增或更新
+                $exist = $orderModel->where('o_number', $header['o_number'])->first();
+                $oldOrder = null; $oldDetails = null;
+                if ($exist) {
+                    $header['o_id'] = $exist['o_id'];
+                    $oldOrder = $exist;
+                    $oldDetails = $orderDetailModel->getByOrderId((int)$exist['o_id']);
+                    $orderModel->save($header);
+
+                    // 刪舊明細與關聯
+                    if (!empty($oldDetails)) {
+                        foreach ($oldDetails as $d) {
+                            $odpiModel->where('odpi_od_id', $d['od_id'])->delete();
+                        }
+                    }
+                    $orderDetailModel->where('od_o_id', $exist['o_id'])->delete();
+                    $updated++;
+                } else {
+                    $orderModel->insert($header);
+                    $header['o_id'] = $orderModel->getInsertID();
+                    $oldOrder = null; $oldDetails = [];
+                    $created++;
+                }
+
+                // 聚合 (pr_id,length) → 建立 order_details
+                $detailIdByKey = [];
+                foreach ($details as $d) {
+                    $key = $d['pr_id'].'|'.$d['length'];
+                    if (!isset($detailIdByKey[$key])) {
+                        $orderDetailModel->insert([
+                            'od_o_id' => $header['o_id'],
+                            'od_pr_id' => $d['pr_id'],
+                            'od_qty' => $d['qty'],
+                            'od_length' => $d['length'],
+                        ]);
+                        $detailIdByKey[$key] = $orderDetailModel->getInsertID();
+                    } else {
+                        // 若同鍵多筆（理論上已聚合），仍保險相加
+                        $odId = $detailIdByKey[$key];
+                        $row = $orderDetailModel->find($odId);
+                        $orderDetailModel->update($odId, ['od_qty' => ((int)$row['od_qty']) + (int)$d['qty']]);
+                    }
+
+                    // 建立項目配置
+                    $odId = $detailIdByKey[$key];
+                    foreach ($d['allocations'] as $piId => $qty) {
+                        $odpiModel->insert([
+                            'odpi_od_id' => $odId,
+                            'odpi_pi_id' => $piId,
+                            'odpi_qty' => $qty,
+                        ]);
+                    }
+                }
+
+                // 更新庫存
+                $inventoryService->updateInventoryForOrder((int)$header['o_id'], $exist ? 'UPDATE' : 'CREATE', $oldOrder, $oldDetails);
+            }
+
+            // Rentals 寫入
+            foreach ($rentals as $r) {
+                $header = $r['header'];
+                $details = $r['details'];
+
+                $exist = $rentalModel->where('ro_number', $header['ro_number'])->first();
+                $oldRental = null; $oldDetails = null;
+                if ($exist) {
+                    $header['ro_id'] = $exist['ro_id'];
+                    $oldRental = $exist;
+                    $oldDetails = $rentalDetailModel->getByRentalId((int)$exist['ro_id']);
+                    $rentalModel->save($header);
+
+                    // 刪舊明細與關聯
+                    if (!empty($oldDetails)) {
+                        foreach ($oldDetails as $d) {
+                            $rodpiModel->where('rodpi_rod_id', $d['rod_id'])->delete();
+                        }
+                    }
+                    $rentalDetailModel->where('rod_ro_id', $exist['ro_id'])->delete();
+                    $updated++;
+                } else {
+                    $rentalModel->insert($header);
+                    $header['ro_id'] = $rentalModel->getInsertID();
+                    $oldRental = null; $oldDetails = [];
+                    $created++;
+                }
+
+                // 聚合 (pr_id,length) → 建立 rental_order_details
+                $detailIdByKey = [];
+                foreach ($details as $d) {
+                    $key = $d['pr_id'].'|'.$d['length'];
+                    if (!isset($detailIdByKey[$key])) {
+                        $rentalDetailModel->insert([
+                            'rod_ro_id' => $header['ro_id'],
+                            'rod_pr_id' => $d['pr_id'],
+                            'rod_qty' => $d['qty'],
+                            'rod_length' => $d['length'],
+                        ]);
+                        $detailIdByKey[$key] = $rentalDetailModel->getInsertID();
+                    } else {
+                        $rodId = $detailIdByKey[$key];
+                        $row = $rentalDetailModel->find($rodId);
+                        $rentalDetailModel->update($rodId, ['rod_qty' => ((int)$row['rod_qty']) + (int)$d['qty']]);
+                    }
+
+                    // 建立項目配置
+                    $rodId = $detailIdByKey[$key];
+                    foreach ($d['allocations'] as $piId => $qty) {
+                        $rodpiModel->insert([
+                            'rodpi_rod_id' => $rodId,
+                            'rodpi_pi_id' => $piId,
+                            'rodpi_qty' => $qty,
+                        ]);
+                    }
+                }
+
+                // 更新庫存（只調工地）
+                $inventoryService->updateInventoryForRental((int)$header['ro_id'], $exist ? 'UPDATE' : 'CREATE', $oldRental, $oldDetails);
+            }
+
+            $db->transComplete();
             $this->clearMemoryData();
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => "匯入完成！新增 {$result['created_count']} 筆、更新 {$result['updated_count']} 筆",
-                'data' => $result
+                'message' => "匯入完成！新增 {$created} 筆、更新 {$updated} 筆",
+                'data' => [ 'created' => $created, 'updated' => $updated ]
             ]);
         } catch (\Exception $e) {
             return $this->response->setJSON([
@@ -400,44 +544,5 @@ class ExcelController extends BaseController
         session()->remove('excel_memory_data');
     }
 
-    /**
-     * 將資料儲存到資料庫 - 您自己實作
-     */
-    private function saveDataToDatabase(array $data): array
-    {
-        // TODO: 您在此實作資料庫儲存邏輯
-        // 現在 $data 包含了結構化的資料和原始Excel資料陣列
-
-        $createdCount = 0;
-        $updatedCount = 0;
-
-        foreach ($data as $record) {
-            // 取得處理後的資料
-            $carNo = $record['carNo'];          // B欄 - 車號
-            $no = $record['no'];                // C欄 - 編號
-            $date = $record['date'];            // D欄 - 日期
-            $manufacturer = $record['manufacturer']; // E欄 - 廠商
-            $location = $record['location'];    // F欄 - 地點
-            $type = $record['type'];            // rental 或 order
-            $totalQuantity = $record['totalQuantity']; // 總數量
-            $quantities = $record['quantities']; // 各欄位數量
-            $rawRecord = $record['raw_record']; // 完整Excel原始資料
-
-            // 根據類型儲存到不同的資料表
-            if ($type === 'rental') {
-                // 儲存到租賃相關的 Model
-                // 檢查是否已存在（更新）或新增
-                // 可以用 $carNo 或 $no 作為唯一識別
-                // $createdCount++ 或 $updatedCount++
-            } else {
-                // 儲存到訂單相關的 Model
-                // $createdCount++ 或 $updatedCount++
-            }
-        }
-
-        return [
-            'created_count' => $createdCount,
-            'updated_count' => $updatedCount
-        ];
-    }
+    // 舊版保留的方法移除，避免混淆
 }

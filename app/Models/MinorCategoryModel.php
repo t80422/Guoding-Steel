@@ -14,7 +14,8 @@ class MinorCategoryModel extends Model
         'mic_create_at',
         'mic_update_by',
         'mic_update_at',
-        'mic_mc_id'
+        'mic_mc_id',
+        'mic_unit'
     ];
 
     public function getList($keyword)
@@ -23,7 +24,7 @@ class MinorCategoryModel extends Model
             ->join('major_categories mc', 'mc.mc_id=mic.mic_mc_id', 'left')
             ->join('users u1', 'u1.u_id=mic.mic_create_by', 'left')
             ->join('users u2', 'u2.u_id=mic.mic_update_by', 'left')
-            ->select('mic.mic_id, mic.mic_name, mc.mc_name, mic.mic_create_at, mic.mic_update_at, u1.u_name as creator, u2.u_name as updater');
+            ->select('mic.*, mc.mc_name, u1.u_name as creator, u2.u_name as updater');
 
         if (!empty($keyword)) {
             $builder->groupStart()
@@ -39,6 +40,14 @@ class MinorCategoryModel extends Model
     {
         $builder = $this->builder('minor_categories mic')
             ->select('mic.mic_id, mic.mic_name')
+            ->where('mic.mic_mc_id', $mcId);
+        return $builder->get()->getResultArray();
+    }
+
+    public function getInfo($mcId)
+    {
+        $builder = $this->builder('minor_categories mic')
+            ->select('mic.mic_id, mic.mic_name, mic.mic_unit')
             ->where('mic.mic_mc_id', $mcId);
         return $builder->get()->getResultArray();
     }

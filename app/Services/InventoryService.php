@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\InventoryModel;
 use App\Models\OrderModel;
 use App\Models\OrderDetailModel;
+use App\Models\RentalOrderModel;
+use App\Models\RentalOrderDetailModel;
 use Exception;
 
 class InventoryService
@@ -12,12 +14,16 @@ class InventoryService
     protected $inventoryModel;
     protected $orderModel;
     protected $orderDetailModel;
+    protected $rentalOrderModel;
+    protected $rentalOrderDetailModel;
 
     public function __construct()
     {
         $this->inventoryModel = new InventoryModel();
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();
+        $this->rentalOrderModel = new RentalOrderModel();
+        $this->rentalOrderDetailModel = new RentalOrderDetailModel();
     }
 
     /**
@@ -74,6 +80,52 @@ class InventoryService
         }
 
         return true;
+    }
+
+    /**
+     * 根據租賃單操作更新庫存（只調整工地庫存）
+     * ro_type: 0=進工地(+qty), 1=出工地(-qty)
+     */
+    public function updateInventoryForRental(int $rentalId, string $operation, ?array $oldRentalData = null, ?array $oldRentalDetails = null): bool
+    {
+        try {
+            switch ($operation) {
+                case 'CREATE':
+                    $rental = $this->rentalOrderModel->find($rentalId);
+                    if (!$rental) throw new Exception('租賃單不存在');
+                    $details = $this->rentalOrderDetailModel->getByRentalId($rentalId);
+                    foreach ($details as $d) {
+                        $delta = ((int)$rental['ro_type'] === 0) ? (int)$d['rod_qty'] : -(int)$d['rod_qty'];
+                        $this->adjustInventory((int)$d['rod_pr_id'], (int)$rental['ro_l_id'], $delta);
+                    }
+                    return true;
+                case 'DELETE':
+                    $rental = $this->rentalOrderModel->find($rentalId);
+                    if (!$rental) throw new Exception('租賃單不存在');
+                    $details = $this->rentalOrderDetailModel->getByRentalId($rentalId);
+                    foreach ($details as $d) {
+                        // 回復動作與 CREATE 相反
+                        $delta = ((int)$rental['ro_type'] === 0) ? -(int)$d['rod_qty'] : (int)$d['rod_qty'];
+                        $this->adjustInventory((int)$d['rod_pr_id'], (int)$rental['ro_l_id'], $delta);
+                    }
+                    return true;
+                case 'UPDATE':
+                    // 先回復舊影響
+                    if ($oldRentalData !== null && $oldRentalDetails !== null) {
+                        foreach ($oldRentalDetails as $d) {
+                            $delta = ((int)$oldRentalData['ro_type'] === 0) ? -(int)$d['rod_qty'] : (int)$d['rod_qty'];
+                            $this->adjustInventory((int)$d['rod_pr_id'], (int)$oldRentalData['ro_l_id'], $delta);
+                        }
+                    }
+                    // 再套用新值
+                    return $this->updateInventoryForRental($rentalId, 'CREATE');
+                default:
+                    throw new Exception('不支援的操作類型');
+            }
+        } catch (Exception $e) {
+            log_message('error', 'InventoryService::updateInventoryForRental - ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
@@ -198,7 +250,56 @@ class InventoryService
      */
     public function getInventoryList($filter = [], $page = 1, $usePaging = true)
     {
-        return $this->inventoryModel->getList($filter, $page, $usePaging);
+        $result = $this->inventoryModel->getList($filter, $page, $usePaging);
+
+        $data = $result['data'] ?? [];
+        if (empty($data)) {
+            return $result;
+        }
+
+        // 收集當頁的地點與產品
+        $locationIds = [];
+        $productIds = [];
+        foreach ($data as $row) {
+            if (isset($row['i_l_id'])) {
+                $locationIds[(int)$row['i_l_id']] = true;
+            }
+            if (isset($row['i_pr_id'])) {
+                $productIds[(int)$row['i_pr_id']] = true;
+            }
+        }
+        $locationIds = array_keys($locationIds);
+        $productIds = array_keys($productIds);
+
+        if (!empty($locationIds) && !empty($productIds)) {
+            // 兩來源的長度彙總
+            $orderSums = $this->orderModel->getLengthSumsByLocationAndProduct($locationIds, $productIds);
+            $rentalSums = $this->rentalOrderModel->getLengthSumsByLocationAndProduct($locationIds, $productIds);
+
+            // 轉為 map 以便查找
+            $sumMap = [];
+            foreach ($orderSums as $row) {
+                $key = $row['location_id'] . '-' . $row['product_id'];
+                $sumMap[$key] = ($sumMap[$key] ?? 0) + (float)$row['total_length'];
+            }
+            foreach ($rentalSums as $row) {
+                $key = $row['location_id'] . '-' . $row['product_id'];
+                $sumMap[$key] = ($sumMap[$key] ?? 0) + (float)$row['total_length'];
+            }
+
+            // 回填到當頁資料
+            foreach ($result['data'] as &$row) {
+                $key = ((int)$row['i_l_id']) . '-' . ((int)$row['i_pr_id']);
+                $row['totalMeters'] = isset($sumMap[$key]) ? (float)$sumMap[$key] : 0.0;
+            }
+        } else {
+            // 當頁若無有效 id，則統一補 0
+            foreach ($result['data'] as &$row) {
+                $row['totalMeters'] = 0.0;
+            }
+        }
+
+        return $result;
     }
 
     /**

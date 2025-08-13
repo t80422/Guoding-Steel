@@ -40,7 +40,6 @@ class RentalController extends BaseController
         $this->manufacturerModel = new ManufacturerModel();
     }
 
-
     // 列表
     public function index()
     {
@@ -193,6 +192,13 @@ class RentalController extends BaseController
                 ->withInput()
                 ->with('error', $e->getMessage());
         }
+    }
+
+    // 取得租賃訂單明細（提供給項目數量表載入）
+    public function getDetail($id)
+    {
+        $details = $this->rentalOrderDetailModel->getDetailByRentalId((int)$id);
+        return $this->response->setJSON($details);
     }
 
     /**

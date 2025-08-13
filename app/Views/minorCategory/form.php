@@ -27,6 +27,11 @@
                 <?php endforeach; ?>
             </select>
         </div>
+
+        <div class="mb-3">
+            <label for="micUnit" class="form-label">單位</label>
+            <input type="text" class="form-control" name="mic_unit" value="<?= old('mic_unit', $data['mic_unit'] ?? '') ?>">
+        </div>
     
         <?php if(!$isEdit): ?>
         <div class="mb-3">

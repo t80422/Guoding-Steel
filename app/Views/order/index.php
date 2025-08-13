@@ -59,6 +59,7 @@
                     <th>目的地</th>
                     <th>車號</th>
                     <th>GPS</th>
+                    <th>總噸數</th>
                     <th>氧氣</th>
                     <th>乙炔</th>
                     <th>備註</th>
@@ -114,6 +115,7 @@
                             <td><?= esc($item['to_location_name']) ?></td>
                             <td><?= esc($item['o_car_number']) ?></td>
                             <td><?= esc($item['gps_name']) ?></td>
+                            <td><?= esc($item['o_total_tons']) ?></td>
                             <td><?= esc($item['o_oxygen']) ?></td>
                             <td><?= esc($item['o_acetylene']) ?></td>
                             <td><?= esc($item['o_remark']) ?></td>

@@ -108,6 +108,15 @@ class OrderModel extends Model
     {
         $builder = $this->baseQuery();
 
+        // 加入明細重量彙總的子查詢（公斤）
+        $subSql = $this->db->table('order_details')
+            ->select('od_o_id, SUM(od_weight) AS total_kg')
+            ->groupBy('od_o_id')
+            ->getCompiledSelect();
+
+        $builder->join("($subSql) od_sum", 'od_sum.od_o_id = o.o_id', 'left')
+                ->select('COALESCE(od_sum.total_kg, 0) AS total_kg', false);
+
         if ($keyword) {
             $builder->groupStart()
                 ->like('o.o_id', $keyword)
@@ -136,6 +145,9 @@ class OrderModel extends Model
         foreach ($results as &$row) {
             $row['typeName'] = self::getTypeName($row['o_type']);
             $row['o_status'] = self::getStatusName($row['o_status']);
+            // 換算噸數（保留兩位小數），不顯示單位
+            $sumKg = (float) ($row['total_kg'] ?? 0);
+            $row['o_total_tons'] = number_format($sumKg / 1000, 2, '.', '');
         }
 
         return $results;
@@ -328,6 +340,37 @@ class OrderModel extends Model
     }
 
     /**
+     * 依地點與產品彙總訂單的長度總和（不乘數量，無日期篩選）
+     *
+     * @param int[] $locationIds o_to_location 清單
+     * @param int[] $productIds od_pr_id 清單
+     * @return array<int,array{location_id:int,product_id:int,total_length:float}>
+     */
+    public function getLengthSumsByLocationAndProduct(array $locationIds, array $productIds): array
+    {
+        if (empty($locationIds) || empty($productIds)) {
+            return [];
+        }
+
+        $builder = $this->db->table('orders o')
+            ->join('order_details od', 'od.od_o_id = o.o_id')
+            ->select('o.o_to_location AS location_id, od.od_pr_id AS product_id, COALESCE(SUM(od.od_length), 0) AS total_length', false)
+            ->whereIn('o.o_to_location', $locationIds)
+            ->whereIn('od.od_pr_id', $productIds)
+            ->groupBy('o.o_to_location, od.od_pr_id');
+
+        $rows = $builder->get()->getResultArray();
+
+        // 正規化型別
+        foreach ($rows as &$row) {
+            $row['location_id'] = (int) $row['location_id'];
+            $row['product_id'] = (int) $row['product_id'];
+            $row['total_length'] = (float) $row['total_length'];
+        }
+        return $rows;
+    }
+
+    /**
      * 取得倉庫名稱
      *
      * @param array $row
@@ -363,6 +406,7 @@ class OrderModel extends Model
                 ->orWhereIn('o.o_to_location', $userLocationIds)
                 ->orWhere('o.o_create_by', $userId)
             ->groupEnd()
+            ->orderBy('o.o_id', 'DESC')
             ->get()->getResultArray();
     }
 
@@ -387,5 +431,24 @@ class OrderModel extends Model
                 ->orWhere('o.o_create_by', $userId)
             ->groupEnd()
             ->get()->getResultArray();
+    }
+
+    /**
+     * 生成訂單編號
+     *
+     * @return string
+     */
+    public function generateOrderNumber(){
+        $prefix = date('Ym');
+        $lastOrder = $this->like('o_number', $prefix, 'after')->orderBy('o_number', 'DESC')->first();
+
+        if ($lastOrder) {
+            $lastNumber = (int) substr($lastOrder['o_number'], 6);
+            $newNumber = $lastNumber + 1;
+        } else {
+            $newNumber = 1;
+        }
+
+        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 }

@@ -53,9 +53,10 @@ class CreateOrdersTable extends Migration
                 'type' => 'TIME',
                 'null' => true,
             ],
-            'o_gps' => [
-                'type'       => 'VARCHAR',
-                'constraint' => '255',
+            'o_g_id' => [
+                'type'       => 'INT',
+                'constraint' => 5,
+                'unsigned'   => true,
                 'null'       => true,
             ],
             'o_oxygen' => [
@@ -119,6 +120,7 @@ class CreateOrdersTable extends Migration
         $this->forge->addPrimaryKey('o_id');
         $this->forge->addForeignKey('o_from_location', 'locations', 'l_id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('o_to_location', 'locations', 'l_id', 'SET NULL', 'CASCADE');
+        $this->forge->addForeignKey('o_g_id', 'gps', 'g_id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('o_create_by', 'users', 'u_id', 'SET NULL', 'CASCADE');
         $this->forge->addForeignKey('o_update_by', 'users', 'u_id', 'SET NULL', 'CASCADE');
         $this->forge->createTable('orders');

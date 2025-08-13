@@ -9,7 +9,8 @@
     <style>
         /* A4 直式紙張大小 */
         body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            /* 優先使用繁中無襯線字體，貼近範例視覺 */
+            font-family: "Microsoft JhengHei", "Noto Sans TC", "PingFang TC", "Heiti TC", "Source Han Sans TC", "PMingLiU", "MingLiU", Arial, sans-serif;
             font-size: 14px;
         }
 
@@ -97,7 +98,7 @@
                 <td style="width:34%; text-align:left;">日期：<?= esc($order['o_date'] ?? '') ?></td>
             </tr>
         </table>
-        <!-- 材料規格大清單（三組） -->
+        <!-- 材料規格大清單（三組，動態） -->
         <table class="mb-1">
             <thead>
                 <tr>
@@ -113,27 +114,24 @@
                 </tr>
             </thead>
             <tbody>
-                <?php
-                foreach ($staticItems as $index => $row):
-                    $q1 = $quantities[$index][0] ?? '';
-                    $q2 = $quantities[$index][1] ?? '';
-                    $q3 = $quantities[$index][2] ?? '';
-                    $d1 = !empty($displayNames[$index][0]) ? $displayNames[$index][0] : $row[0]; // 顯示名稱或預設名稱
-                    $d2 = !empty($displayNames[$index][1]) ? $displayNames[$index][1] : $row[2]; // 顯示名稱或預設名稱
-                    $d3 = !empty($displayNames[$index][2]) ? $displayNames[$index][2] : $row[4]; // 顯示名稱或預設名稱
-                ?>
-                    <tr>
-                        <td><?= esc($d1) ?></td>
-                        <td><?= $row[1] ?></td>
-                        <td><?= esc($q1) ?></td>
-                        <td><?= esc($d2) ?></td>
-                        <td><?= $row[3] ?></td>
-                        <td><?= esc($q2) ?></td>
-                        <td><?= esc($d3) ?></td>
-                        <td><?= $row[5] ?></td>
-                        <td><?= esc($q3) ?></td>
-                    </tr>
-                <?php endforeach; ?>
+                <?php if (!empty($itemsGrid)): ?>
+                    <?php foreach ($itemsGrid as $row): ?>
+                        <tr>
+                            <?php for ($i = 0; $i < 3; $i++): ?>
+                                <?php $cell = $row[$i] ?? null; ?>
+                                <?php if ($cell): ?>
+                                    <td><?= esc($cell['name'] ?? '') ?></td>
+                                    <td><?= esc($cell['unit'] ?? '') ?></td>
+                                    <td><?= esc($cell['qty'] ?? '') ?></td>
+                                <?php else: ?>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
         <!-- 明細列 -->

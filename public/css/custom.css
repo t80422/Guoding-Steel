@@ -107,14 +107,17 @@ body {
 
 /* ===== 導航列樣式 ===== */
 .navbar-brand img {
-    height: 30px;
-    /* Adjust as needed */
-    margin-right: 10px;
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    display: block;
 }
 
 .navbar-brand {
     font-weight: bold;
     color: #708C7D !important;
+    font-size: 50px;
+    line-height: 1;
 }
 
 .navbar-bg-color {
@@ -227,16 +230,4 @@ body {
         position: absolute;
         top: 100%;
     }
-} 
-
-/* ===== 導覽列 Logo 與文字尺寸調整 ===== */
-.navbar-brand img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-}
-
-.navbar-brand {
-    font-size: 2rem;
-    line-height: 40px;
 } 

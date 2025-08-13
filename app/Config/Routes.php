@@ -15,6 +15,9 @@ $routes->group('auth', function ($routes) {
     $routes->get('authLogs', 'AuthController::authLogs');
 });
 
+// 首頁
+$routes->get('home', 'HomeController::index');
+
 // 職位
 $routes->group('position', function ($routes) {
     $routes->get('/', 'PositionController::index');
@@ -153,6 +156,7 @@ $routes->group('rentalOrder', function ($routes) {
     $routes->get('/', 'RentalController::index_order');
     $routes->get('create', 'RentalController::createOrder');
     $routes->get('edit/(:num)', 'RentalController::editOrder/$1');
+    $routes->get('getDetail/(:num)', 'RentalController::getDetail/$1');
     $routes->get('delete/(:num)', 'RentalController::deleteOrder/$1');
     $routes->post('save', 'RentalController::saveOrder');
 });
@@ -187,6 +191,12 @@ $routes->group('projectItem', function ($routes) {
 $routes->group('orderDetailProjectItem', function ($routes) {
     $routes->get('getDetail/(:num)', 'OrderDetailProjectItemController::getDetail/$1');
     $routes->post('save', 'OrderDetailProjectItemController::save');
+});
+
+// 租賃明細施工項目
+$routes->group('rentalDetailProjectItem', function ($routes) {
+    $routes->get('getDetail/(:num)', 'RentalDetailProjectItemController::getDetail/$1');
+    $routes->post('save', 'RentalDetailProjectItemController::save');
 });
 
 // API

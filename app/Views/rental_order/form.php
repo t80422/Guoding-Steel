@@ -179,9 +179,17 @@
                             <h5 class="card-title mb-0">
                                 <i class="bi bi-list-ul me-2 text-primary"></i>租賃明細
                             </h5>
-                            <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
-                                <i class="bi bi-plus-lg me-1"></i>新增明細
-                            </button>
+                            <div class="d-flex gap-2">
+                                <?php if ($isEdit): ?>
+                                <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
+                                    data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
+                                    <i class="bi bi-table me-1"></i>項目數量表
+                                </button>
+                                <?php endif; ?>
+                                <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
+                                    <i class="bi bi-plus-lg me-1"></i>新增明細
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -318,6 +326,24 @@
         </div>
     </form>
 </div>
+<?php if ($isEdit): ?>
+<?= view('components/item_quantity_table', [
+    // 參數化以支援租賃模式
+    'documentType' => 'rental',
+    'documentId' => $data['rental']['ro_id'] ?? 0,
+    'detailUrl' => url_to('RentalController::getDetail', $data['rental']['ro_id'] ?? 0),
+    'assignmentGetUrl' => url_to('RentalDetailProjectItemController::getDetail', $data['rental']['ro_id'] ?? 0),
+    'assignmentSaveUrl' => url_to('RentalDetailProjectItemController::save'),
+    'detailIdKey' => 'rod_id',
+    'qtyField' => 'rod_qty',
+    'lengthField' => 'rod_length',
+    'payloadFieldMap' => [
+        'detail' => 'rodpi_rod_id',
+        'pi' => 'rodpi_pi_id',
+        'qty' => 'rodpi_qty',
+    ],
+]) ?>
+<?php endif; ?>
 <?= $this->include('components/product_selector', [
     'modalId' => 'productModal',
     'fieldPrefix' => 'rod'

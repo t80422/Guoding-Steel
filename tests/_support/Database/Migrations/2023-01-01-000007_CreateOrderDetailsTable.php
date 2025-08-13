@@ -54,8 +54,8 @@ class CreateOrderDetailsTable extends Migration
         ]);
 
         $this->forge->addPrimaryKey('od_id');
-        $this->forge->addForeignKey('od_o_id', 'orders', 'o_id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('od_pr_id', 'products', 'pr_id', 'SET NULL', 'CASCADE');
+        $this->forge->addForeignKey('od_o_id', 'orders', 'o_id', 'RESTRICT', 'CASCADE');
+        $this->forge->addForeignKey('od_pr_id', 'products', 'pr_id', 'RESTRICT', 'SET NULL');
         $this->forge->createTable('order_details');
     }
 

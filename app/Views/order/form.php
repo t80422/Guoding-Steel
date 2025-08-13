@@ -184,10 +184,12 @@
                                 <i class="bi bi-list-ul me-2 text-primary"></i>料單明細
                             </h5>
                             <div class="d-flex gap-2">
+                                <?php if ($isEdit): ?>
                                 <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
                                     data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
                                     <i class="bi bi-table me-1"></i>項目數量表
                                 </button>
+                                <?php endif; ?>
                                 <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
                                     <i class="bi bi-plus-lg me-1"></i>新增明細
                                 </button>
@@ -487,10 +489,24 @@
     </div>
 </div>
 
-<!-- 項目數量表 -->
+<?php if ($isEdit): ?>
+<!-- 項目數量表（參數化） -->
 <?= view('components/item_quantity_table', [
-    'orderId' => $data['order']['o_id'] ?? 0
+    'documentType' => 'order',
+    'documentId' => $data['order']['o_id'] ?? 0,
+    'detailUrl' => url_to('OrderController::getDetail', $data['order']['o_id'] ?? 0),
+    'assignmentGetUrl' => url_to('OrderDetailProjectItemController::getDetail', $data['order']['o_id'] ?? 0),
+    'assignmentSaveUrl' => url_to('OrderDetailProjectItemController::save'),
+    'detailIdKey' => 'od_id',
+    'qtyField' => 'od_qty',
+    'lengthField' => 'od_length',
+    'payloadFieldMap' => [
+        'detail' => 'odpi_od_id',
+        'pi' => 'odpi_pi_id',
+        'qty' => 'odpi_qty',
+    ],
 ]) ?>
+<?php endif; ?>
 
 <!-- 產品選擇器 -->
 <?= $this->include('components/product_selector', [

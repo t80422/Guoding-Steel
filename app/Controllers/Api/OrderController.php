@@ -58,6 +58,9 @@ class OrderController extends Controller
             // 狀態
             $jsonOrder['o_status'] = OrderModel::STATUS_IN_PROGRESS;
 
+            // 生成訂單編號
+            $jsonOrder['o_number'] = $this->orderModel->generateOrderNumber();
+
             // 新增主表
             $orderId = $this->orderModel->insert($jsonOrder);
 
