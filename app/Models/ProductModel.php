@@ -62,7 +62,7 @@ class ProductModel extends Model
     {
         return $this->builder('products pr')
             ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
-            ->select('pr.pr_id, pr.pr_name, pr.pr_unit, mic.mic_id, mic.mic_name')
+            ->select('pr.pr_id, pr.pr_name, mic.mic_unit, mic.mic_id, mic.mic_name')
             ->orderBy('mic.mic_name', 'ASC')
             ->orderBy('pr.pr_name', 'ASC')
             ->get()

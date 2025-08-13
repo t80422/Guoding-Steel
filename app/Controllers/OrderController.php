@@ -193,7 +193,7 @@ class OrderController extends BaseController
         foreach ($allProducts as $p) {
             $prId = (int) ($p['pr_id'] ?? 0);
             $prName = (string) ($p['pr_name'] ?? '');
-            $prUnit = (string) ($p['pr_unit'] ?? '');
+            $prUnit = (string) ($p['mic_unit'] ?? '');
             $micName = (string) ($p['mic_name'] ?? '');
 
             $isSameName = ($prName === $micName);
