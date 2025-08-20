@@ -287,11 +287,22 @@ class OrderController extends BaseController
                 }
                 
                 if (!empty($matchedProducts)) {
-                    $productNames = implode('、', array_unique($matchedProducts));
+                    // 收集產品名稱和對應數量，保持對應關係
+                    $productDetails = [];
+                    $quantities = [];
+                    foreach ($productInfoMap as $prId => $info) {
+                        if ($info['mic_name'] === $micName && isset($productQtyMap[$prId])) {
+                            $productDetails[] = $info['pr_name'];
+                            $quantities[] = $productQtyMap[$prId];
+                        }
+                    }
+                    
+                    $productNames = implode('/', $productDetails);
+                    $qtyDisplay = implode('/', $quantities);
                     $items[] = [
                         'name' => $micName . ' ' . $productNames,
                         'unit' => $unit,
-                        'qty' => $totalQty
+                        'qty' => $qtyDisplay
                     ];
                 } else {
                     // 沒有明細也要顯示
@@ -372,12 +383,22 @@ class OrderController extends BaseController
             }
             
             if (!empty($productsInOrder)) {
-                // 有產品在明細中：小分類 + 產品名稱
-                $productNames = implode('、', array_unique($productsInOrder));
+                // 有產品在明細中：小分類 + 產品名稱/數量
+                $productDetails = [];
+                $quantities = [];
+                foreach ($categoryData['products'] as $prId => $productData) {
+                    if ($productData['qty'] > 0) {
+                        $productDetails[] = $productData['pr_name'];
+                        $quantities[] = $productData['qty'];
+                    }
+                }
+                
+                $productNames = implode('/', $productDetails);
+                $qtyDisplay = implode('/', $quantities);
                 $items[] = [
                     'name' => $micName . ' ' . $productNames,
                     'unit' => $unit,
-                    'qty' => $totalQty
+                    'qty' => $qtyDisplay
                 ];
             } else {
                 // 沒有產品在明細中：只顯示小分類
@@ -455,12 +476,20 @@ class OrderController extends BaseController
                     'qty' => $totalQty
                 ];
             } else {
-                // 有產品名稱不同於小分類：小分類 + 產品名稱
-                $productNames = implode('、', array_unique($productsInOrder));
+                // 有產品名稱不同於小分類：小分類 + 產品名稱/數量
+                $productDetails = [];
+                $quantities = [];
+                foreach ($categoryData['products'] as $prId => $productData) {
+                    $productDetails[] = $productData['pr_name'];
+                    $quantities[] = $productData['qty'];
+                }
+                
+                $productNames = implode('/', $productDetails);
+                $qtyDisplay = implode('/', $quantities);
                 $items[] = [
                     'name' => $micName . ' ' . $productNames,
                     'unit' => $unit,
-                    'qty' => $totalQty
+                    'qty' => $qtyDisplay
                 ];
             }
         }
