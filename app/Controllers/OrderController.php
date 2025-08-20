@@ -174,56 +174,195 @@ class OrderController extends BaseController
         }
     }
 
-    // 列印
-    public function print($orderId = null)
+    /**
+     * 取得固定產品清單模板（按指定順序排列，必須全部顯示）
+     */
+    private function getFixedProductTemplate(): array
     {
-        if (!$orderId) {
-            return redirect()->to(url_to('OrderController::index'))->with('error', '請提供訂單ID');
+        return [
+            ['name' => '中間樁', 'unit' => '支', 'dynamic' => true],
+            ['name' => '覆工板', 'unit' => '塊', 'dynamic' => true],
+            ['name' => '鋪路鋼板', 'unit' => '片', 'dynamic' => true],
+            ['name' => '支撐料', 'unit' => '支', 'dynamic' => true],
+            ['name' => '構台角鐵', 'unit' => '支', 'dynamic' => false],
+            ['name' => '不鏽鋼花板', 'unit' => '片', 'dynamic' => true],
+            ['name' => '圍令', 'unit' => '支', 'dynamic' => true],
+            ['name' => '構台帽', 'unit' => '個', 'dynamic' => false],
+            ['name' => '踢腳板', 'unit' => '片', 'dynamic' => false],
+            ['name' => '短料', 'unit' => '個', 'dynamic' => true],
+            ['name' => '千斤頂', 'unit' => '個', 'dynamic' => true],
+            ['name' => '樓梯', 'unit' => '座', 'dynamic' => true],
+            ['name' => '三角架', 'unit' => '支', 'dynamic' => true],
+            ['name' => '千斤頂保護蓋', 'unit' => '片', 'dynamic' => false],
+            ['name' => '組合樓梯', 'unit' => '組', 'dynamic' => true],
+            ['name' => '大U', 'unit' => '支', 'dynamic' => true],
+            ['name' => '長螺絲', 'unit' => '顆', 'dynamic' => false],
+            ['name' => '平台踏板', 'unit' => '個', 'dynamic' => false],
+            ['name' => '小U', 'unit' => '支', 'dynamic' => false],
+            ['name' => '短螺絲', 'unit' => '顆', 'dynamic' => false],
+            ['name' => '帆布', 'unit' => '支', 'dynamic' => true],
+            ['name' => '大小U角鐵', 'unit' => '支', 'dynamic' => false],
+            ['name' => '膨脹螺絲', 'unit' => '支', 'dynamic' => true],
+            ['name' => '襯板', 'unit' => '捆', 'dynamic' => false],
+            ['name' => '角鐵', 'unit' => '支', 'dynamic' => true],
+            ['name' => '安全母索', 'unit' => '捆', 'dynamic' => false],
+            ['name' => '竹片', 'unit' => '把', 'dynamic' => false],
+            ['name' => 'PC連接板', 'unit' => '片', 'dynamic' => false],
+            ['name' => '母索立柱', 'unit' => '支', 'dynamic' => false],
+            ['name' => '夾板', 'unit' => '片', 'dynamic' => true],
+            ['name' => '斜撐', 'unit' => '支', 'dynamic' => false],
+            ['name' => 'GIP錏管', 'unit' => '支', 'dynamic' => true],
+            ['name' => 'PGB錶、土壓計', 'unit' => '台', 'dynamic' => false],
+            ['name' => '斜撐頭(大)', 'unit' => '個', 'dynamic' => false],
+            ['name' => '錏管帽蓋', 'unit' => '個', 'dynamic' => false],
+            ['name' => '油壓機', 'unit' => '台', 'dynamic' => false],
+            ['name' => '斜撐頭(小)', 'unit' => '個', 'dynamic' => false],
+            ['name' => 'C型夾', 'unit' => '個', 'dynamic' => false],
+            ['name' => '手動加壓機', 'unit' => '台', 'dynamic' => false],
+            ['name' => '加勁盒', 'unit' => '個', 'dynamic' => false],
+            ['name' => '萬向活扣', 'unit' => '個', 'dynamic' => false],
+            ['name' => '操作油', 'unit' => '桶', 'dynamic' => true],
+            ['name' => '車輪檔', 'unit' => '座', 'dynamic' => true],
+            ['name' => '活扣保護蓋', 'unit' => '個', 'dynamic' => false],
+            ['name' => '鐵籠', 'unit' => '個', 'dynamic' => false],
+        ];
+    }
+
+
+
+    /**
+     * 建立新的材料規格清單
+     */
+    private function buildMaterialGrid(int $orderId): array
+    {
+        $fixedTemplate = $this->getFixedProductTemplate();
+        
+        // 取得訂單明細（用於統計數量）
+        $orderProducts = $this->orderDetailModel->getOrderProductsWithCategories($orderId);
+        
+        // 按產品ID分組統計數量
+        $productQtyMap = [];
+        $productInfoMap = [];
+        foreach ($orderProducts as $item) {
+            $prId = (int) $item['od_pr_id'];
+            $qty = (int) $item['od_qty'];
+            
+            if (!isset($productQtyMap[$prId])) {
+                $productQtyMap[$prId] = 0;
+            }
+            $productQtyMap[$prId] += $qty;
+            
+            $productInfoMap[$prId] = [
+                'pr_name' => $item['pr_name'],
+                'mic_name' => $item['mic_name'],
+                'mic_unit' => $item['mic_unit'],
+                'mc_name' => $item['mc_name'],
+            ];
         }
 
-        $order = $this->orderModel->getDetail($orderId);
-        if (!$order) {
-            throw new PageNotFoundException('找不到該訂單: ' . $orderId);
-        }
-        // 動態產生材料規格清單
-        $allProducts = $this->productModel->getAllForPrint();
-        $qtyByPrId = $this->orderDetailModel->getOrderProductQuantities((int) $orderId);
+        // 取得所有型鋼/配件產品
+        $allSteelAccessoryProducts = $this->productModel->getSteelAndAccessoryProducts();
 
-        $itemsA = [];
-        $itemsB = [];
-        foreach ($allProducts as $p) {
-            $prId = (int) ($p['pr_id'] ?? 0);
-            $prName = (string) ($p['pr_name'] ?? '');
-            $prUnit = (string) ($p['mic_unit'] ?? '');
-            $micName = (string) ($p['mic_name'] ?? '');
+        $items = [];
 
-            $isSameName = ($prName === $micName);
-            $hasQty = array_key_exists($prId, $qtyByPrId);
-
-            if (!$isSameName) {
-                if ($hasQty) {
-                    $itemsA[] = [
-                        'name' => trim($micName . ' ' . $prName),
-                        'unit' => $prUnit,
-                        'qty'  => $qtyByPrId[$prId] ?? ''
+        // 1. 固定清單優先（按定義順序，必須全部顯示）
+        $processedMicNames = [];
+        foreach ($fixedTemplate as $templateItem) {
+            $micName = $templateItem['name'];
+            $unit = $templateItem['unit'];
+            $isDynamic = $templateItem['dynamic'];
+            
+            $processedMicNames[] = $micName;
+            
+            if ($isDynamic) {
+                // 動態項目：找出該小分類下有哪些產品型號
+                $matchedProducts = [];
+                $totalQty = 0;
+                
+                foreach ($productInfoMap as $prId => $info) {
+                    if ($info['mic_name'] === $micName && isset($productQtyMap[$prId])) {
+                        $matchedProducts[] = $info['pr_name'];
+                        $totalQty += $productQtyMap[$prId];
+                    }
+                }
+                
+                if (!empty($matchedProducts)) {
+                    $productNames = implode('、', array_unique($matchedProducts));
+                    $items[] = [
+                        'name' => $micName . ' ' . $productNames,
+                        'unit' => $unit,
+                        'qty' => $totalQty
+                    ];
+                } else {
+                    // 沒有明細也要顯示
+                    $items[] = [
+                        'name' => $micName,
+                        'unit' => $unit,
+                        'qty' => ''
                     ];
                 }
             } else {
-                $itemsB[] = [
-                    'name' => $prName,
-                    'unit' => $prUnit,
-                    'qty'  => $qtyByPrId[$prId] ?? ''
+                // 固定項目：直接顯示小分類名稱
+                $qty = '';
+                foreach ($productInfoMap as $prId => $info) {
+                    if ($info['mic_name'] === $micName && isset($productQtyMap[$prId])) {
+                        $qty = $productQtyMap[$prId];
+                        break;
+                    }
+                }
+                
+                $items[] = [
+                    'name' => $micName,
+                    'unit' => $unit,
+                    'qty' => $qty
                 ];
             }
         }
 
-        // 合併 A（不同名且有明細）在前，B（同名全列）在後
-        $items = array_merge($itemsA, $itemsB);
+        // 2. 其他型鋼/配件產品（按產品ID排序，全部顯示不管有沒有明細）
+        $steelAccessoryProducts = [];
+        foreach ($allSteelAccessoryProducts as $product) {
+            $prId = (int) $product['pr_id'];
+            $micName = $product['mic_name'];
+            $prName = $product['pr_name'];
+            $unit = $product['mic_unit'];
+            
+            // 排除已經在固定清單中的項目
+            if (!in_array($micName, $processedMicNames)) {
+                $steelAccessoryProducts[$prId] = [
+                    'name' => ($micName === $prName) 
+                        ? $micName
+                        : $micName . ' ' . $prName,
+                    'unit' => $unit,
+                    'qty' => $productQtyMap[$prId] ?? '' // 沒有明細就空白
+                ];
+            }
+        }
+        ksort($steelAccessoryProducts);
+        $items = array_merge($items, array_values($steelAccessoryProducts));
+
+        // 3. 其他分類產品（按產品ID排序）
+        $otherProducts = [];
+        foreach ($productInfoMap as $prId => $info) {
+            if (!in_array($info['mc_name'], ['型鋼', '配件']) && 
+                isset($productQtyMap[$prId])) {
+                
+                $otherProducts[$prId] = [
+                    'name' => ($info['mic_name'] === $info['pr_name']) 
+                        ? $info['mic_name']
+                        : $info['mic_name'] . ' ' . $info['pr_name'],
+                    'unit' => $info['mic_unit'],
+                    'qty' => $productQtyMap[$prId]
+                ];
+            }
+        }
+        ksort($otherProducts);
+        $items = array_merge($items, array_values($otherProducts));
 
         // 轉成三欄網格
         $itemsGrid = [];
         $row = [];
-        foreach ($items as $idx => $item) {
+        foreach ($items as $item) {
             $row[] = $item;
             if (count($row) === 3) {
                 $itemsGrid[] = $row;
@@ -237,7 +376,25 @@ class OrderController extends BaseController
             $itemsGrid[] = $row;
         }
 
-        // 取得項目明細統計（改由 OrderDetailModel 提供）
+        return $itemsGrid;
+    }
+
+    // 列印
+    public function print($orderId = null)
+    {
+        if (!$orderId) {
+            return redirect()->to(url_to('OrderController::index'))->with('error', '請提供訂單ID');
+        }
+
+        $order = $this->orderModel->getDetail($orderId);
+        if (!$order) {
+            throw new PageNotFoundException('找不到該訂單: ' . $orderId);
+        }
+
+        // 使用新的材料規格清單邏輯
+        $itemsGrid = $this->buildMaterialGrid((int) $orderId);
+
+        // 取得項目明細統計
         $projectItemDetails = $this->orderDetailModel->getDetailsForPrint((int)$orderId);
 
         return view('print/warehouse_form', [

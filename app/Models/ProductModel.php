@@ -68,4 +68,21 @@ class ProductModel extends Model
             ->get()
             ->getResultArray();
     }
+
+    /**
+     * 取得所有型鋼/配件產品（含分類資訊）
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public function getSteelAndAccessoryProducts(): array
+    {
+        return $this->builder('products pr')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
+            ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
+            ->select('pr.pr_id, pr.pr_name, mic.mic_name, mic.mic_unit, mc.mc_name')
+            ->whereIn('mc.mc_name', ['型鋼', '配件'])
+            ->orderBy('pr.pr_id', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
 }

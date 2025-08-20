@@ -245,6 +245,7 @@
         // 顯示資料預覽
         function displayPreview(data) {
             // 更新統計卡片數字
+            console.log(data);
             document.getElementById('rentalCount').textContent = data.rental_data ? data.rental_data.total_count : 0;
             document.getElementById('orderCount').textContent = data.order_data ? data.order_data.total_count : 0;
             document.getElementById('totalCount').textContent = data.total_records || 0;

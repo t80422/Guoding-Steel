@@ -91,14 +91,7 @@ class OrderDetailModel extends Model
     }
 
     /**
-     * 取得列印用的明細（僅依 order_details 彙整）
-     * - 以 pr_id 分組，排序依 pr_id 升冪
-     * - 組內以 od_length 合併相同長度為單一片段，排序由小到大
-     * - total_count = Σ od_qty
-     * - total_length = Σ (od_length × od_qty)
-     * - 整數不顯示小數，否則四捨五入至 1 位小數
-     * - 規格字首：mic_name + 空白 + pr_name
-     * - 回傳格式：[['spec' => '...'], ...]
+     * 取得列印用的明細
      *
      * @param int $orderId
      * @return array<int,array{spec:string}>
@@ -108,8 +101,10 @@ class OrderDetailModel extends Model
         $rows = $this->builder('order_details od')
             ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
             ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
+            ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
             ->select('p.pr_id, p.pr_name, mic.mic_name, od.od_length, od.od_qty')
             ->where('od.od_o_id', $orderId)
+            ->where('mc.mc_name', '型鋼')
             ->get()
             ->getResultArray();
 
@@ -198,5 +193,21 @@ class OrderDetailModel extends Model
         }
 
         return $formatted;
+    }
+
+    /**
+     * 取得訂單的完整產品資料（含分類資訊）
+     */
+    public function getOrderProductsWithCategories(int $orderId): array
+    {
+        return $this->builder('order_details od')
+            ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
+            ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
+            ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
+            ->select('od.od_pr_id, od.od_qty, p.pr_name, mic.mic_name, mic.mic_unit, mc.mc_name, p.pr_id')
+            ->where('od.od_o_id', $orderId)
+            ->orderBy('p.pr_id', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 }

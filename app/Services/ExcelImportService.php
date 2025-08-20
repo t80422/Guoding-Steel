@@ -79,7 +79,8 @@ class ExcelImportService
             $stats = [
                 'order_count' => 0,
                 'rental_count' => 0,
-                'project_item_counts' => []
+                'project_item_counts' => [],
+                'location_counts' => []  // 統計各工地的租賃單數量
             ];
 
             // 第6列起逐列掃描
@@ -224,6 +225,7 @@ class ExcelImportService
 
                     $siteName = $leftIsMa ? $right : $left;
                     $loc = $dict['locations_by_name'][$siteName] ?? null;
+                    
                     if (!$loc || (int) $loc['l_type'] !== LocationModel::TYPE_CONSTRUCTION_SITE) {
                         $errors[] = [
                             'row' => $row,
@@ -251,6 +253,11 @@ class ExcelImportService
                     $detailsBundle = $this->collectDetailsForRow($sheet, $row, $startCol, $highestCol, $projectItemHeaderMap, $productHeaderByPair, $dict, $errors);
                     $rowResult['details'] = $detailsBundle['details'];
                     $stats['rental_count']++;
+                    
+                    // 統計工地的租賃單數量
+                    $locationName = $loc['l_name'];
+                    $stats['location_counts'][$locationName] = ($stats['location_counts'][$locationName] ?? 0) + 1;
+                    
                     $this->accumulateProjectStats($stats['project_item_counts'], $detailsBundle['projectAllocations']);
                     $rentals[] = $rowResult;
                 }
@@ -268,9 +275,13 @@ class ExcelImportService
             return [
                 'success' => true,
                 'summary' => [
-                    'order_total' => $stats['order_count'],
-                    'rental_total' => $stats['rental_count'],
-                    'project_item_counts' => $stats['project_item_counts'],
+                    'rental_data' => [
+                        'total_count' => $stats['rental_count'],
+                        'locations' => $stats['location_counts']
+                    ],
+                    'order_data' => [
+                        'total_count' => $stats['order_count']
+                    ],
                     'total_records' => $stats['order_count'] + $stats['rental_count']
                 ],
                 'data' => [
@@ -361,6 +372,8 @@ class ExcelImportService
         foreach ($locRows as $r) {
             $locationsByName[$r['l_name']] = $r;
         }
+        
+
 
         // 廠商
         $maRows = $this->manufacturerModel->select('ma_id,ma_name')->get()->getResultArray();
@@ -487,8 +500,10 @@ class ExcelImportService
             // 項目（第1列，以右欄為對應即可）
             $piName = $projectItemHeaderMap[$col + 1] ?? '';
             $piId = null;
+            
             if ($piName !== '') {
                 $piId = $dict['project_items_by_name'][$piName] ?? null;
+                
                 if ($piId === null) {
                     $errors[] = [
                         'row' => $row,
@@ -584,5 +599,3 @@ class ExcelImportService
         return $sheet->getCell($coord)->getCalculatedValue();
     }
 }
-
-

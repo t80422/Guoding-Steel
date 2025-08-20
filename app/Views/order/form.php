@@ -48,12 +48,12 @@
                                 <label class="form-label fw-bold">料單類型</label>
                                 <div class="btn-group w-100" role="group">
                                     <input type="radio" class="btn-check" name="o_type" id="o_type_0" value="0"
-                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?> required>
+                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?>>
                                     <label class="btn btn-outline-primary" for="o_type_0">
                                         <i class="bi bi-box-arrow-in-down me-1"></i>進倉庫
                                     </label>
                                     <input type="radio" class="btn-check" name="o_type" id="o_type_1" value="1"
-                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '1' ? 'checked' : '' ?> required>
+                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '1' ? 'checked' : '' ?> >
                                     <label class="btn btn-outline-primary" for="o_type_1">
                                         <i class="bi bi-box-arrow-up me-1"></i>出倉庫
                                     </label>
@@ -65,7 +65,7 @@
                                 <label class="form-label fw-bold">
                                     <i class="bi bi-geo-alt me-1"></i>出發地
                                 </label>
-                                <input type="hidden" name="o_from_location" value="<?= old('o_from_location', $data['order']['o_from_location'] ?? '') ?>" required>
+                                <input type="hidden" name="o_from_location" value="<?= old('o_from_location', $data['order']['o_from_location'] ?? '') ?>">
                                 <div class="form-control location-selector d-flex justify-content-between align-items-center"
                                     id="fromLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal"
                                     data-target-field="from" style="cursor: pointer; min-height: 45px;">
@@ -79,7 +79,7 @@
                                 <label class="form-label fw-bold">
                                     <i class="bi bi-pin-map me-1"></i>目的地
                                 </label>
-                                <input type="hidden" name="o_to_location" value="<?= old('o_to_location', $data['order']['o_to_location'] ?? '') ?>" required>
+                                <input type="hidden" name="o_to_location" value="<?= old('o_to_location', $data['order']['o_to_location'] ?? '') ?>">
                                 <div class="form-control location-selector d-flex justify-content-between align-items-center"
                                     id="toLocationDisplay" data-bs-toggle="modal" data-bs-target="#locationModal"
                                     data-target-field="to" style="cursor: pointer; min-height: 45px;">
@@ -96,13 +96,13 @@
                                     <i class="bi bi-calendar3 me-1"></i>料單日期
                                 </label>
                                 <input type="date" class="form-control" name="o_date" id="o_date"
-                                    value="<?= old('o_date', $data['order']['o_date'] ?? '') ?>" required>
+                                    value="<?= old('o_date', $data['order']['o_date'] ?? '') ?>">
                             </div>
                             <div class="col-md-6">
                                 <label for="o_g_id" class="form-label fw-bold">
                                     <i class="bi bi-broadcast me-1"></i>GPS設備
                                 </label>
-                                <select class="form-select" name="o_g_id" id="o_g_id" required>
+                                <select class="form-select" name="o_g_id" id="o_g_id">
                                     <option value="">請選擇GPS設備</option>
                                     <?php foreach ($data['gpsOptions'] as $gps): ?>
                                         <option value="<?= $gps['g_id'] ?>" <?= old('o_g_id', $data['order']['o_g_id'] ?? '') == $gps['g_id'] ? 'selected' : '' ?>>
@@ -119,7 +119,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="o_car_number" id="o_car_number"
                                     value="<?= old('o_car_number', $data['order']['o_car_number'] ?? '') ?>"
-                                    placeholder="請輸入車牌號碼" required>
+                                    placeholder="請輸入車牌號碼">
                             </div>
                             <div class="col-md-6">
                                 <label for="o_driver_phone" class="form-label fw-bold">
@@ -127,7 +127,7 @@
                                 </label>
                                 <input type="text" class="form-control" name="o_driver_phone" id="o_driver_phone"
                                     value="<?= old('o_driver_phone', $data['order']['o_driver_phone'] ?? '') ?>"
-                                    placeholder="請輸入聯絡電話" required>
+                                    placeholder="請輸入聯絡電話">
                             </div>
 
                             <!-- 作業時間 -->
@@ -136,14 +136,14 @@
                                     <i class="bi bi-clock me-1"></i>上料時間
                                 </label>
                                 <input type="datetime-local" class="form-control" name="o_loading_time" id="o_loading_time"
-                                    value="<?= old('o_loading_time', $data['order']['o_loading_time'] ?? '') ?>" required>
+                                    value="<?= old('o_loading_time', $data['order']['o_loading_time'] ?? '') ?>">
                             </div>
                             <div class="col-md-6">
                                 <label for="o_unloading_time" class="form-label fw-bold">
                                     <i class="bi bi-clock me-1"></i>下料時間
                                 </label>
                                 <input type="datetime-local" class="form-control" name="o_unloading_time" id="o_unloading_time"
-                                    value="<?= old('o_unloading_time', $data['order']['o_unloading_time'] ?? '') ?>" required>
+                                    value="<?= old('o_unloading_time', $data['order']['o_unloading_time'] ?? '') ?>">
                             </div>
 
                             <!-- 氣體資訊 -->
@@ -153,7 +153,7 @@
                                 </label>
                                 <input type="number" class="form-control" name="o_oxygen" id="o_oxygen"
                                     value="<?= old('o_oxygen', $data['order']['o_oxygen'] ?? '') ?>"
-                                    placeholder="0" step="0.01" min="0" required>
+                                    placeholder="0" step="0.01" min="0">
                             </div>
                             <div class="col-md-6">
                                 <label for="o_acetylene" class="form-label fw-bold">
@@ -161,7 +161,7 @@
                                 </label>
                                 <input type="number" class="form-control" name="o_acetylene" id="o_acetylene"
                                     value="<?= old('o_acetylene', $data['order']['o_acetylene'] ?? '') ?>"
-                                    placeholder="0" step="0.01" min="0" required>
+                                    placeholder="0" step="0.01" min="0">
                             </div>
 
                             <!-- 備註 -->
@@ -236,13 +236,13 @@
                                                     <input type="number" class="form-control quantity-input"
                                                         name="details[<?= $index ?>][od_qty]"
                                                         value="<?= $detail['od_qty'] ?>"
-                                                        step="0.01" min="0" required>
+                                                        step="0.01" min="0">
                                                 </td>
                                                 <td class="align-middle">
                                                     <input type="number" class="form-control length-input"
                                                         name="details[<?= $index ?>][od_length]"
                                                         value="<?= $detail['od_length'] ?>"
-                                                        step="0.01" min="0" required>
+                                                        step="0.01" min="0">
                                                 </td>
                                                 <td class="align-middle">
                                                     <input type="hidden" class="weight-input-kg" 
@@ -270,12 +270,12 @@
                                             <td class="align-middle">
                                                 <input type="number" class="form-control quantity-input"
                                                     name="details[0][od_qty]"
-                                                    step="0.01" min="0" required>
+                                                    step="0.01" min="0">
                                             </td>
                                             <td class="align-middle">
                                                 <input type="number" class="form-control length-input"
                                                     name="details[0][od_length]"
-                                                    step="0.01" min="0" required>
+                                                    step="0.01" min="0">
                                             </td>
                                             <td class="align-middle">
                                                 <input type="hidden" class="weight-input-kg" 

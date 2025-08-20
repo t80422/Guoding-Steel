@@ -56,9 +56,16 @@ class ExcelController extends BaseController
             $result = $service->parse($file);
 
             if (!$result['success']) {
+                $errors = $result['errors'] ?? [];
+                log_message('error', 'Excel import errors: ' . print_r($errors, true));
+                
+                // 將錯誤陣列轉換為可讀的訊息
+                $errorMessage = $this->formatErrorMessage($errors);
+                
                 return $this->response->setJSON([
                     'success' => false,
-                    'errors' => $result['errors'] ?? []
+                    'message' => $errorMessage,
+                    'errors' => $errors
                 ]);
             }
 
@@ -70,225 +77,11 @@ class ExcelController extends BaseController
                 'data' => $result['summary'] ?? []
             ]);
         } catch (\Exception $e) {
+            log_message('error', $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
                 'message' => '檔案處理失敗：' . $e->getMessage()
             ]);
-        }
-    }
-
-    /**
-     * 讀取Excel檔案
-     */
-    private function readExcelFile(UploadedFile $file): array
-    {
-        try {
-            // 直接從上傳檔案的暫存路徑讀取
-            $filePath = $file->getTempName();
-
-            // 載入 Excel 檔案
-            $reader = IOFactory::createReaderForFile($filePath);
-            $reader->setReadDataOnly(true);
-            $spreadsheet = $reader->load($filePath);
-
-            // 選擇工作表
-            $worksheet = $spreadsheet->getSheet(0);
-
-            // 讀取資料範圍
-            $highestRow = $worksheet->getHighestRow();
-
-            if ($highestRow < 8) {
-                $spreadsheet->disconnectWorksheets();
-                unset($spreadsheet);
-                return [
-                    'success' => false,
-                    'message' => 'Excel 檔案中沒有足夠的資料（至少需要8列）',
-                    'data' => []
-                ];
-            }
-
-            // 從第9列開始讀取資料，建立陣列
-            $dataArray = [];
-            $incompleteRows = []; // 記錄資料不完全的列
-            for ($row = 9; $row <= $highestRow; $row++) {
-                $rowData = $worksheet->rangeToArray('A' . $row . ':CF' . $row);
-
-                // 檢查是否遇到結束標記
-                if (isset($rowData[0][2]) && $rowData[0][2] == '選擇性總計') break; // 遇到選擇性總計就停止處理
-
-                if (!empty($rowData[0]) && (!empty($rowData[0][1]) || !empty($rowData[0][2]) || !empty($rowData[0][3]))) { // 檢查B欄C欄D欄有資料
-                    // 處理日期欄位（D欄）
-                    $dateValue = $rowData[0][3] ?? '';
-                    if (is_numeric($dateValue) && $dateValue > 0) {
-                        try {
-                            // 將Excel日期序號轉換為日期格式
-                            $dateObj = Date::excelToDateTimeObject($dateValue);
-                            $dateValue = $dateObj->format('Y-m-d');
-                        } catch (\Exception $e) {
-                            // 如果轉換失敗，保持原值
-                            $dateValue = $rowData[0][3] ?? '';
-                        }
-                    }
-
-                    // 建立以Excel欄位名稱為key的陣列
-                    $record = [
-                        'B' => $rowData[0][1] ?? '',   // B欄 - 車號
-                        'C' => $rowData[0][2] ?? '',   // C欄 - 編號
-                        'D' => $dateValue,             // D欄 - 日期（已轉換）
-                        'E' => $rowData[0][4] ?? '',   // E欄 - 廠商
-                        'F' => $rowData[0][5] ?? '',   // F欄 - 地點
-                    ];
-
-                    // H到CF欄的數量資料 (索引7到83)
-                    $columns = [
-                        'H',
-                        'I',
-                        'J',
-                        'K',
-                        'L',
-                        'M',
-                        'N',
-                        'O',
-                        'P',
-                        'Q',
-                        'R',
-                        'S',
-                        'T',
-                        'U',
-                        'V',
-                        'W',
-                        'X',
-                        'Y',
-                        'Z',
-                        'AA',
-                        'AB',
-                        'AC',
-                        'AD',
-                        'AE',
-                        'AF',
-                        'AG',
-                        'AH',
-                        'AI',
-                        'AJ',
-                        'AK',
-                        'AL',
-                        'AM',
-                        'AN',
-                        'AO',
-                        'AP',
-                        'AQ',
-                        'AR',
-                        'AS',
-                        'AT',
-                        'AU',
-                        'AV',
-                        'AW',
-                        'AX',
-                        'AY',
-                        'AZ',
-                        'BA',
-                        'BB',
-                        'BC',
-                        'BD',
-                        'BE',
-                        'BF',
-                        'BG',
-                        'BH',
-                        'BI',
-                        'BJ',
-                        'BK',
-                        'BL',
-                        'BM',
-                        'BN',
-                        'BO',
-                        'BP',
-                        'BQ',
-                        'BR',
-                        'BS',
-                        'BT',
-                        'BU',
-                        'BV',
-                        'BW',
-                        'BX',
-                        'BY',
-                        'BZ',
-                        'CA',
-                        'CB',
-                        'CC',
-                        'CD',
-                        'CE',
-                        'CF'
-                    ];
-
-                    for ($i = 0; $i < count($columns) && ($i + 7) < count($rowData[0]); $i++) {
-                        $record[$columns[$i]] = $rowData[0][$i + 7] ?? '';
-                    }
-
-                    $dataArray[] = $record;
-                } else {
-                    // 記錄資料不完全的列
-                    $missingFields = [];
-                    if (empty($rowData[0][1])) $missingFields[] = 'B欄(車號)';
-                    if (empty($rowData[0][2])) $missingFields[] = 'C欄(單號)';
-                    if (empty($rowData[0][3])) $missingFields[] = 'D欄(日期)';
-
-                    if (!empty($missingFields)) {
-                        $incompleteRows[] = [
-                            'row' => $row,
-                            'missing_fields' => $missingFields,
-                            'data' => [
-                                'B' => $rowData[0][1] ?? '',
-                                'C' => $rowData[0][2] ?? '',
-                                'D' => $rowData[0][3] ?? '',
-                            ]
-                        ];
-                    }
-                }
-            }
-
-            // 檢查是否有資料不完全的列
-            if (!empty($incompleteRows)) {
-                $errorMessages = [];
-                foreach ($incompleteRows as $incompleteRow) {
-                    $missingText = implode('、', $incompleteRow['missing_fields']);
-                    $errorMessages[] = "第{$incompleteRow['row']}列缺少：{$missingText}";
-                }
-
-                $spreadsheet->disconnectWorksheets();
-                unset($spreadsheet);
-
-                return [
-                    'success' => false,
-                    'message' => 'Excel 檔案有資料不完全的列，請檢查後重新上傳：' . "\n" . implode("\n", $errorMessages),
-                    'incomplete_rows' => $incompleteRows,
-                    'data' => []
-                ];
-            }
-
-            $result = [
-                'success' => true,
-                'data' => $dataArray,
-                'total_records' => count($dataArray),
-                'message' => "成功讀取 Excel 檔案，共 " . count($dataArray) . " 筆有效資料"
-            ];
-
-            // 清理記憶體並關閉檔案
-            $spreadsheet->disconnectWorksheets();
-            unset($spreadsheet);
-
-            return $result;
-        } catch (ReaderException $e) {
-            return [
-                'success' => false,
-                'message' => 'Excel 檔案讀取錯誤: ' . $e->getMessage(),
-                'data' => []
-            ];
-        } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => '處理檔案時發生錯誤: ' . $e->getMessage(),
-                'data' => []
-            ];
         }
     }
 
@@ -304,46 +97,6 @@ class ExcelController extends BaseController
         ]);
     }
 
-    /**
-     * 總結統計資料供前端顯示
-     */
-    private function getSummaryData(array $data): array
-    {
-        $rentalCount = 0;
-        $orderCount = 0;
-        $manufacturerSummary = []; // 廠商統計（租賃單明細）
-
-        // 統計邏輯
-        foreach ($data as $record) {
-            $manufacturer = $record['E'] ?? ''; // E欄 - 廠商
-            
-            // 判斷類型：E欄是"國鼎"就是訂單，其他都是租賃單
-            if ($manufacturer === '國鼎') {
-                $orderCount++;
-            } else {
-                $rentalCount++;
-                
-                // 統計租賃單的廠商分佈（用E欄廠商名稱）
-                $manufacturerName = $manufacturer ?: '未指定廠商';
-                if (!isset($manufacturerSummary[$manufacturerName])) {
-                    $manufacturerSummary[$manufacturerName] = 0;
-                }
-                $manufacturerSummary[$manufacturerName]++;
-            }
-        }
-
-        return [
-            'rental_data' => [
-                'total_count' => $rentalCount,
-                'locations' => $manufacturerSummary // 租賃單明細（按廠商分組）
-            ],
-            'order_data' => [
-                'total_count' => $orderCount,
-            ],
-            'total_records' => count($data)
-        ];
-    }
-
     // 儲存匯入的資料（寫入 orders / rental_orders，重建明細與庫存）
     public function save()
     {
@@ -355,6 +108,14 @@ class ExcelController extends BaseController
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => '沒有可儲存的資料,或資料已過期,請重新匯入Excel檔案'
+                ]);
+            }
+            
+            $userId = session()->get('userId');
+            if (!$userId) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => '請先登入'
                 ]);
             }
 
@@ -447,6 +208,8 @@ class ExcelController extends BaseController
                 $oldRental = null; $oldDetails = null;
                 if ($exist) {
                     $header['ro_id'] = $exist['ro_id'];
+                    $header['ro_update_by'] = $userId;
+                    $header['ro_update_at'] = date('Y-m-d H:i:s');
                     $oldRental = $exist;
                     $oldDetails = $rentalDetailModel->getByRentalId((int)$exist['ro_id']);
                     $rentalModel->save($header);
@@ -462,6 +225,7 @@ class ExcelController extends BaseController
                 } else {
                     $rentalModel->insert($header);
                     $header['ro_id'] = $rentalModel->getInsertID();
+                    $header['ro_create_by'] = $userId;
                     $oldRental = null; $oldDetails = [];
                     $created++;
                 }
@@ -500,6 +264,14 @@ class ExcelController extends BaseController
             }
 
             $db->transComplete();
+            
+            if ($db->transStatus() === FALSE) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => '資料庫交易失敗'
+                ]);
+            }
+            
             $this->clearMemoryData();
 
             return $this->response->setJSON([
@@ -508,6 +280,7 @@ class ExcelController extends BaseController
                 'data' => [ 'created' => $created, 'updated' => $updated ]
             ]);
         } catch (\Exception $e) {
+            log_message('error', 'Save operation failed: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
                 'message' => '儲存失敗：' . $e->getMessage()
@@ -544,5 +317,35 @@ class ExcelController extends BaseController
         session()->remove('excel_memory_data');
     }
 
-    // 舊版保留的方法移除，避免混淆
+    /**
+     * 將錯誤陣列格式化為可讀的訊息
+     */
+    private function formatErrorMessage(array $errors): string
+    {
+        if (empty($errors)) {
+            return '未知錯誤';
+        }
+
+        $messages = [];
+        foreach ($errors as $error) {
+            $message = $error['message'] ?? '未知錯誤';
+            
+            // 如果有行號資訊，加入行號
+            if (isset($error['row'])) {
+                $message = "第{$error['row']}列：{$message}";
+            }
+            
+            $messages[] = $message;
+        }
+
+        // 限制顯示的錯誤數量，避免訊息過長
+        if (count($messages) > 10) {
+            $displayMessages = array_slice($messages, 0, 10);
+            $remaining = count($messages) - 10;
+            $displayMessages[] = "...及其他 {$remaining} 個錯誤";
+            return implode("\n", $displayMessages);
+        }
+
+        return implode("\n", $messages);
+    }
 }
