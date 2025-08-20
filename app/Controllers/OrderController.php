@@ -319,8 +319,8 @@ class OrderController extends BaseController
             }
         }
 
-        // 2. 其他型鋼/配件產品（按產品ID排序，全部顯示不管有沒有明細）
-        $steelAccessoryProducts = [];
+        // 2. 其他型鋼/配件產品（按小分類分組，類似第一優先級處理）
+        $steelAccessoryByCategory = [];
         foreach ($allSteelAccessoryProducts as $product) {
             $prId = (int) $product['pr_id'];
             $micName = $product['mic_name'];
@@ -329,35 +329,141 @@ class OrderController extends BaseController
             
             // 排除已經在固定清單中的項目
             if (!in_array($micName, $processedMicNames)) {
-                $steelAccessoryProducts[$prId] = [
-                    'name' => ($micName === $prName) 
-                        ? $micName
-                        : $micName . ' ' . $prName,
+                if (!isset($steelAccessoryByCategory[$micName])) {
+                    $steelAccessoryByCategory[$micName] = [
+                        'unit' => $unit,
+                        'products' => [],
+                        'total_qty' => 0,
+                        'min_pr_id' => $prId // 用於排序
+                    ];
+                }
+                
+                $steelAccessoryByCategory[$micName]['products'][$prId] = [
+                    'pr_name' => $prName,
+                    'qty' => $productQtyMap[$prId] ?? 0
+                ];
+                
+                if (isset($productQtyMap[$prId])) {
+                    $steelAccessoryByCategory[$micName]['total_qty'] += $productQtyMap[$prId];
+                }
+                
+                // 記錄最小的產品ID作為排序依據
+                if ($prId < $steelAccessoryByCategory[$micName]['min_pr_id']) {
+                    $steelAccessoryByCategory[$micName]['min_pr_id'] = $prId;
+                }
+            }
+        }
+        
+        // 按最小產品ID排序
+        uasort($steelAccessoryByCategory, function($a, $b) {
+            return $a['min_pr_id'] <=> $b['min_pr_id'];
+        });
+        
+        foreach ($steelAccessoryByCategory as $micName => $categoryData) {
+            $unit = $categoryData['unit'];
+            $totalQty = $categoryData['total_qty'];
+            
+            // 找出在訂單明細中的產品
+            $productsInOrder = [];
+            foreach ($categoryData['products'] as $prId => $productData) {
+                if ($productData['qty'] > 0) {
+                    $productsInOrder[] = $productData['pr_name'];
+                }
+            }
+            
+            if (!empty($productsInOrder)) {
+                // 有產品在明細中：小分類 + 產品名稱
+                $productNames = implode('、', array_unique($productsInOrder));
+                $items[] = [
+                    'name' => $micName . ' ' . $productNames,
                     'unit' => $unit,
-                    'qty' => $productQtyMap[$prId] ?? '' // 沒有明細就空白
+                    'qty' => $totalQty
+                ];
+            } else {
+                // 沒有產品在明細中：只顯示小分類
+                $items[] = [
+                    'name' => $micName,
+                    'unit' => $unit,
+                    'qty' => ''
                 ];
             }
         }
-        ksort($steelAccessoryProducts);
-        $items = array_merge($items, array_values($steelAccessoryProducts));
 
-        // 3. 其他分類產品（按產品ID排序）
-        $otherProducts = [];
+        // 3. 其他分類產品（按小分類分組，只顯示訂單明細中有的）
+        $otherProductsByCategory = [];
         foreach ($productInfoMap as $prId => $info) {
             if (!in_array($info['mc_name'], ['型鋼', '配件']) && 
                 isset($productQtyMap[$prId])) {
                 
-                $otherProducts[$prId] = [
-                    'name' => ($info['mic_name'] === $info['pr_name']) 
-                        ? $info['mic_name']
-                        : $info['mic_name'] . ' ' . $info['pr_name'],
-                    'unit' => $info['mic_unit'],
-                    'qty' => $productQtyMap[$prId]
+                $micName = $info['mic_name'];
+                $prName = $info['pr_name'];
+                $unit = $info['mic_unit'];
+                $qty = $productQtyMap[$prId];
+                
+                if (!isset($otherProductsByCategory[$micName])) {
+                    $otherProductsByCategory[$micName] = [
+                        'unit' => $unit,
+                        'products' => [],
+                        'total_qty' => 0,
+                        'min_pr_id' => $prId // 用於排序
+                    ];
+                }
+                
+                $otherProductsByCategory[$micName]['products'][$prId] = [
+                    'pr_name' => $prName,
+                    'qty' => $qty
+                ];
+                
+                $otherProductsByCategory[$micName]['total_qty'] += $qty;
+                
+                // 記錄最小的產品ID作為排序依據
+                if ($prId < $otherProductsByCategory[$micName]['min_pr_id']) {
+                    $otherProductsByCategory[$micName]['min_pr_id'] = $prId;
+                }
+            }
+        }
+        
+        // 按最小產品ID排序
+        uasort($otherProductsByCategory, function($a, $b) {
+            return $a['min_pr_id'] <=> $b['min_pr_id'];
+        });
+        
+        foreach ($otherProductsByCategory as $micName => $categoryData) {
+            $unit = $categoryData['unit'];
+            $totalQty = $categoryData['total_qty'];
+            
+            // 找出在訂單明細中的產品（第三優先級都是有明細的）
+            $productsInOrder = [];
+            foreach ($categoryData['products'] as $prId => $productData) {
+                $productsInOrder[] = $productData['pr_name'];
+            }
+            
+            // 檢查是否所有產品名稱都等於小分類名稱
+            $allProductsSameAsMic = true;
+            foreach ($productsInOrder as $productName) {
+                if ($productName !== $micName) {
+                    $allProductsSameAsMic = false;
+                    break;
+                }
+            }
+            
+            if ($allProductsSameAsMic) {
+                // 所有產品名稱都等於小分類名稱：只顯示小分類
+                $items[] = [
+                    'name' => $micName,
+                    'unit' => $unit,
+                    'qty' => $totalQty
+                ];
+            } else {
+                // 有產品名稱不同於小分類：小分類 + 產品名稱
+                $productNames = implode('、', array_unique($productsInOrder));
+                $items[] = [
+                    'name' => $micName . ' ' . $productNames,
+                    'unit' => $unit,
+                    'qty' => $totalQty
                 ];
             }
         }
-        ksort($otherProducts);
-        $items = array_merge($items, array_values($otherProducts));
 
         // 轉成三欄網格
         $itemsGrid = [];
