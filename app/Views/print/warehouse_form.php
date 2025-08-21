@@ -51,6 +51,14 @@
             border-bottom: 1px dashed #000 !important;
         }
 
+        .underlined-text {
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            min-width: 250px;
+            text-align: center;
+            padding-bottom: 2px;
+        }
+
         .signature {
             height: 60px;
         }
@@ -94,7 +102,10 @@
             <table class="borderless mb-1">
                 <tr>
                     <td class="text-end align-top" style="width:80%;">
-                        <div class="fw-bold fs-2 me-1">國 鼎 鋼 鐵 股 份 有 限 公 司</div>
+                        <div class="fw-bold fs-2 d-flex align-items-center justify-content-end">
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1em; width:auto; margin-right: 0.5rem;">
+                            <span>國 鼎 鋼 鐵 股 份 有 限 公 司</span>
+                        </div>
                         <div class="fs-4 me-5">
                             請詳細打√&nbsp;&nbsp;
                             進倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 0 ? 'checked' : '' ?>>&nbsp;&nbsp;
@@ -104,16 +115,19 @@
                     <td class="text-end align-top" style="width:20%;">
                         NO.&nbsp;<?= esc($order['o_number']) ?><br>
                         大溪&nbsp;03-3802339<br>
-                        苗栗&nbsp;037-990009
+                        苗栗&nbsp;037-990009<br>
+                        日期：<?= esc($order['o_date'] ?? '') ?>
                     </td>
                 </tr>
             </table>
             <!-- 基本資料列 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td style="width:33%; text-align:left;">名稱地址：<?= esc($order['from_location_name'] ?? '') ?></td>
-                    <td style="width:33%; text-align:left;">至 <?= esc($order['to_location_name'] ?? '') ?></td>
-                    <td style="width:34%; text-align:right;">日期：<?= esc($order['o_date'] ?? '') ?></td>
+                    <td class="text-center fs-4 pt-2">
+                        名稱地址：<span class="underlined-text"><?= esc($order['from_location_name'] ?? '') ?></span>
+                        <span class="ms-5">至</span>
+                        <span class="underlined-text"><?= esc($order['to_location_name'] ?? '') ?></span>
+                    </td>
                 </tr>
             </table>
             <!-- 材料規格大清單（三組，動態） -->

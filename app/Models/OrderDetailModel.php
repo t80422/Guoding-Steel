@@ -105,6 +105,7 @@ class OrderDetailModel extends Model
             ->select('p.pr_id, p.pr_name, mic.mic_name, od.od_length, od.od_qty')
             ->where('od.od_o_id', $orderId)
             ->where('mc.mc_name', '型鋼')
+            ->where('p.pr_is_length', false)
             ->get()
             ->getResultArray();
 

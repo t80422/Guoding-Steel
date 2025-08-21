@@ -228,8 +228,6 @@ class OrderController extends BaseController
         ];
     }
 
-
-
     /**
      * 建立新的材料規格清單
      */
@@ -345,7 +343,6 @@ class OrderController extends BaseController
                         'unit' => $unit,
                         'products' => [],
                         'total_qty' => 0,
-                        'min_pr_id' => $prId // 用於排序
                     ];
                 }
                 
@@ -357,18 +354,8 @@ class OrderController extends BaseController
                 if (isset($productQtyMap[$prId])) {
                     $steelAccessoryByCategory[$micName]['total_qty'] += $productQtyMap[$prId];
                 }
-                
-                // 記錄最小的產品ID作為排序依據
-                if ($prId < $steelAccessoryByCategory[$micName]['min_pr_id']) {
-                    $steelAccessoryByCategory[$micName]['min_pr_id'] = $prId;
-                }
             }
         }
-        
-        // 按最小產品ID排序
-        uasort($steelAccessoryByCategory, function($a, $b) {
-            return $a['min_pr_id'] <=> $b['min_pr_id'];
-        });
         
         foreach ($steelAccessoryByCategory as $micName => $categoryData) {
             $unit = $categoryData['unit'];
