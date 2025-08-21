@@ -342,7 +342,7 @@ class OrderController extends BaseController
                     $steelAccessoryByCategory[$micName] = [
                         'unit' => $unit,
                         'products' => [],
-                        'total_qty' => 0,
+                        'total_qty' => 0
                     ];
                 }
                 
@@ -370,7 +370,7 @@ class OrderController extends BaseController
             }
             
             if (!empty($productsInOrder)) {
-                // 有產品在明細中：小分類 + 產品名稱/數量
+                // 有產品在明細中，檢查是否與小分類名稱相同
                 $productDetails = [];
                 $quantities = [];
                 foreach ($categoryData['products'] as $prId => $productData) {
@@ -380,13 +380,33 @@ class OrderController extends BaseController
                     }
                 }
                 
-                $productNames = implode('/', $productDetails);
-                $qtyDisplay = implode('/', $quantities);
-                $items[] = [
-                    'name' => $micName . ' ' . $productNames,
-                    'unit' => $unit,
-                    'qty' => $qtyDisplay
-                ];
+                // 檢查是否所有產品名稱都等於小分類名稱
+                $allProductsSameAsMic = true;
+                foreach ($productDetails as $productName) {
+                    if ($productName !== $micName) {
+                        $allProductsSameAsMic = false;
+                        break;
+                    }
+                }
+                
+                if ($allProductsSameAsMic) {
+                    // 所有產品名稱都等於小分類名稱：只顯示小分類
+                    $qtyDisplay = implode('/', $quantities);
+                    $items[] = [
+                        'name' => $micName,
+                        'unit' => $unit,
+                        'qty' => $qtyDisplay
+                    ];
+                } else {
+                    // 有產品名稱不同於小分類：小分類 + 產品名稱/數量
+                    $productNames = implode('/', $productDetails);
+                    $qtyDisplay = implode('/', $quantities);
+                    $items[] = [
+                        'name' => $micName . ' ' . $productNames,
+                        'unit' => $unit,
+                        'qty' => $qtyDisplay
+                    ];
+                }
             } else {
                 // 沒有產品在明細中：只顯示小分類
                 $items[] = [
