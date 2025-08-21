@@ -105,7 +105,7 @@ class OrderDetailModel extends Model
             ->select('p.pr_id, p.pr_name, mic.mic_name, od.od_length, od.od_qty')
             ->where('od.od_o_id', $orderId)
             ->where('mc.mc_name', '型鋼')
-            ->where('p.pr_is_length', false)
+            ->where('p.pr_is_length', true)
             ->get()
             ->getResultArray();
 
@@ -118,7 +118,6 @@ class OrderDetailModel extends Model
                     'pr_id' => $prId,
                     'pr_name' => (string) ($row['pr_name'] ?? ''),
                     'mic_name' => (string) ($row['mic_name'] ?? ''),
-                    // length_counts: key => ['value' => float, 'count' => int]
                     'length_counts' => [],
                     'total_count' => 0,
                     'total_length' => 0.0,
