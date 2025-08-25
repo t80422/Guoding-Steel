@@ -65,4 +65,20 @@ class UserLocationModel extends Model
             return false;
         }
     }
+    
+    /**
+     * 取得使用者有權限的地點
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getUserLocations($userId)
+    {
+        return $this->builder()
+            ->select('l_id, l_name')
+            ->join('locations l', 'l.l_id = ul_l_id')
+            ->where('ul_u_id', $userId)
+            ->get()
+            ->getResultArray();
+    }
 } 

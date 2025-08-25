@@ -218,7 +218,16 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
     $routes->get('product/getProducts/(:num)', 'ProductController::getProductList/$1');
 
     // 取得地點
-    $routes->get('location/getLocations/(:num)', 'LocationController::getLocations/$1');
+    $routes->group('location', function ($routes) {
+        // 取得地點
+        $routes->get('getLocations/(:num)', 'LocationController::getLocations/$1');
+
+        // 工地用料情況
+        $routes->get('materialUsage/(:num)', 'LocationController::materialUsage/$1');
+    });
+
+    // 取得使用者地點
+    $routes->get('userLocation/getUserLocations', 'UserLocationController::index');
 
     // 訂單
     $routes->group('order', function ($routes) {
@@ -240,4 +249,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 機械維修
     $routes->get('machine-repair', 'MachineRepairController::index');
+
+    // 鋪路鋼板
+    $routes->get('roadPlate', 'RoadPlateController::index');
 });

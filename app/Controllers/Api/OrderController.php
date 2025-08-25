@@ -4,7 +4,6 @@ namespace App\Controllers\Api;
 
 use App\Models\OrderModel;
 use App\Models\OrderDetailModel;
-use App\Models\UserLocationModel;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Controller;
 use Exception;
@@ -19,7 +18,6 @@ class OrderController extends Controller
     protected $orderModel;
     protected $orderDetailModel;
     protected $orderService;
-    protected $userLocationModel;
     protected $fileManager;
     protected $inventoryService;
 
@@ -28,7 +26,6 @@ class OrderController extends Controller
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();
         $this->orderService = new OrderService();
-        $this->userLocationModel = new UserLocationModel();
         $this->fileManager = new FileManager(WRITEPATH . 'uploads/signatures/');
         $this->inventoryService = new InventoryService();
     }
@@ -95,24 +92,16 @@ class OrderController extends Controller
     public function index()
     {
         try {
-            // 取得使用者ID (header 取得)
-            $userId = $this->request->getHeaderLine('X-User-ID');
-            
-            if (!$userId) {
-                return $this->fail('缺少使用者身份資訊');
-            }
-
-            // 取得使用者有權限的地點ID
-            $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
-            
             // 根據地點權限過濾訂單
-            $orders = $this->orderModel->getByInProgressWithLocationFilter($userId, $userLocationIds);
+            $orders = $this->orderModel->getByInProgress();
 
             $data = [];
             foreach ($orders as $order) {
                 $data[] = [
                     'o_id' => $order['o_id'],
+                    'from_location_id' => $order['o_from_location'],
                     'o_from_location' => $order['from_location_name'],
+                    'to_location_id' => $order['o_to_location'],
                     'o_to_location' => $order['to_location_name'],
                     'o_car_number' => $order['o_car_number'],
                     'o_driver_signature' => $order['o_driver_signature'] ? true : false,
@@ -255,23 +244,15 @@ class OrderController extends Controller
     public function history()
     {
         try {
-            // 取得使用者ID (可從 GET 參數或 header 取得)
-            $userId = $this->request->getHeaderLine('X-User-ID');
-            
-            if (!$userId) {
-                return $this->fail('缺少使用者身份資訊');
-            }
-
-            // 取得使用者有權限的地點ID
-            $userLocationIds = $this->userLocationModel->getUserLocationIds($userId);
-            
             // 根據地點權限過濾訂單
-            $orders = $this->orderModel->getByCompletedWithLocationFilter($userId, $userLocationIds);
+            $orders = $this->orderModel->getByCompleted();
 
             $data = [];
             foreach ($orders as $order) {
                 $data[] = [
                     'o_id' => $order['o_id'],
+                    'from_location_id' => $order['o_from_location'],
+                    'to_location_id' => $order['o_to_location'],
                     'o_from_location' => $order['from_location_name'],
                     'o_to_location' => $order['to_location_name'],
                     'o_car_number' => $order['o_car_number']

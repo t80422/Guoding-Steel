@@ -387,49 +387,27 @@ class OrderModel extends Model
     }
 
     /**
-     * 根據使用者地點權限取得進行中的訂單
+     * 取得進行中的訂單
      *
-     * @param array $userLocationIds 使用者有權限的地點ID陣列
-     * @param int $userId 使用者ID
      * @return array
      */
-    public function getByInProgressWithLocationFilter($userId,$userLocationIds = [])
+    public function getByInProgress()
     {
-        if (empty($userLocationIds)) {
-            return [];
-        }
-
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_IN_PROGRESS)
-            ->groupStart()
-                ->whereIn('o.o_from_location', $userLocationIds)
-                ->orWhereIn('o.o_to_location', $userLocationIds)
-                ->orWhere('o.o_create_by', $userId)
-            ->groupEnd()
             ->orderBy('o.o_id', 'DESC')
             ->get()->getResultArray();
     }
 
     /**
-     * 根據使用者地點權限取得已完成的訂單
+     * 取得已完成的訂單
      *
-     * @param array $userLocationIds 使用者有權限的地點ID陣列
-     * @param int $userId 使用者ID
      * @return array
      */
-    public function getByCompletedWithLocationFilter($userId, $userLocationIds = [])
+    public function getByCompleted()
     {
-        if (empty($userLocationIds)) {
-            return [];
-        }
-
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_COMPLETED)
-            ->groupStart()
-                ->whereIn('o.o_from_location', $userLocationIds)
-                ->orWhereIn('o.o_to_location', $userLocationIds)
-                ->orWhere('o.o_create_by', $userId)
-            ->groupEnd()
             ->get()->getResultArray();
     }
 

@@ -54,7 +54,7 @@
         .underlined-text {
             border-bottom: 1px solid #000;
             display: inline-block;
-            min-width: 250px;
+            min-width: 240px;
             text-align: center;
             padding-bottom: 2px;
         }
@@ -101,10 +101,10 @@
             <!-- 表頭 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td class="text-end align-top" style="width:80%;">
-                        <div class="fw-bold fs-2 d-flex align-items-center justify-content-end">
-                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1em; width:auto; margin-right: 0.5rem;">
-                            <span>國 鼎 鋼 鐵 股 份 有 限 公 司</span>
+                    <td class="align-top" style="width:80%;">
+                        <div class="text-start fw-bold fs-1 d-flex align-items-center">
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1em; width:auto; margin-right: 0.75rem;">
+                            <span style="letter-spacing: 0.35em;">國鼎鋼鐵股份有限公司</span>
                         </div>
                         <div class="fs-4 me-5">
                             請詳細打√&nbsp;&nbsp;
@@ -116,17 +116,19 @@
                         NO.&nbsp;<?= esc($order['o_number']) ?><br>
                         大溪&nbsp;03-3802339<br>
                         苗栗&nbsp;037-990009<br>
-                        日期：<?= esc($order['o_date'] ?? '') ?>
                     </td>
                 </tr>
             </table>
             <!-- 基本資料列 -->
-            <table class="borderless mb-1">
+            <table class="borderless mb-1 fs-6">
                 <tr>
-                    <td class="text-center fs-4 pt-2">
+                    <td class="text-center pt-2">
                         名稱地址：<span class="underlined-text"><?= esc($order['from_location_name'] ?? '') ?></span>
-                        <span class="ms-5">至</span>
+                        <span>至</span>
                         <span class="underlined-text"><?= esc($order['to_location_name'] ?? '') ?></span>
+                    </td>
+                    <td class="text-center pt-2">
+                        日期：<?= esc($order['o_date'] ?? '') ?>
                     </td>
                 </tr>
             </table>
