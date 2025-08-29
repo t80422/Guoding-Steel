@@ -12,6 +12,7 @@ use App\Models\ProductModel;
 use App\Models\ManufacturerModel;
 use App\Libraries\FileManager;
 use App\Services\ManufacturerInventoryService;
+use App\Services\PermissionService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use Exception;
 
@@ -25,6 +26,7 @@ class RentalController extends BaseController
     protected $productModel;
     protected $manufacturerInventoryService;
     protected $manufacturerModel;
+    protected $permissionService;
 
     const UPLOAD_PATH = WRITEPATH . 'uploads/rentals/';
 
@@ -38,6 +40,7 @@ class RentalController extends BaseController
         $this->productModel = new ProductModel();
         $this->manufacturerInventoryService = new ManufacturerInventoryService();
         $this->manufacturerModel = new ManufacturerModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -72,6 +75,12 @@ class RentalController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $fileManager = new FileManager(self::UPLOAD_PATH);
         $rental = $this->rentalModel->find($id);
         $fileManager->deleteFiles([
@@ -145,6 +154,12 @@ class RentalController extends BaseController
     // 保存租賃訂單
     public function saveOrder()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->rentalOrderModel->db->transStart();
 
         try {
@@ -265,6 +280,12 @@ class RentalController extends BaseController
     // 刪除租賃訂單
     public function deleteOrder($id = null)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->rentalOrderModel->db->transStart();
         try {
             $rentalOrder = $this->rentalOrderModel->find($id);

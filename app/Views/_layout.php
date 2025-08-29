@@ -157,6 +157,47 @@
             });
         });
     </script>
+    
+    <script>
+        // 權限檢查全局變數
+        const isReadonlyUser = <?= session()->get('isReadonly') ? 'true' : 'false' ?>;
+        
+        // 檢查是否為唯讀使用者並顯示提示
+        function checkReadonlyPermission(actionName = '此操作') {
+            if (isReadonlyUser) {
+                alert('您的帳號為唯讀權限，無法執行' + actionName + '。');
+                return false;
+            }
+            return true;
+        }
+        
+        // 包裝原有的確認刪除函數  
+        function confirmDelete(url) {
+            if (!checkReadonlyPermission('刪除操作')) {
+                return false;
+            }
+            
+            if (confirm('確定要刪除這筆資料嗎？')) {
+                location.href = url;
+            }
+        }
+        
+        // 檢查編輯權限
+        function checkEditPermission(url) {
+            if (!checkReadonlyPermission('編輯操作')) {
+                return false;
+            }
+            window.location.href = url;
+        }
+        
+        // 檢查新增權限
+        function checkCreatePermission(url) {
+            if (!checkReadonlyPermission('新增操作')) {
+                return false;
+            }
+            window.location.href = url;
+        }
+    </script>
 </body>
 
 </html>

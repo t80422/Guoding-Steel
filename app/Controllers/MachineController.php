@@ -4,16 +4,19 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\MachineModel;
+use App\Services\PermissionService;
 use Throwable;
 use Exception;
 
 class MachineController extends BaseController
 {
     private $machineModel;
+    private $permissionService;
 
     public function __construct()
     {
         $this->machineModel = new MachineModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -43,6 +46,12 @@ class MachineController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         try {
             $userId = session()->get('userId');
@@ -75,6 +84,12 @@ class MachineController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->machineModel->delete($id);
         return redirect()->to(url_to('MachineController::index'));
     }

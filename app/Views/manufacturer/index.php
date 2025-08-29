@@ -61,7 +61,7 @@
                             <td><?= esc($item['updater']) ?></td>
                             <td><?= esc($item['ma_update_at']) ?></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-info" onclick="window.location.href='<?= url_to('ManufacturerController::edit', $item['ma_id']) ?>'" title="編輯">
+                                <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('ManufacturerController::edit', $item['ma_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('ManufacturerController::delete', $item['ma_id']) ?>')" title="刪除">

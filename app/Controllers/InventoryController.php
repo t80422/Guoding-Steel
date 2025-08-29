@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\MajorCategoryModel;
 use App\Models\LocationModel;
 use App\Services\InventoryService;
+use App\Services\PermissionService;
 
 class InventoryController extends BaseController
 {
     private $majorCategoryModel;
     private $locationModel;
     private $inventoryService;
+    private $permissionService;
 
     public function __construct()
     {
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->locationModel = new LocationModel();
         $this->inventoryService = new InventoryService();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -65,6 +68,12 @@ class InventoryController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->inventoryService->deleteInventory($id);
         return redirect()->to(url_to('InventoryController::index'))->with('success', '刪除成功');
     }
@@ -72,6 +81,12 @@ class InventoryController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');

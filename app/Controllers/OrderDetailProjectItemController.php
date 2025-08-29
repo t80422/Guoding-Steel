@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\OrderDetailProjectItemModel;
+use App\Services\PermissionService;
 
 class OrderDetailProjectItemController extends BaseController
 {
     private $odpiModel;
+    private $permissionService;
 
     public function __construct()
     {
         $this->odpiModel = new OrderDetailProjectItemModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function getDetail($orderId)
@@ -36,6 +39,15 @@ class OrderDetailProjectItemController extends BaseController
 
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $permissionCheck['message']
+            ]);
+        }
+
         try {
             // 獲取 JSON 數據
             $json = $this->request->getJSON(true);

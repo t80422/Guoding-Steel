@@ -7,6 +7,7 @@ use App\Models\ProductModel;
 use App\Models\MajorCategoryModel;
 use App\Models\MinorCategoryModel;
 use App\Services\ProductService;
+use App\Services\PermissionService;
 
 class ProductController extends BaseController
 {
@@ -14,6 +15,7 @@ class ProductController extends BaseController
     protected $majorCategoryModel;
     protected $minorCategoryModel;
     protected $productService;
+    protected $permissionService;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class ProductController extends BaseController
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->minorCategoryModel = new MinorCategoryModel();
         $this->productService = new ProductService();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -77,6 +80,12 @@ class ProductController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -93,6 +102,12 @@ class ProductController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->productModel->delete($id);
         return redirect()->to(url_to('ProductController::index'));
     }

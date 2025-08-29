@@ -51,8 +51,16 @@
             </select>
         </div>
         <div class="mb-3">
-            <label for="isAdmin" class="form-label">是否使用後台</label>
-            <input type="checkbox" class="form-check-input" id="isAdmin" name="u_is_admin" value="1" <?= (old('u_is_admin', $data['u_is_admin'] ?? 0) == 1) ? 'checked' : '' ?>>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isAdmin" name="u_is_admin" value="1" <?= (old('u_is_admin', $data['u_is_admin'] ?? 0) == 1) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="isAdmin">管理員權限</label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isReadonly" name="u_is_readonly" value="1" <?= (old('u_is_readonly', $data['u_is_readonly'] ?? 0) == 1) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="isReadonly">唯讀權限（無法新增、編輯、刪除）</label>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary">保存</button>
         <a href="/user" class="btn btn-secondary">取消</a>

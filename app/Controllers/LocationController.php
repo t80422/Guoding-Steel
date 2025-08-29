@@ -5,17 +5,20 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
 use App\Models\OrderModel;
+use App\Services\PermissionService;
 use Throwable;
 
 class LocationController extends BaseController
 {
     private $locationModel;
     private $orderModel;
+    private $permissionService;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
         $this->orderModel = new OrderModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function index()
@@ -53,6 +56,12 @@ class LocationController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
@@ -86,6 +95,12 @@ class LocationController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->locationModel->delete($id);
         return redirect()->to(url_to('LocationController::index'));
     }

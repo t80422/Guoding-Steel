@@ -4,15 +4,18 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\MajorCategoryModel;
+use App\Services\PermissionService;
 
 // 大分類
 class MajorCategoryController extends BaseController
 {
     protected $majorCategoryModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->majorCategoryModel = new MajorCategoryModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -43,6 +46,12 @@ class MajorCategoryController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -65,6 +74,12 @@ class MajorCategoryController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->majorCategoryModel->delete($id);
         return redirect()->to(url_to('MajorCategoryController::index'));
     }

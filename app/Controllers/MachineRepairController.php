@@ -5,17 +5,20 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\MachineRepairModel;
 use App\Models\MachineModel;
+use App\Services\PermissionService;
 use Throwable;
 
 class MachineRepairController extends BaseController
 {
     protected $machineRepairModel;
     protected $machineModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->machineRepairModel = new MachineRepairModel();
         $this->machineModel = new MachineModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function index()
@@ -64,6 +67,12 @@ class MachineRepairController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');

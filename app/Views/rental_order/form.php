@@ -150,7 +150,7 @@
                                 </label>
                                 <input type="number" class="form-control" name="ro_oxygen" id="ro_oxygen"
                                     value="<?= old('ro_oxygen', $data['rental']['ro_oxygen'] ?? '') ?>"
-                                    placeholder="0" step="0.01" min="0" required>
+                                    placeholder="0" step="0.01" min="0">
                             </div>
                             <!-- 乙炔 -->
                             <div class="col-md-6">
@@ -159,7 +159,7 @@
                                 </label>
                                 <input type="number" class="form-control" name="ro_acetylene" id="ro_acetylene"
                                     value="<?= old('ro_acetylene', $data['rental']['ro_acetylene'] ?? '') ?>"
-                                    placeholder="0" step="0.01" min="0" required>
+                                    placeholder="0" step="0.01" min="0">
                             </div>
                             <!-- 備註 -->
                             <div class="col-12">
@@ -181,10 +181,10 @@
                             </h5>
                             <div class="d-flex gap-2">
                                 <?php if ($isEdit): ?>
-                                <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
-                                    data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
-                                    <i class="bi bi-table me-1"></i>項目數量表
-                                </button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
+                                        data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
+                                        <i class="bi bi-table me-1"></i>項目數量表
+                                    </button>
                                 <?php endif; ?>
                                 <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
                                     <i class="bi bi-plus-lg me-1"></i>新增明細
@@ -205,82 +205,47 @@
                                     </tr>
                                 </thead>
                                 <tbody id="detailTableBody">
-                                    <?php if ($isEdit && isset($data['rentalDetails']) && !empty($data['rentalDetails'])): ?>
-                                        <?php foreach ($data['rentalDetails'] as $index => $detail): ?>
-                                            <tr data-index="<?= $index ?>">
-                                                <td class="text-center align-middle">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <?php if ($isEdit && !empty($detail['rod_id'])): ?>
-                                                        <input type="hidden" name="details[<?= $index ?>][rod_id]" value="<?= $detail['rod_id'] ?>">
-                                                    <?php endif; ?>
-                                                    <input type="hidden" name="details[<?= $index ?>][rod_pr_id]" value="<?= $detail['rod_pr_id'] ?? '' ?>">
-                                                    <input type="hidden" class="product-weight-per-unit" value="<?= $detail['pr_weight_per_unit'] ?? 0 ?>">
-                                                    <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
-                                                        data-bs-target="#productModal" data-target-index="<?= $index ?>" style="cursor: pointer;">
-                                                        <span class="product-text"><?= isset($detail['pr_name']) ? esc($detail['pr_name']) : '請選擇產品' ?></span>
-                                                    </div>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <input type="number" class="form-control quantity-input"
-                                                        name="details[<?= $index ?>][rod_qty]"
-                                                        value="<?= $detail['rod_qty'] ?>"
-                                                        step="0.01" min="0" required>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <input type="number" class="form-control length-input"
-                                                        name="details[<?= $index ?>][rod_length]"
-                                                        value="<?= $detail['rod_length'] ?>"
-                                                        step="0.01" min="0" required>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <input type="number" class="form-control-plaintext weight-input fw-bold text-primary"
-                                                        name="details[<?= $index ?>][rod_weight]"
-                                                        value="<?= $detail['rod_weight'] ?>"
-                                                        step="0.01" min="0" readonly>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr data-index="0">
-                                            <td class="text-center align-middle">
-                                                <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="hidden" name="details[0][rod_pr_id]" value="">
-                                                <input type="hidden" class="product-weight-per-unit" value="0">
-                                                <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
-                                                    data-bs-target="#productModal" data-target-index="0" style="cursor: pointer;">
-                                                    <span class="product-text text-muted">請選擇產品</span>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="number" class="form-control quantity-input"
-                                                    name="details[0][rod_qty]"
-                                                    step="0.01" min="0" required>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="number" class="form-control length-input"
-                                                    name="details[0][rod_length]"
-                                                    step="0.01" min="0" required>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="number" class="form-control-plaintext weight-input fw-bold text-primary"
-                                                    name="details[0][rod_weight]"
-                                                    step="0.01" min="0" readonly>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
+                                    <!-- 明細行將由 JavaScript 動態生成 -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- 明細行模板 -->
+                <template id="detailRowTemplate">
+                    <tr data-index="">
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                        <td class="align-middle">
+                            <input type="hidden" class="detail-rod-id" name="details[][rod_id]" value="">
+                            <input type="hidden" name="details[][rod_pr_id]" value="">
+                            <input type="hidden" class="product-weight-per-unit" value="0">
+                            <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
+                                data-bs-target="#productModal" data-target-index="" style="cursor: pointer;">
+                                <span class="product-text text-muted">請選擇產品</span>
+                            </div>
+                        </td>
+                        <td class="align-middle">
+                            <input type="number" class="form-control quantity-input"
+                                name="details[][rod_qty]"
+                                step="0.01" min="0" required>
+                        </td>
+                        <td class="align-middle">
+                            <input type="number" class="form-control length-input"
+                                name="details[][rod_length]"
+                                step="0.01" min="0">
+                        </td>
+                        <td class="align-middle">
+                            <input type="number" class="form-control-plaintext weight-input fw-bold text-primary"
+                                name="details[][rod_weight]"
+                                step="0.01" min="0" readonly>
+                        </td>
+                    </tr>
+                </template>
             </div>
             <!-- 右側資訊 -->
             <div class="col-lg-4">
@@ -327,22 +292,22 @@
     </form>
 </div>
 <?php if ($isEdit): ?>
-<?= view('components/item_quantity_table', [
-    // 參數化以支援租賃模式
-    'documentType' => 'rental',
-    'documentId' => $data['rental']['ro_id'] ?? 0,
-    'detailUrl' => url_to('RentalController::getDetail', $data['rental']['ro_id'] ?? 0),
-    'assignmentGetUrl' => url_to('RentalDetailProjectItemController::getDetail', $data['rental']['ro_id'] ?? 0),
-    'assignmentSaveUrl' => url_to('RentalDetailProjectItemController::save'),
-    'detailIdKey' => 'rod_id',
-    'qtyField' => 'rod_qty',
-    'lengthField' => 'rod_length',
-    'payloadFieldMap' => [
-        'detail' => 'rodpi_rod_id',
-        'pi' => 'rodpi_pi_id',
-        'qty' => 'rodpi_qty',
-    ],
-]) ?>
+    <?= view('components/item_quantity_table', [
+        // 參數化以支援租賃模式
+        'documentType' => 'rental',
+        'documentId' => $data['rental']['ro_id'] ?? 0,
+        'detailUrl' => url_to('RentalController::getDetail', $data['rental']['ro_id'] ?? 0),
+        'assignmentGetUrl' => url_to('RentalDetailProjectItemController::getDetail', $data['rental']['ro_id'] ?? 0),
+        'assignmentSaveUrl' => url_to('RentalDetailProjectItemController::save'),
+        'detailIdKey' => 'rod_id',
+        'qtyField' => 'rod_qty',
+        'lengthField' => 'rod_length',
+        'payloadFieldMap' => [
+            'detail' => 'rodpi_rod_id',
+            'pi' => 'rodpi_pi_id',
+            'qty' => 'rodpi_qty',
+        ],
+    ]) ?>
 <?php endif; ?>
 <?= $this->include('components/product_selector', [
     'modalId' => 'productModal',
@@ -350,8 +315,14 @@
 ]) ?>
 
 <script>
+    // 租賃明細資料
+    const rentalDetails = <?= json_encode($data['rentalDetails'] ?? []) ?>;
+    const isEditMode = <?= json_encode($isEdit) ?>;
+</script>
+
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        let detailIndex = document.querySelectorAll('#detailTableBody tr').length;
+        let detailIndex = 0;
 
         // 新增明細行
         document.getElementById('addDetailBtn').addEventListener('click', function() {
@@ -362,42 +333,60 @@
         });
 
         // 創建新的明細行
-        function createDetailRow(index) {
-            const row = document.createElement('tr');
+        function createDetailRow(index, detail = null) {
+            const template = document.getElementById('detailRowTemplate');
+            const row = template.content.cloneNode(true).querySelector('tr');
+
+            // 更新 data-index
             row.setAttribute('data-index', index);
-            row.innerHTML = `
-            <td class="text-center align-middle">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-            <td class="align-middle">
-                <input type="hidden" name="details[${index}][rod_pr_id]" value="">
-                <input type="hidden" class="product-weight-per-unit" value="0">
-                <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
-                     data-bs-target="#productModal" data-target-index="${index}" style="cursor: pointer;">
-                    <span class="product-text text-muted">請選擇產品</span>
-                </div>
-            </td>
-            <td class="align-middle">
-                <input type="number" class="form-control quantity-input" 
-                       name="details[${index}][rod_qty]" 
-                       step="0.01" min="0" required>
-            </td>
-            <td class="align-middle">
-                <input type="number" class="form-control length-input" 
-                       name="details[${index}][rod_length]" 
-                       step="0.01" min="0" required>
-            </td>
-            <td class="align-middle">
-                <input type="number" class="form-control-plaintext weight-input fw-bold text-primary" 
-                       name="details[${index}][rod_weight]" 
-                       step="0.01" min="0" readonly>
-            </td>
-        `;
+
+            // 更新所有相關的 name 屬性和 data-target-index
+            row.querySelector('.detail-rod-id').name = `details[${index}][rod_id]`;
+            row.querySelector('input[name="details[][rod_pr_id]"]').name = `details[${index}][rod_pr_id]`;
+            row.querySelector('input[name="details[][rod_qty]"]').name = `details[${index}][rod_qty]`;
+            row.querySelector('input[name="details[][rod_length]"]').name = `details[${index}][rod_length]`;
+            row.querySelector('input[name="details[][rod_weight]"]').name = `details[${index}][rod_weight]`;
+            row.querySelector('.product-selector').setAttribute('data-target-index', index);
+
+            // 如果有提供明細資料，填入表單
+            if (detail) {
+                fillDetailRow(row, detail);
+            }
 
             bindDetailEvents(row);
             return row;
+        }
+
+        // 填入明細行資料
+        function fillDetailRow(row, detail) {
+            // 填入隱藏欄位
+            if (detail.rod_id) {
+                row.querySelector('.detail-rod-id').value = detail.rod_id;
+            }
+            if (detail.rod_pr_id) {
+                row.querySelector('input[name*="[rod_pr_id]"]').value = detail.rod_pr_id;
+            }
+            if (detail.pr_weight_per_unit) {
+                row.querySelector('.product-weight-per-unit').value = detail.pr_weight_per_unit;
+            }
+
+            // 填入產品名稱
+            if (detail.pr_name) {
+                const productText = row.querySelector('.product-text');
+                productText.textContent = detail.pr_name;
+                productText.classList.remove('text-muted');
+            }
+
+            // 填入數量、長度、重量
+            if (detail.rod_qty) {
+                row.querySelector('.quantity-input').value = detail.rod_qty;
+            }
+            if (detail.rod_length) {
+                row.querySelector('.length-input').value = detail.rod_length;
+            }
+            if (detail.rod_weight) {
+                row.querySelector('.weight-input').value = detail.rod_weight;
+            }
         }
 
         // 綁定明細行事件
@@ -426,11 +415,23 @@
             weightInput.value = totalWeight.toFixed(2);
         }
 
-        // 初始化現有明細行的事件
-        document.querySelectorAll('#detailTableBody tr').forEach(row => {
-            bindDetailEvents(row);
-            calculateRowWeight(row);
-        });
+        // 初始化明細行
+        const tbody = document.getElementById('detailTableBody');
+
+        if (isEditMode && rentalDetails && rentalDetails.length > 0) {
+            // 編輯模式：根據現有資料生成明細行
+            rentalDetails.forEach((detail, index) => {
+                const row = createDetailRow(index, detail);
+                tbody.appendChild(row);
+                calculateRowWeight(row);
+            });
+            detailIndex = rentalDetails.length;
+        } else {
+            // 新增模式：生成一個空白明細行
+            const newRow = createDetailRow(0);
+            tbody.appendChild(newRow);
+            detailIndex = 1;
+        }
 
         // 初始化產品選擇器
         const productSelector = window.createProductSelector({

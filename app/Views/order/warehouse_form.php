@@ -101,18 +101,18 @@
             <!-- 表頭 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td class="align-top" style="width:80%;">
+                    <td class="align-top" style="width:84%;">
                         <div class="text-start fw-bold fs-1 d-flex align-items-center">
-                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1em; width:auto; margin-right: 0.75rem;">
-                            <span style="letter-spacing: 0.35em;">國鼎鋼鐵股份有限公司</span>
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1.2em; width:auto; margin-right: 0.75rem;">
+                            <span style="letter-spacing: 0.41em;">國鼎鋼鐵股份有限公司</span>
                         </div>
-                        <div class="fs-4 me-5">
+                        <div class="fs-4 ms-5">
                             請詳細打√&nbsp;&nbsp;
                             進倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 0 ? 'checked' : '' ?>>&nbsp;&nbsp;
                             出倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 1 ? 'checked' : '' ?>>
                         </div>
                     </td>
-                    <td class="text-end align-top" style="width:20%;">
+                    <td class="text-end align-top" style="width:16%;">
                         NO.&nbsp;<?= esc($order['o_number']) ?><br>
                         大溪&nbsp;03-3802339<br>
                         苗栗&nbsp;037-990009<br>
@@ -190,13 +190,14 @@
             <!-- 配件／氧氣／乙炔 & GPS & 時間 -->
             <table class="borderless mb-1">
                 <tr>
+                    <td style="width:20%; text-align:left;">配件：</td>
+                    <td></td>
+                    <td><span style="font-weight:bold; font-size:1.5em;">總噸數:<?= $totalWeight ?></span></td>
+                </tr>
+                <tr>
                     <td style="width:33%; text-align:left;">氧氣：<?= esc($order['o_oxygen'] ?? '') ?></td>
                     <td style="width:34%; text-align:left;">乙炔：<?= esc($order['o_acetylene'] ?? '') ?></td>
                     <td style="width:33%; text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
-                </tr>
-                <tr>
-                    <td style="width:20%; text-align:left;">配件：</td>
-                    <td class="dashed" colspan="2"></td>
                 </tr>
                 <tr>
                     <td style="width:33%; text-align:left;">GPS：<?= esc($order['gps_name'] ?? '') ?></td>

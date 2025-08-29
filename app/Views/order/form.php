@@ -910,7 +910,7 @@
             <td class="align-middle">
                 <input type="number" class="form-control length-input" 
                        name="details[${index}][od_length]" 
-                       step="0.01" min="0" required>
+                       step="0.01" min="0">
             </td>
             <td class="align-middle">
                 <input type="number" class="form-control-plaintext weight-input fw-bold text-primary" 

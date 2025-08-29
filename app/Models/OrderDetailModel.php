@@ -210,4 +210,12 @@ class OrderDetailModel extends Model
             ->get()
             ->getResultArray();
     }
+    
+    public function getTotalWeight(int $orderId): float
+    {
+        return $this->builder('order_details od')
+            ->select('SUM(od.od_weight) as total_weight')
+            ->where('od.od_o_id', $orderId)
+            ->get()->getRowArray()['total_weight'] ?? 0;
+    }
 }

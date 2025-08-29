@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\GpsModel;
+use App\Services\PermissionService;
 
 class GpsController extends BaseController
 {
     protected $gpsModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->gpsModel = new GpsModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function index()
@@ -37,12 +40,24 @@ class GpsController extends BaseController
 
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->gpsModel->delete($id);
         return redirect()->to(url_to('GpsController::index'));
     }
 
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 

@@ -14,6 +14,7 @@ use Exception;
 use App\Libraries\OrderService;
 use App\Libraries\FileManager;
 use App\Services\InventoryService;
+use App\Services\PermissionService;
 
 class OrderController extends BaseController
 {
@@ -26,11 +27,12 @@ class OrderController extends BaseController
     protected $productModel;
     protected $fileManager;
     protected $inventoryService;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->orderModel = new OrderModel();
-        $this->orderDetailModel = new OrderDetailModel();   
+        $this->orderDetailModel = new OrderDetailModel();
         $this->orderDetailProjectItemModel = new OrderDetailProjectItemModel();
         $this->orderService = new OrderService();
         $this->locationModel = new LocationModel();
@@ -38,6 +40,7 @@ class OrderController extends BaseController
         $this->productModel = new ProductModel();
         $this->fileManager = new FileManager(WRITEPATH . 'uploads/signatures/');
         $this->inventoryService = new InventoryService();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -69,7 +72,6 @@ class OrderController extends BaseController
         }
 
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
-        log_message('debug', print_r($orderDetails, true));
         $gpsOptions = $this->gpsModel->getOptions();
 
         $data = [
@@ -82,13 +84,19 @@ class OrderController extends BaseController
     }
 
     // 保存
-    public function save(){
+    public function save()
+    {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->orderModel->db->transStart();
 
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
-    
             if (!$userId) {
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
@@ -98,10 +106,10 @@ class OrderController extends BaseController
             $orderId = $data['o_id'];
             $oldOrder = $this->orderModel->find($orderId);
             $oldOrderDetails = $this->orderDetailModel->getByOrderId($orderId);
-    
+
             $data['o_update_by'] = $userId;
             $data['o_update_at'] = date('Y-m-d H:i:s');
-    
+
             $this->orderModel->save($data);
             $this->orderService->updateOrderDetails($data['o_id'], $data['details']);
 
@@ -137,6 +145,12 @@ class OrderController extends BaseController
     // 刪除
     public function delete($id = null)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->orderModel->db->transStart();
         try {
             $order = $this->orderModel->find($id);
@@ -234,22 +248,22 @@ class OrderController extends BaseController
     private function buildMaterialGrid(int $orderId): array
     {
         $fixedTemplate = $this->getFixedProductTemplate();
-        
+
         // 取得訂單明細（用於統計數量）
         $orderProducts = $this->orderDetailModel->getOrderProductsWithCategories($orderId);
-        
+
         // 按產品ID分組統計數量
         $productQtyMap = [];
         $productInfoMap = [];
         foreach ($orderProducts as $item) {
             $prId = (int) $item['od_pr_id'];
             $qty = (int) $item['od_qty'];
-            
+
             if (!isset($productQtyMap[$prId])) {
                 $productQtyMap[$prId] = 0;
             }
             $productQtyMap[$prId] += $qty;
-            
+
             $productInfoMap[$prId] = [
                 'pr_name' => $item['pr_name'],
                 'mic_name' => $item['mic_name'],
@@ -269,21 +283,21 @@ class OrderController extends BaseController
             $micName = $templateItem['name'];
             $unit = $templateItem['unit'];
             $isDynamic = $templateItem['dynamic'];
-            
+
             $processedMicNames[] = $micName;
-            
+
             if ($isDynamic) {
                 // 動態項目：找出該小分類下有哪些產品型號
                 $matchedProducts = [];
                 $totalQty = 0;
-                
+
                 foreach ($productInfoMap as $prId => $info) {
                     if ($info['mic_name'] === $micName && isset($productQtyMap[$prId])) {
                         $matchedProducts[] = $info['pr_name'];
                         $totalQty += $productQtyMap[$prId];
                     }
                 }
-                
+
                 if (!empty($matchedProducts)) {
                     // 收集產品名稱和對應數量，保持對應關係
                     $productDetails = [];
@@ -294,7 +308,7 @@ class OrderController extends BaseController
                             $quantities[] = $productQtyMap[$prId];
                         }
                     }
-                    
+
                     $productNames = implode('/', $productDetails);
                     $qtyDisplay = implode('/', $quantities);
                     $items[] = [
@@ -319,7 +333,7 @@ class OrderController extends BaseController
                         break;
                     }
                 }
-                
+
                 $items[] = [
                     'name' => $micName,
                     'unit' => $unit,
@@ -335,7 +349,7 @@ class OrderController extends BaseController
             $micName = $product['mic_name'];
             $prName = $product['pr_name'];
             $unit = $product['mic_unit'];
-            
+
             // 排除已經在固定清單中的項目
             if (!in_array($micName, $processedMicNames)) {
                 if (!isset($steelAccessoryByCategory[$micName])) {
@@ -345,22 +359,22 @@ class OrderController extends BaseController
                         'total_qty' => 0
                     ];
                 }
-                
+
                 $steelAccessoryByCategory[$micName]['products'][$prId] = [
                     'pr_name' => $prName,
                     'qty' => $productQtyMap[$prId] ?? 0
                 ];
-                
+
                 if (isset($productQtyMap[$prId])) {
                     $steelAccessoryByCategory[$micName]['total_qty'] += $productQtyMap[$prId];
                 }
             }
         }
-        
+
         foreach ($steelAccessoryByCategory as $micName => $categoryData) {
             $unit = $categoryData['unit'];
             $totalQty = $categoryData['total_qty'];
-            
+
             // 找出在訂單明細中的產品
             $productsInOrder = [];
             foreach ($categoryData['products'] as $prId => $productData) {
@@ -368,7 +382,7 @@ class OrderController extends BaseController
                     $productsInOrder[] = $productData['pr_name'];
                 }
             }
-            
+
             if (!empty($productsInOrder)) {
                 // 有產品在明細中，檢查是否與小分類名稱相同
                 $productDetails = [];
@@ -379,7 +393,7 @@ class OrderController extends BaseController
                         $quantities[] = $productData['qty'];
                     }
                 }
-                
+
                 // 檢查是否所有產品名稱都等於小分類名稱
                 $allProductsSameAsMic = true;
                 foreach ($productDetails as $productName) {
@@ -388,7 +402,7 @@ class OrderController extends BaseController
                         break;
                     }
                 }
-                
+
                 if ($allProductsSameAsMic) {
                     // 所有產品名稱都等於小分類名稱：只顯示小分類
                     $qtyDisplay = implode('/', $quantities);
@@ -420,14 +434,16 @@ class OrderController extends BaseController
         // 3. 其他分類產品（按小分類分組，只顯示訂單明細中有的）
         $otherProductsByCategory = [];
         foreach ($productInfoMap as $prId => $info) {
-            if (!in_array($info['mc_name'], ['型鋼', '配件']) && 
-                isset($productQtyMap[$prId])) {
-                
+            if (
+                !in_array($info['mc_name'], ['型鋼', '配件']) &&
+                isset($productQtyMap[$prId])
+            ) {
+
                 $micName = $info['mic_name'];
                 $prName = $info['pr_name'];
                 $unit = $info['mic_unit'];
                 $qty = $productQtyMap[$prId];
-                
+
                 if (!isset($otherProductsByCategory[$micName])) {
                     $otherProductsByCategory[$micName] = [
                         'unit' => $unit,
@@ -436,36 +452,36 @@ class OrderController extends BaseController
                         'min_pr_id' => $prId // 用於排序
                     ];
                 }
-                
+
                 $otherProductsByCategory[$micName]['products'][$prId] = [
                     'pr_name' => $prName,
                     'qty' => $qty
                 ];
-                
+
                 $otherProductsByCategory[$micName]['total_qty'] += $qty;
-                
+
                 // 記錄最小的產品ID作為排序依據
                 if ($prId < $otherProductsByCategory[$micName]['min_pr_id']) {
                     $otherProductsByCategory[$micName]['min_pr_id'] = $prId;
                 }
             }
         }
-        
+
         // 按最小產品ID排序
-        uasort($otherProductsByCategory, function($a, $b) {
+        uasort($otherProductsByCategory, function ($a, $b) {
             return $a['min_pr_id'] <=> $b['min_pr_id'];
         });
-        
+
         foreach ($otherProductsByCategory as $micName => $categoryData) {
             $unit = $categoryData['unit'];
             $totalQty = $categoryData['total_qty'];
-            
+
             // 找出在訂單明細中的產品（第三優先級都是有明細的）
             $productsInOrder = [];
             foreach ($categoryData['products'] as $prId => $productData) {
                 $productsInOrder[] = $productData['pr_name'];
             }
-            
+
             // 檢查是否所有產品名稱都等於小分類名稱
             $allProductsSameAsMic = true;
             foreach ($productsInOrder as $productName) {
@@ -474,7 +490,7 @@ class OrderController extends BaseController
                     break;
                 }
             }
-            
+
             if ($allProductsSameAsMic) {
                 // 所有產品名稱都等於小分類名稱：只顯示小分類
                 $items[] = [
@@ -490,7 +506,7 @@ class OrderController extends BaseController
                     $productDetails[] = $productData['pr_name'];
                     $quantities[] = $productData['qty'];
                 }
-                
+
                 $productNames = implode('/', $productDetails);
                 $qtyDisplay = implode('/', $quantities);
                 $items[] = [
@@ -539,15 +555,21 @@ class OrderController extends BaseController
         // 取得項目明細統計
         $projectItemDetails = $this->orderDetailModel->getDetailsForPrint((int)$orderId);
 
-        return view('print/warehouse_form', [
+        // 取得總噸數
+        $totalWeight = $this->orderDetailModel->getTotalWeight((int)$orderId);
+        $formatTotalWeight = $totalWeight > 0 ? $totalWeight / 1000 : '';
+
+        return view('order/warehouse_form', [
             'order' => $order,
             'itemsGrid' => $itemsGrid,
             'details' => $projectItemDetails,
+            'totalWeight' => $formatTotalWeight
         ]);
     }
 
     // 取得訂單明細
-    public function getDetail($id){
+    public function getDetail($id)
+    {
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
         return $this->response->setJSON($orderDetails);
     }

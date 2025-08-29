@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\MachineMaintenanceModel;
 use App\Models\MachineModel;
+use App\Services\PermissionService;
 use Throwable;
 
 // 機械保養
@@ -12,11 +13,13 @@ class MachineMaintenanceController extends BaseController
 {
     private $machineMaintenanceModel;
     private $machineModel;
+    private $permissionService;
 
     public function __construct()
     {
         $this->machineMaintenanceModel = new MachineMaintenanceModel();
         $this->machineModel = new MachineModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -62,6 +65,12 @@ class MachineMaintenanceController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
@@ -93,6 +102,12 @@ class MachineMaintenanceController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->machineMaintenanceModel->delete($id);
         return redirect()->to(url_to('MachineMaintenanceController::index'));
     }

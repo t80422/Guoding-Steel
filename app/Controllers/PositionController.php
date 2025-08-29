@@ -4,15 +4,18 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\PositionModel;
+use App\Services\PermissionService;
 
 // 職位
 class PositionController extends BaseController
 {
     private $positionModel;
+    private $permissionService;
 
     public function __construct()
     {
         $this->positionModel = new PositionModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -39,6 +42,12 @@ class PositionController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = [
             'p_name' => $this->request->getPost('p_name'),
         ];
@@ -64,6 +73,12 @@ class PositionController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->positionModel->delete($id);
         return redirect()->to('position');
     }

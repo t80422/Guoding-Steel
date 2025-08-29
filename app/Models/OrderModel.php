@@ -230,7 +230,10 @@ class OrderModel extends Model
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
                 pi.pi_name as project_name,
-                CONCAT(mic.mic_name, p.pr_name) as product_name,
+                CASE 
+                    WHEN mic.mic_name = p.pr_name THEN p.pr_name
+                    ELSE CONCAT(mic.mic_name, p.pr_name)
+                END as product_name,
                 od.od_length,
                 odpi.odpi_qty
             ')

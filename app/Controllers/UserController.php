@@ -107,7 +107,8 @@ class UserController extends BaseController
 
         $result = [
             'u_name' => $data['u_name'],
-            'u_is_admin' => $this->request->getVar('u_is_admin') ?? 0
+            'u_is_admin' => $this->request->getVar('u_is_admin') ?? 0,
+            'u_is_readonly' => $this->request->getVar('u_is_readonly') ?? 0
         ];
 
         if (!empty($data['u_p_id'])) {

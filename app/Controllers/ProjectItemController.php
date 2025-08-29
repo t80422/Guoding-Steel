@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\ProjectItemModel;
+use App\Services\PermissionService;
 
 class ProjectItemController extends BaseController
 {
     protected $projectItemModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->projectItemModel = new ProjectItemModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function index()
@@ -60,6 +63,12 @@ class ProjectItemController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -82,6 +91,12 @@ class ProjectItemController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->projectItemModel->delete($id);
         return redirect()->to(url_to('ProjectItemController::index'));
     }

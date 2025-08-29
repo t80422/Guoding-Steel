@@ -6,17 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\MinorCategoryModel;
 use App\Models\MajorCategoryModel;
 use App\Services\ProductService;
+use App\Services\PermissionService;
 
 class MinorCategoryController extends BaseController
 {
     protected $minorCategoryModel;
     protected $majorCategoryModel;
     protected $productService;
+    protected $permissionService;
+
     public function __construct()
     {
         $this->minorCategoryModel = new MinorCategoryModel();
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->productService = new ProductService();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -49,6 +53,12 @@ class MinorCategoryController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -79,6 +89,12 @@ class MinorCategoryController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->minorCategoryModel->delete($id);
         return redirect()->to(url_to('MinorCategoryController::index'));
     }

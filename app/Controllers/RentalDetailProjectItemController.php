@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\RentalDetailProjectItemModel;
+use App\Services\PermissionService;
 
 class RentalDetailProjectItemController extends BaseController
 {
     private RentalDetailProjectItemModel $model;
+    private $permissionService;
 
     public function __construct()
     {
         $this->model = new RentalDetailProjectItemModel();
+        $this->permissionService = new PermissionService();
     }
 
     public function getDetail(int $rentalId)
@@ -36,6 +39,15 @@ class RentalDetailProjectItemController extends BaseController
 
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $permissionCheck['message']
+            ]);
+        }
+
         try {
             $json = $this->request->getJSON(true);
             if (empty($json)) {

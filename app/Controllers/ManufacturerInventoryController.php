@@ -7,6 +7,7 @@ use App\Models\ManufacturerInventoryModel;
 use App\Models\ManufacturerModel;
 use App\Models\MajorCategoryModel;
 use App\Services\ManufacturerInventoryService;
+use App\Services\PermissionService;
 
 class ManufacturerInventoryController extends BaseController
 {
@@ -14,6 +15,7 @@ class ManufacturerInventoryController extends BaseController
     protected $manufacturerModel;
     protected $majorCategoryModel;
     protected $manufacturerInventoryService;
+    protected $permissionService;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class ManufacturerInventoryController extends BaseController
         $this->manufacturerModel = new ManufacturerModel();
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->manufacturerInventoryService = new ManufacturerInventoryService();
+        $this->permissionService = new PermissionService();
     }
 
     public function index()
@@ -65,6 +68,12 @@ class ManufacturerInventoryController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');

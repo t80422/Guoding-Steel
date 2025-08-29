@@ -4,15 +4,18 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\ManufacturerModel;
+use App\Services\PermissionService;
 use Throwable;
 
 class ManufacturerController extends BaseController
 {
     protected $manufacturerModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->manufacturerModel = new ManufacturerModel();
+        $this->permissionService = new PermissionService();
     }
 
     // 列表
@@ -55,6 +58,12 @@ class ManufacturerController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         $this->manufacturerModel->delete($id);
         return redirect()->to(url_to('ManufacturerController::index'))->with('success', '刪除成功');
     }
@@ -62,6 +71,12 @@ class ManufacturerController extends BaseController
     // 儲存
     public function save()
     {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');

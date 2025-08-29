@@ -6,9 +6,9 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">庫存管理</h3>
-        <a href="<?= url_to('InventoryController::create') ?>" class="btn btn-primary">
+        <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('InventoryController::create') ?>')">
             <i class="bi bi-plus-circle"></i> 新增
-        </a>
+        </button>
     </div>
     <!-- 搜尋列 -->
     <div class="card mb-4">
@@ -73,7 +73,7 @@
                             <td><?= esc($item['updater']) ?></td>
                             <td><?= esc($item['i_update_at']) ?></td>
                             <td class="text-end">
-                                <button class="btn btn-sm btn-outline-info" onclick="window.location.href='<?= url_to('InventoryController::edit', $item['i_id']) ?>'" title="編輯">
+                                <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('InventoryController::edit', $item['i_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('InventoryController::delete', $item['i_id']) ?>')" title="刪除">

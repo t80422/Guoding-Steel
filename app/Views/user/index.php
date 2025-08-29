@@ -6,9 +6,9 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">使用者管理</h3>
-        <a href="<?= url_to('UserController::create') ?>" class="btn btn-primary">
+        <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('UserController::create') ?>')">
             <i class="bi bi-plus-lg me-1"></i> 新增
-        </a>
+        </button>
     </div>
     <!-- 搜尋列 -->
     <form class="mb-4" onsubmit="search('<?= url_to('UserController::index') ?>'); return false;">
@@ -26,6 +26,7 @@
                 <tr>
                     <th>名稱</th>
                     <th>職位</th>
+                    <th>權限</th>
                     <th>建立時間</th>
                     <th class="text-end">操作</th>
                 </tr>
@@ -33,13 +34,22 @@
             <tbody>
                 <?php if (empty($data)): ?>
                     <tr>
-                        <td colspan="6" class="text-center">查無資料</td>
+                        <td colspan="7" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($data as $item): ?>
                         <tr>
                             <td><?= esc($item['u_name']) ?></td>
                             <td><?= esc($item['p_name']) ?></td>
+                            <td>
+                                <?php if ($item['u_is_admin'] == 1): ?>
+                                    <span class="badge bg-danger">管理員</span>
+                                <?php elseif ($item['u_is_readonly'] == 1): ?>
+                                    <span class="badge bg-warning">唯讀</span>
+                                <?php else: ?>
+                                    <span class="badge bg-success">一般</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?= esc($item['u_create_at']) ?></td>
                             <td class="text-end">
                                 <?php if ($item['u_is_admin'] == 0): ?>
@@ -47,9 +57,9 @@
                                         <i class="bi bi-geo-alt"></i>
                                     </a>
                                 <?php endif; ?>
-                                <a href="<?= url_to('UserController::edit', $item['u_id']) ?>" class="btn btn-sm btn-outline-info me-1" title="編輯">
+                                <button class="btn btn-sm btn-outline-info me-1" onclick="checkEditPermission('<?= url_to('UserController::edit', $item['u_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
-                                </a>
+                                </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('UserController::delete', $item['u_id']) ?>')" title="刪除">
                                     <i class="bi bi-trash"></i>
                                 </button>

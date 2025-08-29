@@ -12,7 +12,8 @@ class UserModel extends Model
         'u_name',
         'u_password',
         'u_p_id',
-        'u_is_admin'
+        'u_is_admin',
+        'u_is_readonly'
     ];
 
     /**
@@ -31,7 +32,7 @@ class UserModel extends Model
     {
         $builder = $this->builder('users u')
             ->join('positions p', 'p.p_id=u.u_p_id','left')
-            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at, u.u_is_admin');
+            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at, u.u_is_admin, u.u_is_readonly');
 
         if(!empty($keyword)){
             $builder->groupStart()

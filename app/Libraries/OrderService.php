@@ -116,7 +116,6 @@ class OrderService
 
             // 執行新增操作
             if (!empty($toInsert)) {
-                log_message('debug', print_r($toInsert, true));
                 $this->orderDetailModel->insertBatch($toInsert);
             }
 
