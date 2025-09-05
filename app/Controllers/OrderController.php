@@ -101,7 +101,15 @@ class OrderController extends BaseController
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
             }
-
+            
+            // 處理外鍵欄位：空字串轉為 NULL，避免外鍵約束錯誤
+            $foreignKeyFields = ['o_g_id', 'o_from_location', 'o_to_location'];
+            foreach ($foreignKeyFields as $field) {
+                if (isset($data[$field]) && $data[$field] === '') {
+                    $data[$field] = null;
+                }
+            }
+            
             // 取得修改前的訂單資料用於庫存更新
             $orderId = $data['o_id'];
             $oldOrder = $this->orderModel->find($orderId);
@@ -557,7 +565,7 @@ class OrderController extends BaseController
 
         // 取得總噸數
         $totalWeight = $this->orderDetailModel->getTotalWeight((int)$orderId);
-        $formatTotalWeight = $totalWeight > 0 ? $totalWeight / 1000 : '';
+        $formatTotalWeight = $totalWeight > 0 ? round($totalWeight / 1000, 2) : '';
 
         return view('order/warehouse_form', [
             'order' => $order,

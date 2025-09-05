@@ -103,7 +103,7 @@
                                     <i class="bi bi-broadcast me-1"></i>GPS設備
                                 </label>
                                 <select class="form-select" name="o_g_id" id="o_g_id">
-                                    <option value="">請選擇GPS設備</option>
+                                    <option value="" <?= empty(old('o_g_id', $data['order']['o_g_id'] ?? '')) ? 'selected' : '' ?>>請選擇GPS設備</option>
                                     <?php foreach ($data['gpsOptions'] as $gps): ?>
                                         <option value="<?= $gps['g_id'] ?>" <?= old('o_g_id', $data['order']['o_g_id'] ?? '') == $gps['g_id'] ? 'selected' : '' ?>>
                                             <?= esc($gps['g_name']) ?>
@@ -211,7 +211,7 @@
                                 <tbody id="detailTableBody">
                                     <?php if ($isEdit && isset($data['orderDetails']) && !empty($data['orderDetails'])): ?>
                                         <?php foreach ($data['orderDetails'] as $index => $detail): ?>
-                                            <tr data-index="<?= $index ?>">
+                                            <tr data-index="<?= $index ?>" data-is-original="true" data-original-weight="<?= $detail['od_weight'] ?>">
                                                 <td class="text-center align-middle">
                                                     <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
                                                         <i class="bi bi-trash"></i>
@@ -245,15 +245,21 @@
                                                         step="0.01" min="0">
                                                 </td>
                                                 <td class="align-middle">
-                                                    <input type="hidden" class="weight-input-kg" 
+                                                    <!-- 隱藏欄位：儲存公斤值給後端 -->
+                                                    <input type="hidden" class="weight-value" 
                                                         name="details[<?= $index ?>][od_weight]"
                                                         value="<?= $detail['od_weight'] ?>">
-                                                    <span class="fw-bold text-primary weight-display-ton"></span>
+                                                    
+                                                    <!-- 顯示區域：顯示噸數給用戶 -->
+                                                    <div class="weight-display">
+                                                        <span class="weight-number fw-bold text-primary">0.00</span>
+                                                        <small class="text-muted ms-1">噸</small>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <tr data-index="0">
+                                        <tr data-index="0" data-is-original="false">
                                             <td class="text-center align-middle">
                                                 <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
                                                     <i class="bi bi-trash"></i>
@@ -278,9 +284,15 @@
                                                     step="0.01" min="0">
                                             </td>
                                             <td class="align-middle">
-                                                <input type="hidden" class="weight-input-kg" 
+                                                <!-- 隱藏欄位：儲存公斤值給後端 -->
+                                                <input type="hidden" class="weight-value" 
                                                     name="details[0][od_weight]">
-                                                <span class="fw-bold text-primary weight-display-ton"></span>
+                                                
+                                                <!-- 顯示區域：顯示噸數給用戶 -->
+                                                <div class="weight-display">
+                                                    <span class="weight-number fw-bold text-primary">0.00</span>
+                                                    <small class="text-muted ms-1">噸</small>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
@@ -888,6 +900,7 @@
         function createDetailRow(index) {
             const row = document.createElement('tr');
             row.setAttribute('data-index', index);
+            row.setAttribute('data-is-original', 'false');
             row.innerHTML = `
             <td class="text-center align-middle">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
@@ -913,9 +926,15 @@
                        step="0.01" min="0">
             </td>
             <td class="align-middle">
-                <input type="number" class="form-control-plaintext weight-input fw-bold text-primary" 
-                       name="details[${index}][od_weight]" 
-                       step="0.01" min="0" readonly>
+                <!-- 隱藏欄位：儲存公斤值給後端 -->
+                <input type="hidden" class="weight-value" 
+                       name="details[${index}][od_weight]">
+                
+                <!-- 顯示區域：顯示噸數給用戶 -->
+                <div class="weight-display">
+                    <span class="weight-number fw-bold text-primary">0.000</span>
+                    <small class="text-muted ms-1">噸</small>
+                </div>
             </td>
         `;
 
@@ -934,35 +953,58 @@
             });
 
             row.querySelectorAll('.quantity-input, .length-input').forEach(input => {
-                input.addEventListener('input', () => calculateRowWeight(row));
+                input.addEventListener('input', () => {
+                    // 標記為已變更
+                    row.dataset.hasChanged = 'true';
+                    calculateRowWeight(row);
+                });
             });
         }
 
-        function calculateRowWeight(row) {
+        function calculateRowWeight(row, forceRecalculate = false) {
+            const isOriginal = row.dataset.isOriginal === 'true';
+            const hasChanged = row.dataset.hasChanged === 'true';
+            const weightValue = row.querySelector('.weight-value');
+            const weightNumber = row.querySelector('.weight-number');
+            
+            // 如果是原始資料且未變更且不強制重新計算，使用原始重量
+            if (isOriginal && !hasChanged && !forceRecalculate) {
+                const originalWeight = parseFloat(row.dataset.originalWeight) || 0;
+                
+                if (weightValue) {
+                    weightValue.value = originalWeight.toFixed(2);
+                }
+                
+                if (weightNumber) {
+                    const ton = originalWeight / 1000;
+                    weightNumber.textContent = ton.toFixed(2);
+                }
+                return;
+            }
+            
+            // 新增資料或已變更的資料：用 pr_weight × 數量 計算
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
-
-            // 明細總重量（公斤）：pr_weight × 數量（與長度無關）
+            
             const totalWeightKg = quantity * weightPerUnit;
-
-            // 存回 kg 至隱藏欄位，維持後端入庫單位
-            const weightInputKg = row.querySelector('.weight-input-kg');
-            if (weightInputKg) {
-                weightInputKg.value = totalWeightKg.toFixed(2);
+            
+            // 儲存公斤值至隱藏欄位，給後端使用
+            if (weightValue) {
+                weightValue.value = totalWeightKg.toFixed(2);
             }
-
-            // 顯示噸（kg / 1000），小數 2 位
-            const weightDisplayTon = row.querySelector('.weight-display-ton');
-            if (weightDisplayTon) {
+            
+            // 顯示噸數（kg / 1000）給用戶看，保留 2 位小數
+            if (weightNumber) {
                 const ton = totalWeightKg / 1000;
-                weightDisplayTon.textContent = ton.toFixed(2);
+                weightNumber.textContent = ton.toFixed(2);
             }
         }
 
         // 初始化現有明細行的事件
         document.querySelectorAll('#detailTableBody tr').forEach(row => {
             bindDetailEvents(row);
-            calculateRowWeight(row);
+            // 初始化時不強制重新計算，原始資料會顯示已儲存的重量
+            calculateRowWeight(row, false);
         });
 
         // 初始化產品選擇器

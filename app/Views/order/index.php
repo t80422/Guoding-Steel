@@ -7,6 +7,16 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">料單管理</h3>
     </div>
+
+    <!-- 錯誤訊息 -->
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <?= session()->getFlashdata('error') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif; ?>
+
     <!-- 搜尋列 -->
     <div class="card mb-4">
         <div class="card-header bg-light">

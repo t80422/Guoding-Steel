@@ -484,10 +484,13 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                 productText.textContent = displayName;
                 productText.classList.remove('text-muted');
                 targetRow.querySelector('.product-weight-per-unit').value = weightPerUnit;
+                
+                // 標記為已變更（產品有變更）
+                targetRow.dataset.hasChanged = 'true';
 
-                // 觸發重量計算
+                // 觸發重量計算（強制重新計算）
                 if (window.calculateRowWeight && typeof window.calculateRowWeight === 'function') {
-                    window.calculateRowWeight(targetRow);
+                    window.calculateRowWeight(targetRow, true);
                 }
             }
 
