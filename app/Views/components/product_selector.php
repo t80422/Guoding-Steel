@@ -439,7 +439,8 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                         <button type="button" class="list-group-item list-group-item-action product-item" 
                                 data-product-id="${product.pr_id}" 
                                 data-product-name="${product.pr_name}"
-                                data-weight-per-unit="${product.pr_weight || 0}">
+                                data-weight-per-unit="${product.pr_weight || 0}"
+                                data-is-length="${product.pr_is_length || 0}">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">${product.pr_name}</h6>
                                 <i class="bi bi-chevron-right text-muted"></i>
@@ -471,6 +472,7 @@ $fieldPrefix = $fieldPrefix ?? 'od';
             const productId = item.dataset.productId;
             const productName = item.dataset.productName;
             const weightPerUnit = item.dataset.weightPerUnit;
+            const isLength = item.dataset.isLength;
 
             const targetRow = document.querySelector(`tr[data-index="${this.currentTargetIndex}"]`);
             if (targetRow) {
@@ -484,6 +486,9 @@ $fieldPrefix = $fieldPrefix ?? 'od';
                 productText.textContent = displayName;
                 productText.classList.remove('text-muted');
                 targetRow.querySelector('.product-weight-per-unit').value = weightPerUnit;
+                
+                // 儲存產品是否按長度計算的資訊
+                targetRow.dataset.productIsLength = isLength;
                 
                 // 標記為已變更（產品有變更）
                 targetRow.dataset.hasChanged = 'true';

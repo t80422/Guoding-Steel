@@ -211,7 +211,7 @@
                                 <tbody id="detailTableBody">
                                     <?php if ($isEdit && isset($data['orderDetails']) && !empty($data['orderDetails'])): ?>
                                         <?php foreach ($data['orderDetails'] as $index => $detail): ?>
-                                            <tr data-index="<?= $index ?>" data-is-original="true" data-original-weight="<?= $detail['od_weight'] ?>">
+                                            <tr data-index="<?= $index ?>" data-is-original="true" data-original-weight="<?= $detail['od_weight'] ?>" data-product-is-length="<?= $detail['pr_is_length'] ?? 0 ?>">
                                                 <td class="text-center align-middle">
                                                     <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
                                                         <i class="bi bi-trash"></i>
@@ -932,7 +932,7 @@
                 
                 <!-- 顯示區域：顯示噸數給用戶 -->
                 <div class="weight-display">
-                    <span class="weight-number fw-bold text-primary">0.000</span>
+                    <span class="weight-number fw-bold text-primary">0.00</span>
                     <small class="text-muted ms-1">噸</small>
                 </div>
             </td>
@@ -982,11 +982,28 @@
                 return;
             }
             
-            // 新增資料或已變更的資料：用 pr_weight × 數量 計算
+            // 新增資料或已變更的資料：根據產品類型使用不同計算公式
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const length = parseFloat(row.querySelector('.length-input').value) || 0;
             const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
+            const isLength = row.dataset.productIsLength === '1';
             
-            const totalWeightKg = quantity * weightPerUnit;
+            let totalWeightKg = 0;
+            
+            if (isLength) {
+                // 按長度計算：總重量 = pr_weight × od_length × od_qty
+                if (length <= 0) {
+                    // 按長度計算的產品，長度為0或空要提醒
+                    if (weightPerUnit > 0) { // 只有選擇了產品才提醒
+                        alert('此產品按長度計算重量，請輸入長度！');
+                        return;
+                    }
+                }
+                totalWeightKg = weightPerUnit * length * quantity;
+            } else {
+                // 按數量計算：總重量 = pr_weight × od_qty  
+                totalWeightKg = weightPerUnit * quantity;
+            }
             
             // 儲存公斤值至隱藏欄位，給後端使用
             if (weightValue) {
