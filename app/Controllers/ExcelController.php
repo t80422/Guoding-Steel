@@ -2,10 +2,6 @@
 
 namespace App\Controllers;
 
-use CodeIgniter\HTTP\Files\UploadedFile;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Exception as ReaderException;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use App\Services\ExcelImportService;
 use App\Models\OrderModel;
 use App\Models\OrderDetailModel;
@@ -51,7 +47,7 @@ class ExcelController extends BaseController
                 ]);
             }
 
-            // 使用 Service 解析新版格式
+            // 使用 Service 解析格式
             $service = new ExcelImportService();
             $result = $service->parse($file);
 

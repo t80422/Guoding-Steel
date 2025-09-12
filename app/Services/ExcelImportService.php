@@ -101,13 +101,13 @@ class ExcelImportService
                     break;
                 }
 
-                // 基本欄位檢查
-                if ($carNo === '' || $number === '' || $dateRaw === null || $manufacturerName === '') {
+                // 基本欄位檢查：A、B、C、E必填
+                if ($carNo === '' || $number === '' || $dateRaw === null || $eValue === '') {
                     $missing = [];
                     if ($carNo === '') $missing[] = 'A(車號)';
                     if ($number === '') $missing[] = 'B(單號)';
                     if ($dateRaw === null || $dateRaw === '') $missing[] = 'C(日期)';
-                    if ($manufacturerName === '') $missing[] = 'D(廠商)';
+                    if ($eValue === '') $missing[] = 'E(地點資訊)';
                     $errors[] = [
                         'row' => $row,
                         'type' => 'basic_missing',
@@ -128,58 +128,53 @@ class ExcelImportService
                     continue;
                 }
 
-                $isOrder = ($manufacturerName === '國鼎');
-
-                // 解析 E 欄
-                $parts = explode('-', $eValue);
-                if (count($parts) !== 2) {
+                // 解析 E 欄內容
+                $eParseResult = $this->parseEColumnContent($eValue, $dict);
+                if (!$eParseResult['success']) {
                     $errors[] = [
                         'row' => $row,
-                        'type' => 'bad_e_format',
-                        'message' => 'E 欄格式錯誤，必須為「甲-乙」'
+                        'type' => 'e_column_error',
+                        'message' => $eParseResult['error']
                     ];
                     continue;
                 }
-                $left = trim($parts[0]);
-                $right = trim($parts[1]);
 
-                // 解析主檔（依分流）
-                if ($isOrder) {
-                    // 訂單：兩段都要是地點，一段倉庫、一段工地
-                    $locLeft = $dict['locations_by_name'][$left] ?? null;
-                    $locRight = $dict['locations_by_name'][$right] ?? null;
-                    if (!$locLeft || !$locRight) {
+                // 根據E欄是否包含廠商決定建立訂單或租賃單
+                $hasManufacturer = $eParseResult['has_manufacturer'];
+                
+                if (!$hasManufacturer) {
+                    // 沒有廠商 → 建立訂單（兩端都是地點）
+                    $locLeft = $eParseResult['left_data'];
+                    $locRight = $eParseResult['right_data'];
+                    
+                    $leftType = (int) $locLeft['l_type'];
+                    $rightType = (int) $locRight['l_type'];
+                    
+                    // 決定訂單類型和From/To邏輯
+                    $oType = null;
+                    $oFrom = (int) $locLeft['l_id'];
+                    $oTo = (int) $locRight['l_id'];
+                    
+                    // 根據地點組合決定類型
+                    if ($leftType === LocationModel::TYPE_WAREHOUSE && $rightType === LocationModel::TYPE_WAREHOUSE) {
+                        // 倉庫-倉庫：出倉庫
+                        $oType = 1;
+                    } elseif ($leftType === LocationModel::TYPE_CONSTRUCTION_SITE && $rightType === LocationModel::TYPE_CONSTRUCTION_SITE) {
+                        // 工地-工地：出倉庫
+                        $oType = 1;
+                    } elseif ($leftType === LocationModel::TYPE_WAREHOUSE && $rightType === LocationModel::TYPE_CONSTRUCTION_SITE) {
+                        // 倉庫-工地：出倉庫
+                        $oType = 1;
+                    } elseif ($leftType === LocationModel::TYPE_CONSTRUCTION_SITE && $rightType === LocationModel::TYPE_WAREHOUSE) {
+                        // 工地-倉庫：進倉庫
+                        $oType = 0;
+                    } else {
                         $errors[] = [
                             'row' => $row,
-                            'type' => 'unknown_location',
-                            'message' => 'E 欄地點不存在（訂單需要倉庫與工地）：' . $eValue
+                            'type' => 'unsupported_location_combination',
+                            'message' => 'E欄地點組合不支援：' . $eValue
                         ];
                         continue;
-                    }
-                    // 工地在前 → 進倉庫(o_type=0)，工地在後 → 出倉庫(o_type=1)
-                    $isLeftSite = ((int) $locLeft['l_type'] === LocationModel::TYPE_CONSTRUCTION_SITE);
-                    $isRightSite = ((int) $locRight['l_type'] === LocationModel::TYPE_CONSTRUCTION_SITE);
-                    $isLeftWh = ((int) $locLeft['l_type'] === LocationModel::TYPE_WAREHOUSE);
-                    $isRightWh = ((int) $locRight['l_type'] === LocationModel::TYPE_WAREHOUSE);
-
-                    if (!($isLeftSite && $isRightWh) && !($isLeftWh && $isRightSite)) {
-                        $errors[] = [
-                            'row' => $row,
-                            'type' => 'unknown_location',
-                            'message' => 'E 欄兩端地點型別不吻合（需一端倉庫、一端工地）：' . $eValue
-                        ];
-                        continue;
-                    }
-
-                    $oType = $isLeftSite ? 0 : 1; // 左是工地→進倉庫(0)，否則出倉庫(1)
-                    $oFrom = $isLeftSite ? (int) $locLeft['l_id'] : (int) $locLeft['l_id'];
-                    $oTo = $isLeftSite ? (int) $locRight['l_id'] : (int) $locRight['l_id'];
-                    if ($oType === 1) { // 出倉庫：左倉庫 右工地
-                        $oFrom = (int) $locLeft['l_id'];
-                        $oTo = (int) $locRight['l_id'];
-                    } else { // 進倉庫：左工地 右倉庫
-                        $oFrom = (int) $locLeft['l_id'];
-                        $oTo = (int) $locRight['l_id'];
                     }
 
                     $rowResult = [
@@ -201,48 +196,45 @@ class ExcelImportService
                     $this->accumulateProjectStats($stats['project_item_counts'], $detailsBundle['projectAllocations']);
                     $orders[] = $rowResult;
                 } else {
-                    // 租賃：一段是廠商（必須等於 D 欄），另一段是工地
-                    $ma = $dict['manufacturers_by_name'][$manufacturerName] ?? null;
-                    if (!$ma) {
-                        $errors[] = [
-                            'row' => $row,
-                            'type' => 'unknown_manufacturer',
-                            'message' => 'D(廠商) 找不到：' . $manufacturerName
-                        ];
-                        continue;
-                    }
-
-                    $leftIsMa = ($left === $manufacturerName);
-                    $rightIsMa = ($right === $manufacturerName);
-                    if (!($leftIsMa || $rightIsMa)) {
-                        $errors[] = [
-                            'row' => $row,
-                            'type' => 'unknown_manufacturer',
-                            'message' => 'E 欄與 D 欄廠商不一致：' . $eValue . ' / ' . $manufacturerName
-                        ];
-                        continue;
-                    }
-
-                    $siteName = $leftIsMa ? $right : $left;
-                    $loc = $dict['locations_by_name'][$siteName] ?? null;
+                    // 有廠商 → 建立租賃單
+                    $leftType = $eParseResult['left_type'];
+                    $rightType = $eParseResult['right_type'];
+                    $leftData = $eParseResult['left_data'];
+                    $rightData = $eParseResult['right_data'];
                     
-                    if (!$loc || (int) $loc['l_type'] !== LocationModel::TYPE_CONSTRUCTION_SITE) {
+                    // 找出廠商和工地
+                    $manufacturer = null;
+                    $location = null;
+                    $manufacturerOnLeft = false;
+                    
+                    if ($leftType === 'manufacturer') {
+                        $manufacturer = $leftData;
+                        $location = $rightData;
+                        $manufacturerOnLeft = true;
+                    } else {
+                        $manufacturer = $rightData;
+                        $location = $leftData;
+                        $manufacturerOnLeft = false;
+                    }
+                    
+                    // 檢查是否為工地
+                    if ((int) $location['l_type'] !== LocationModel::TYPE_CONSTRUCTION_SITE) {
                         $errors[] = [
                             'row' => $row,
-                            'type' => 'unknown_location',
-                            'message' => 'E 欄工地不存在或型別錯誤（需工地）：' . $siteName
+                            'type' => 'invalid_rental_location',
+                            'message' => 'E欄租賃單需要工地，但找到的是：' . $location['l_name']
                         ];
                         continue;
                     }
-
+                    
                     // 工地在前 → 出工地(1)，工地在後 → 進工地(0)
-                    $roType = ($siteName === $left) ? 1 : 0;
+                    $roType = $manufacturerOnLeft ? 0 : 1;
 
                     $rowResult = [
                         'header' => [
                             'ro_type' => $roType,
-                            'ro_ma_id' => (int) $ma['ma_id'],
-                            'ro_l_id' => (int) $loc['l_id'],
+                            'ro_ma_id' => (int) $manufacturer['ma_id'],
+                            'ro_l_id' => (int) $location['l_id'],
                             'ro_date' => $date,
                             'ro_car_number' => $carNo,
                             'ro_number' => $number,
@@ -255,7 +247,7 @@ class ExcelImportService
                     $stats['rental_count']++;
                     
                     // 統計工地的租賃單數量
-                    $locationName = $loc['l_name'];
+                    $locationName = $location['l_name'];
                     $stats['location_counts'][$locationName] = ($stats['location_counts'][$locationName] ?? 0) + 1;
                     
                     $this->accumulateProjectStats($stats['project_item_counts'], $detailsBundle['projectAllocations']);
@@ -587,6 +579,84 @@ class ExcelImportService
         foreach ($allocMap as $piId => $qty) {
             $stats[$piId] = ($stats[$piId] ?? 0) + $qty;
         }
+    }
+
+    /**
+     * 解析E欄內容，判斷左右兩側是廠商還是地點
+     * @return array{
+     *   success: bool,
+     *   error?: string,
+     *   left_type?: string,  // 'manufacturer' | 'location'
+     *   right_type?: string, // 'manufacturer' | 'location'
+     *   left_data?: array,
+     *   right_data?: array,
+     *   has_manufacturer?: bool
+     * }
+     */
+    private function parseEColumnContent(string $eValue, array &$dict): array
+    {
+        $parts = explode('-', $eValue);
+        if (count($parts) !== 2) {
+            return [
+                'success' => false,
+                'error' => 'E欄格式錯誤，必須為「甲-乙」'
+            ];
+        }
+
+        $left = trim($parts[0]);
+        $right = trim($parts[1]);
+
+        // 判斷左側是廠商還是地點
+        $leftType = null;
+        $leftData = null;
+        if (isset($dict['manufacturers_by_name'][$left])) {
+            $leftType = 'manufacturer';
+            $leftData = $dict['manufacturers_by_name'][$left];
+        } elseif (isset($dict['locations_by_name'][$left])) {
+            $leftType = 'location';
+            $leftData = $dict['locations_by_name'][$left];
+        }
+
+        // 判斷右側是廠商還是地點
+        $rightType = null;
+        $rightData = null;
+        if (isset($dict['manufacturers_by_name'][$right])) {
+            $rightType = 'manufacturer';
+            $rightData = $dict['manufacturers_by_name'][$right];
+        } elseif (isset($dict['locations_by_name'][$right])) {
+            $rightType = 'location';
+            $rightData = $dict['locations_by_name'][$right];
+        }
+
+        // 檢查是否有未知的名稱
+        if ($leftType === null || $rightType === null) {
+            $unknowns = [];
+            if ($leftType === null) $unknowns[] = $left;
+            if ($rightType === null) $unknowns[] = $right;
+            return [
+                'success' => false,
+                'error' => 'E欄中找不到以下廠商或地點：' . implode('、', $unknowns)
+            ];
+        }
+
+        // 檢查是否兩端都是廠商
+        if ($leftType === 'manufacturer' && $rightType === 'manufacturer') {
+            return [
+                'success' => false,
+                'error' => 'E欄兩端都是廠商，無法處理：' . $eValue
+            ];
+        }
+
+        $hasManufacturer = ($leftType === 'manufacturer' || $rightType === 'manufacturer');
+
+        return [
+            'success' => true,
+            'left_type' => $leftType,
+            'right_type' => $rightType,
+            'left_data' => $leftData,
+            'right_data' => $rightData,
+            'has_manufacturer' => $hasManufacturer
+        ];
     }
 
     /**

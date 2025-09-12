@@ -12,8 +12,6 @@ use App\Models\ProductModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use Exception;
 use App\Libraries\OrderService;
-use App\Libraries\FileManager;
-use App\Services\InventoryService;
 use App\Services\PermissionService;
 
 class OrderController extends BaseController
@@ -25,8 +23,6 @@ class OrderController extends BaseController
     protected $locationModel;
     protected $gpsModel;
     protected $productModel;
-    protected $fileManager;
-    protected $inventoryService;
     protected $permissionService;
 
     public function __construct()
@@ -38,8 +34,6 @@ class OrderController extends BaseController
         $this->locationModel = new LocationModel();
         $this->gpsModel = new GpsModel();
         $this->productModel = new ProductModel();
-        $this->fileManager = new FileManager(WRITEPATH . 'uploads/signatures/');
-        $this->inventoryService = new InventoryService();
         $this->permissionService = new PermissionService();
     }
 
@@ -92,44 +86,30 @@ class OrderController extends BaseController
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
 
-        $this->orderModel->db->transStart();
-
         try {
             $data = $this->request->getPost();
+            $files = $this->request->getFiles();
             $userId = session()->get('userId');
+            
             if (!$userId) {
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
             }
-            
-            // 處理外鍵欄位：空字串轉為 NULL，避免外鍵約束錯誤
-            $foreignKeyFields = ['o_g_id', 'o_from_location', 'o_to_location'];
-            foreach ($foreignKeyFields as $field) {
-                if (isset($data[$field]) && $data[$field] === '') {
-                    $data[$field] = null;
-                }
-            }
-            
-            // 取得修改前的訂單資料用於庫存更新
+
             $orderId = $data['o_id'];
-            $oldOrder = $this->orderModel->find($orderId);
-            $oldOrderDetails = $this->orderDetailModel->getByOrderId($orderId);
+            $detailsData = $data['details'] ?? [];
 
-            $data['o_update_by'] = $userId;
-            $data['o_update_at'] = date('Y-m-d H:i:s');
+            // 使用 OrderService 統一處理
+            $success = $this->orderService->updateOrder((int)$orderId, $data, $detailsData, $files, (int)$userId);
 
-            $this->orderModel->save($data);
-            $this->orderService->updateOrderDetails($data['o_id'], $data['details']);
-
-            // 更新庫存
-            $this->inventoryService->updateInventoryForOrder($orderId, 'UPDATE', $oldOrder, $oldOrderDetails);
-
-            $this->orderModel->db->transComplete();
-            return redirect()->to(url_to('OrderController::index'));
+            if ($success) {
+                return redirect()->to(url_to('OrderController::index'))->with('success', '訂單更新成功');
+            } else {
+                return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗');
+            }
         } catch (Exception $e) {
             log_message('error', $e->getMessage());
-            $this->orderModel->db->transRollback();
-            return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗');
+            return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗：' . $e->getMessage());
         }
     }
 
@@ -159,39 +139,17 @@ class OrderController extends BaseController
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
 
-        $this->orderModel->db->transStart();
         try {
-            $order = $this->orderModel->find($id);
-            if (!$order) {
-                throw new PageNotFoundException('無法找到該訂單: ' . $id);
+            // 使用 OrderService 統一處理
+            $success = $this->orderService->deleteOrder((int)$id);
+            
+            if ($success) {
+                return redirect()->to(url_to('OrderController::index'))->with('success', '刪除成功');
+            } else {
+                return redirect()->to(url_to('OrderController::index'))->with('error', '刪除失敗');
             }
-
-            // 更新庫存 (在實際刪除前)
-            $this->inventoryService->updateInventoryForOrder($id, 'DELETE');
-
-            // 刪除訂單明細
-            $this->orderDetailModel->where('od_o_id', $id)->delete();
-
-            // 刪除訂單
-            $this->orderModel->delete($id);
-
-            // 刪除相關簽名檔案 - 使用 FileManager
-            $signatureKeys = ['o_driver_signature', 'o_from_signature', 'o_to_signature'];
-            $filesToDelete = [];
-            foreach ($signatureKeys as $key) {
-                if (!empty($order[$key])) {
-                    $filesToDelete[] = $order[$key];
-                }
-            }
-            if (!empty($filesToDelete)) {
-                $this->fileManager->deleteFiles($filesToDelete);
-            }
-
-            $this->orderModel->db->transComplete();
-            return redirect()->to(url_to('OrderController::index'))->with('success', '刪除成功');
         } catch (Exception $e) {
             log_message('error', $e->getMessage());
-            $this->orderModel->db->transRollback();
             return redirect()->to(url_to('OrderController::index'))->with('error', '刪除失敗');
         }
     }

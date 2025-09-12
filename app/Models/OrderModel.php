@@ -28,7 +28,9 @@ class OrderModel extends Model
         'o_update_by',
         'o_update_at',
         'o_status',
-        'o_number'
+        'o_number',
+        'o_img_car_head',
+        'o_img_car_tail'
     ];
 
     public const TYPE_IN_WAREHOUSE = 0; // 進倉庫

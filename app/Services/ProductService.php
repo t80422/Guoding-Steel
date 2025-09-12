@@ -11,6 +11,8 @@ class ProductService
     public function __construct()
     {
         $this->productModel = new ProductModel();
+        // 載入資料清理 Helper
+        helper('data_sanitizer');
     }
 
     /**
@@ -22,6 +24,9 @@ class ProductService
      */
     public function save($data, $userId)
     {
+        // 清理表單資料，移除前後空白字元
+        $data = sanitize_form_data($data, ['pr_id', 'pr_is_length']); // 排除 ID 和 checkbox 欄位
+        
         // 處理 checkbox：如果沒有被勾選，設定為 0
         $data['pr_is_length'] = $data['pr_is_length'] ?? 0;
 
@@ -42,10 +47,10 @@ class ProductService
      * @param int $userId 使用者ID
      * @return bool
      */
-    public function createNoModelProduct($minorCategoryId, $userId,$productName)
+    public function createNoModelProduct($minorCategoryId, $userId, $productName)
     {
         $data = [
-            'pr_name' => $productName,
+            'pr_name' => sanitize_string($productName), // 清理產品名稱
             'pr_mic_id' => $minorCategoryId
         ];
 

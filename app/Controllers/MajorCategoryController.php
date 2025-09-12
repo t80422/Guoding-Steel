@@ -16,6 +16,8 @@ class MajorCategoryController extends BaseController
     {
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->permissionService = new PermissionService();
+        // 載入資料清理 Helper
+        helper('data_sanitizer');
     }
 
     // 列表
@@ -53,6 +55,7 @@ class MajorCategoryController extends BaseController
         }
 
         $data = $this->request->getPost();
+        $data = sanitize_form_data($data, ['mc_id']);
         $userId = session()->get('userId');
 
         if (!$userId) {

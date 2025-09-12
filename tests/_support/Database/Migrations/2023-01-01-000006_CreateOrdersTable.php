@@ -88,6 +88,29 @@ class CreateOrdersTable extends Migration
                 'constraint' => '255',
                 'null'       => true,
             ],
+            'o_img_car_head' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
+            'o_img_car_tail' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '255',
+                'null'       => true,
+            ],
+            'o_number' => [
+                'type'       => 'VARCHAR',
+                'constraint' => '50',
+                'null'       => true,
+            ],
+            'o_create_at' => [
+                'type'    => 'DATETIME',
+                'null'    => true,
+            ],
+            'o_update_at' => [
+                'type'    => 'DATETIME',
+                'null'    => true,
+            ],
             'o_create_by' => [
                 'type'       => 'INT',
                 'constraint' => 5,

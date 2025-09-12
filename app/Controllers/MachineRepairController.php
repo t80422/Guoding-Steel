@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\MachineRepairModel;
 use App\Models\MachineModel;
 use App\Services\PermissionService;
+use Exception;
 use Throwable;
 
 class MachineRepairController extends BaseController
@@ -98,6 +99,22 @@ class MachineRepairController extends BaseController
             return redirect()->to($redirectUrl)
                 ->withInput()
                 ->with('error', $th->getMessage());
+        }
+    }
+
+    // 刪除
+    public function delete($id)
+    {
+        // 檢查權限
+        $permissionCheck = $this->permissionService->validateEditPermission();
+        if ($permissionCheck['status'] === 'error') {
+            return redirect()->back()->with('error', $permissionCheck['message']);
+        }
+        try {
+            $this->machineRepairModel->delete($id);
+            return redirect()->to(url_to('MachineRepairController::index'));
+        } catch (Exception $e) {
+            return redirect()->to(url_to('MachineRepairController::index'))->with('error', $e->getMessage());
         }
     }
 }

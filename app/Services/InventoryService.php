@@ -145,11 +145,11 @@ class InventoryService
         $orderDetails = $this->orderDetailModel->getByOrderId($orderId);
         
         foreach ($orderDetails as $detail) {
-            // 回復出庫地點庫存
-            $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], $detail['od_qty']);
+            // 回復出庫地點庫存 (DELETE 操作跳過庫存檢查)
+            $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], $detail['od_qty'], true);
             
-            // 回復入庫地點庫存
-            $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], -$detail['od_qty']);
+            // 回復入庫地點庫存 (DELETE 操作跳過庫存檢查)
+            $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], -$detail['od_qty'], true);
         }
 
         return true;
@@ -166,13 +166,13 @@ class InventoryService
      */
     private function handleUpdateOrder($orderId, $oldOrderData, $oldOrderDetails)
     {
-        // 先回復原有的庫存影響
+        // 先回復原有的庫存影響 (UPDATE 操作的回復階段跳過庫存檢查)
         foreach ($oldOrderDetails as $detail) {
             // 回復原出庫地點庫存
-            $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_from_location'], $detail['od_qty']);
+            $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_from_location'], $detail['od_qty'], true);
             
             // 回復原入庫地點庫存
-            $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_to_location'], -$detail['od_qty']);
+            $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_to_location'], -$detail['od_qty'], true);
         }
 
         // 再套用新的庫存影響
@@ -185,10 +185,11 @@ class InventoryService
      * @param int $productId 產品ID
      * @param int $locationId 地點ID
      * @param int $qtyChange 數量變化 (正數增加，負數減少)
+     * @param bool $skipInventoryCheck 是否跳過庫存檢查 (DELETE 操作時使用)
      * @return bool
      * @throws Exception
      */
-    public function adjustInventory($productId, $locationId, $qtyChange)
+    public function adjustInventory($productId, $locationId, $qtyChange, $skipInventoryCheck = false)
     {
         // 確保庫存記錄存在
         $this->ensureInventoryExists($productId, $locationId);
@@ -202,8 +203,13 @@ class InventoryService
             throw new Exception('庫存記錄不存在');
         }
 
-        // 更新庫存數量
+        // 計算新的庫存數量
         $newQty = $inventory['i_qty'] + $qtyChange;
+        
+        // 🔍 檢查庫存是否足夠 (針對出庫操作，但 DELETE 操作時跳過檢查)
+        if (!$skipInventoryCheck && $qtyChange < 0 && $newQty < 0) {
+            throw new Exception("庫存不足，產品ID: {$productId}，地點ID: {$locationId}，當前庫存: {$inventory['i_qty']}，需要: " . abs($qtyChange));
+        }
         
         $updateData = [
             'i_qty' => $newQty,

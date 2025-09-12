@@ -392,6 +392,58 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- 車頭照片 -->
+                                <div class="col-12">
+                                    <div class="signature-item">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-camera me-2 text-muted"></i>
+                                            <span class="fw-bold text-muted">車頭照片</span>
+                                        </div>
+                                        <div class="signature-container">
+                                            <?php if (!empty($data['order']['o_img_car_head'])): ?>
+                                                <div class="signature-preview" onclick="openImageModal('<?= base_url('order/serveSignature/' . $data['order']['o_img_car_head']) ?>', '車頭照片')">
+                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_img_car_head']) ?>"
+                                                        alt="車頭照片" class="signature-image">
+                                                    <div class="signature-overlay">
+                                                        <i class="bi bi-zoom-in"></i>
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="signature-placeholder">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                    <span class="text-muted">尚未拍攝</span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 車尾照片 -->
+                                <div class="col-12">
+                                    <div class="signature-item">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="bi bi-camera-fill me-2 text-muted"></i>
+                                            <span class="fw-bold text-muted">車尾照片</span>
+                                        </div>
+                                        <div class="signature-container">
+                                            <?php if (!empty($data['order']['o_img_car_tail'])): ?>
+                                                <div class="signature-preview" onclick="openImageModal('<?= base_url('order/serveSignature/' . $data['order']['o_img_car_tail']) ?>', '車尾照片')">
+                                                    <img src="<?= base_url('order/serveSignature/' . $data['order']['o_img_car_tail']) ?>"
+                                                        alt="車尾照片" class="signature-image">
+                                                    <div class="signature-overlay">
+                                                        <i class="bi bi-zoom-in"></i>
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="signature-placeholder">
+                                                    <i class="bi bi-image text-muted"></i>
+                                                    <span class="text-muted">尚未拍攝</span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

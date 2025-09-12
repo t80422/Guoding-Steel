@@ -21,6 +21,9 @@ class MinorCategoryController extends BaseController
         $this->majorCategoryModel = new MajorCategoryModel();
         $this->productService = new ProductService();
         $this->permissionService = new PermissionService();
+
+        // 載入資料清理 Helper
+        helper('data_sanitizer');
     }
 
     // 列表
@@ -60,6 +63,7 @@ class MinorCategoryController extends BaseController
         }
 
         $data = $this->request->getPost();
+        $data = sanitize_form_data($data, ['mic_id']);
         $userId = session()->get('userId');
 
         if (!$userId) {
