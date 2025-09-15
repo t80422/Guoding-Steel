@@ -385,7 +385,6 @@
                                        data-pi-id="${projectItem.pi_id}"
                                        data-max-qty="${maxQty}"
                                        value="${existingQty}" 
-                                       min="0" 
                                        max="${maxQty}"
                                        step="1">
                             </td>

@@ -84,13 +84,13 @@
         <?php endif; ?>
         <div class="mb-3">
             <label for="i_initial" class="form-label">初始庫存</label>
-            <input type="number" class="form-control" id="i_initial" name="i_initial" value="<?= old('i_initial', $data['i_initial'] ?? 0) ?>" required min="0">
+            <input type="number" class="form-control" id="i_initial" name="i_initial" value="<?= old('i_initial', $data['i_initial'] ?? 0) ?>" required>
         </div>
 
         <?php if ($isEdit): ?>
             <div class="mb-3">
                 <label for="i_qty" class="form-label">目前數量</label>
-                <input type="number" class="form-control" id="i_qty" name="i_qty" value="<?= old('i_qty', $data['i_qty'] ?? 0) ?>" required min="0" readonly>
+                <input type="number" class="form-control" id="i_qty" name="i_qty" value="<?= old('i_qty', $data['i_qty'] ?? 0) ?>" required readonly>
                 <div class="form-text">修改初始庫存時，目前數量會自動調整</div>
             </div>
         <?php else: ?>
@@ -143,7 +143,7 @@
                 const newInitial = parseInt(this.value) || 0;
                 const currentQty = parseInt(qtyInput.value) || 0;
                 const difference = newInitial - originalInitial;
-                const newQty = Math.max(0, currentQty + difference);
+                const newQty = currentQty + difference;
 
                 qtyInput.value = newQty;
                 originalInitial = newInitial; // 更新原始值

@@ -204,10 +204,7 @@ class InventoryService
         // 計算新的庫存數量
         $newQty = $inventory['i_qty'] + $qtyChange;
         
-        // 🔍 檢查庫存是否足夠 (針對出庫操作，但 DELETE 操作時跳過檢查)
-        if (!$skipInventoryCheck && $qtyChange < 0 && $newQty < 0) {
-            throw new Exception("庫存不足，產品: {$inventory['mic_name']} {$inventory['pr_name']}，地點: {$inventory['l_name']}，當前庫存: {$inventory['i_qty']}，需要: " . abs($qtyChange));
-        }
+        // 🔍 允許負數庫存，移除庫存不足檢查 (根據業務需求調整)
         
         $updateData = [
             'i_qty' => $newQty,
