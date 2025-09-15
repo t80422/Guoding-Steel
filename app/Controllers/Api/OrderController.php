@@ -40,7 +40,7 @@ class OrderController extends Controller
             return $this->respondCreated(['order_id' => $orderId]);
         } catch (Exception $e) {
             log_message('error', $e->getMessage());
-            return $this->fail('新增失敗');
+            return $this->fail('新增失敗:' . $e->getMessage());
         }
     }
 

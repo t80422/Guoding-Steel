@@ -217,17 +217,8 @@ class ExcelImportService
                         $manufacturerOnLeft = false;
                     }
                     
-                    // 檢查是否為工地
-                    if ((int) $location['l_type'] !== LocationModel::TYPE_CONSTRUCTION_SITE) {
-                        $errors[] = [
-                            'row' => $row,
-                            'type' => 'invalid_rental_location',
-                            'message' => 'E欄租賃單需要工地，但找到的是：' . $location['l_name']
-                        ];
-                        continue;
-                    }
                     
-                    // 工地在前 → 出工地(1)，工地在後 → 進工地(0)
+                    // 地點在前 → 出貨(1)，地點在後 → 進貨(0)
                     $roType = $manufacturerOnLeft ? 0 : 1;
 
                     $rowResult = [

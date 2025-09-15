@@ -86,6 +86,13 @@ class InventoryModel extends Model
         return $builder->countAllResults() > 0;
     }
 
+    /**
+     * 取得鋪路鋼板庫存列表
+     *
+     * @param array $filter
+     * @param int $page
+     * @return array
+     */
     public function getRoadPlateList($filter = [], $page = 1)
     {
         $builder = $this->builder('inventories i')
@@ -113,5 +120,25 @@ class InventoryModel extends Model
             'currentPage' => $page,
             'totalPages' => $totalPages
         ];
+    }
+
+    /**
+     * 取得產品庫存資料
+     *
+     * @param int $productId
+     * @param int $locationId
+     * @return array
+     */
+    public function getProductInventoryByLocation($productId, $locationId)
+    {
+        return $this->builder('inventories i')
+            ->join('locations l', 'l.l_id = i.i_l_id')
+            ->join('products pr', 'pr.pr_id = i.i_pr_id')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id')
+            ->select('i.*, l.l_name, pr.pr_name, mic.mic_name')
+            ->where('i.i_pr_id', $productId)
+            ->where('i.i_l_id', $locationId)
+            ->get()
+            ->getRowArray();
     }
 }
