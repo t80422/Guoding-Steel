@@ -167,7 +167,7 @@ class OrderController extends BaseController
             ['name' => '構台角鐵', 'unit' => '支', 'dynamic' => false],
             ['name' => '不鏽鋼花板', 'unit' => '片', 'dynamic' => true],
             ['name' => '圍令', 'unit' => '支', 'dynamic' => true],
-            ['name' => '構台帽', 'unit' => '個', 'dynamic' => false],
+            ['name' => '構台帽', 'unit' => '個', 'dynamic' => true],
             ['name' => '踢腳板', 'unit' => '片', 'dynamic' => false],
             ['name' => '短料', 'unit' => '個', 'dynamic' => true],
             ['name' => '千斤頂', 'unit' => '個', 'dynamic' => true],

@@ -103,13 +103,8 @@
                 <tr>
                     <td class="align-top" style="width:84%;">
                         <div class="text-start fw-bold fs-1 d-flex align-items-center">
-                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1.2em; width:auto; margin-right: 0.75rem;">
-                            <span style="letter-spacing: 0.41em;">國鼎鋼鐵股份有限公司</span>
-                        </div>
-                        <div class="fs-4 ms-5">
-                            請詳細打√&nbsp;&nbsp;
-                            進倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 0 ? 'checked' : '' ?>>&nbsp;&nbsp;
-                            出倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 1 ? 'checked' : '' ?>>
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1.4em; width:auto; margin-right: 0.75rem;">
+                            <span style="letter-spacing: 0.39em;">國鼎鋼鐵股份有限公司</span>
                         </div>
                     </td>
                     <td class="text-end align-top" style="width:16%;">
@@ -119,6 +114,12 @@
                     </td>
                 </tr>
             </table>
+            <!-- 進倉庫/出倉庫選項 - 置中顯示 -->
+            <div class="text-center fs-4 mb-2">
+                請詳細打√&nbsp;&nbsp;
+                進倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 0 ? 'checked' : '' ?>>&nbsp;&nbsp;
+                出倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 1 ? 'checked' : '' ?>>
+            </div>
             <!-- 基本資料列 -->
             <table class="borderless mb-1 fs-6">
                 <tr>

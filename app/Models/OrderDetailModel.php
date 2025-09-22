@@ -153,7 +153,7 @@ class OrderDetailModel extends Model
             if (floor($num) == $num) {
                 return (string) ((int) $num);
             }
-            return number_format($num, 1, '.', '');
+            return number_format($num, 2, '.', '');
         };
 
         // 依 pr_id 升冪輸出
