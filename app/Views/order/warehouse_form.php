@@ -91,6 +91,7 @@
                 border: none;
                 padding: 5mm;
             }
+
         }
     </style>
 </head>
@@ -102,9 +103,10 @@
             <table class="borderless mb-1">
                 <tr>
                     <td class="align-top" style="width:84%;">
-                        <div class="text-start fw-bold fs-1 d-flex align-items-center">
-                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" style="height: 1.4em; width:auto; margin-right: 0.75rem;">
-                            <span style="letter-spacing: 0.39em;">國鼎鋼鐵股份有限公司</span>
+                        <div style="text-align: left; font-weight: bold; font-size: 2.5rem; line-height: 1.2;">
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" 
+                                 style="height: 60px; width: auto; margin-right: 12px; vertical-align: middle;">
+                            <span style="letter-spacing: 0.35em; vertical-align: middle;">國鼎鋼鐵股份有限公司</span>
                         </div>
                     </td>
                     <td class="text-end align-top" style="width:16%;">

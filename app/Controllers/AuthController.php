@@ -38,10 +38,10 @@ class AuthController extends BaseController
             if ($sessionSet) {
                 return view('home');
             } else {
-                return redirect()->to('auth')->withInput()->with('error', '系統發生錯誤');
+                return redirect()->to('/')->withInput()->with('error', '系統發生錯誤');
             }
         } else {
-            return redirect()->to('auth')->withInput()->with('error', $result['message']);
+            return redirect()->to('/')->withInput()->with('error', $result['message']);
         }
     }
 
