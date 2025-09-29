@@ -56,11 +56,11 @@ class RentalOrderModel extends Model
     private function baseQuery()
     {
         return $this->builder('rental_orders ro')
-            ->join('locations l', 'l.l_id = ro.ro_l_id')
-            ->join('users u1', 'u1.u_id = ro.ro_create_by')
+            ->join('locations l', 'l.l_id = ro.ro_l_id','left')
+            ->join('users u1', 'u1.u_id = ro.ro_create_by','left')
             ->join('users u2', 'u2.u_id = ro.ro_update_by', 'left')
             ->join('gps g', 'g.g_id = ro.ro_g_id', 'left')
-            ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id')
+            ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id','left')
             ->select('
                 ro.*, l.l_name, m.ma_name, u1.u_name as creator, u2.u_name as updater, g.g_name');
     }

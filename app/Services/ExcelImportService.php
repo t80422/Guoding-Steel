@@ -474,8 +474,8 @@ class ExcelImportService
             // 數量與米數
             $qtyRaw = $this->getCellCalculatedValue($sheet, $col, $row);
             $lenRaw = $this->getCellCalculatedValue($sheet, $col + 1, $row);
-            $qty = (int) (is_numeric($qtyRaw) ? $qtyRaw : 0);
-            $length = (float) (is_numeric($lenRaw) ? $lenRaw : 0);
+            $qty = is_numeric($qtyRaw) ? (int) abs((float) $qtyRaw) : 0;
+            $length = is_numeric($lenRaw) ? (float) abs((float) $lenRaw) : 0.0;
             if ($qty <= 0) {
                 continue; // 僅米數或無效數量 → 不保留
             }
