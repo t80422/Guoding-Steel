@@ -413,6 +413,8 @@ class OrderModel extends Model
     {
         return $this->baseQuery()
             ->where('o.o_status', self::STATUS_COMPLETED)
+            ->orderBy('o.o_date', 'DESC')
+            ->orderBy('o.o_id', 'DESC')
             ->get()->getResultArray();
     }
 

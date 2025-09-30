@@ -10,6 +10,7 @@ use App\Models\OrderDetailModel;
 use App\Models\InventoryModel;
 use App\Services\InventoryService;
 use App\Libraries\FileManager;
+use CodeIgniter\HTTP\Files\UploadedFile;
 
 class OrderServiceTest extends CIUnitTestCase
 {
@@ -351,6 +352,64 @@ class OrderServiceTest extends CIUnitTestCase
         // 驗證庫存正確更新 (UPDATE 操作會先恢復舊影響，再套用新影響)
         $afterSnapshot = $this->getInventorySnapshot();
         $this->assertNotEquals($beforeSnapshot, $afterSnapshot, '庫存應該有變化');
+    }
+
+    /**
+     * 測試 updateOrder() - 簽名補齊後狀態改為完成
+     */
+    public function testUpdateOrder_StatusCompletedWhenAllSignaturesPresent()
+    {
+        $orderId = 1;
+
+        // 預先準備已有兩個簽名的訂單
+        $this->orderModel->update($orderId, [
+            'o_driver_signature' => 'driver_existing.png',
+            'o_from_signature' => 'from_existing.png',
+            'o_to_signature' => null,
+            'o_status' => OrderModel::STATUS_IN_PROGRESS,
+        ]);
+
+        // 模擬這次更新上傳第三張簽名
+        $uploadedFile = $this->createMock(UploadedFile::class);
+        $uploadedFile->method('isValid')->willReturn(true);
+        $uploadedFile->method('hasMoved')->willReturn(false);
+
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => null,
+            'o_from_signature' => null,
+            'o_to_signature' => 'new_to_signature.png',
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null,
+        ]);
+        $customFileManager->method('deleteFiles')->willReturnCallback(function (array $files): void {
+            // 模擬刪除舊檔案，這裡不需要做任何事
+        });
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $files = [
+                'o_to_signature' => $uploadedFile,
+            ];
+
+            $result = $this->orderService->updateOrder($orderId, [], [], $files, 1);
+
+            $this->assertTrue($result);
+
+            $updatedOrder = $this->orderModel->find($orderId);
+
+            $this->assertSame('driver_existing.png', $updatedOrder['o_driver_signature']);
+            $this->assertSame('from_existing.png', $updatedOrder['o_from_signature']);
+            $this->assertSame('new_to_signature.png', $updatedOrder['o_to_signature']);
+            $this->assertSame(OrderModel::STATUS_COMPLETED, (int) $updatedOrder['o_status']);
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
     }
 
     /**
