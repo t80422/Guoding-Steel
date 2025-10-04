@@ -553,4 +553,373 @@ class OrderServiceTest extends CIUnitTestCase
         $afterSnapshot = $this->getInventorySnapshot();
         $this->assertEquals($beforeSnapshot, $afterSnapshot, '庫存不足時應該沒有任何庫存變化');
     }
+
+    // ==================== o_status 判斷邏輯測試 ====================
+
+    /**
+     * 測試 createOrder - 四個必要欄位都有值時，狀態應為 STATUS_COMPLETED
+     */
+    public function testCreateOrder_StatusCompleted_WhenAllFieldsPresent()
+    {
+        $this->setupInitialInventory();
+
+        $orderData = [
+            'o_type' => 1,
+            'o_from_location' => 1,
+            'o_to_location' => 2,
+            'o_date' => '2024-01-01',
+            'o_car_number' => 'TEST-STATUS-001',
+            'o_driver_phone' => '0987654321',
+            'o_loading_time' => '2024-01-01 08:00:00',
+            'o_unloading_time' => '2024-01-01 17:00:00',
+            'o_oxygen' => 15.5,
+            'o_acetylene' => 8.2,
+            'o_g_id' => null,
+            'o_remark' => null,
+        ];
+
+        $detailsData = [
+            ['od_pr_id' => 1, 'od_qty' => 5, 'od_length' => 50, 'od_weight' => 250]
+        ];
+
+        // 模擬三個簽名都上傳
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => 'driver_signature.png',
+            'o_from_signature' => 'from_signature.png',
+            'o_to_signature' => 'to_signature.png',
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null
+        ]);
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $orderId = $this->orderService->createOrder($orderData, $detailsData, [], 1);
+
+            $savedOrder = $this->orderModel->find($orderId);
+            
+            // ✅ 驗證狀態為已完成
+            $this->assertEquals(OrderModel::STATUS_COMPLETED, (int)$savedOrder['o_status'], 
+                '當三個簽名和卸貨時間都有值時，狀態應為 STATUS_COMPLETED');
+            
+            // 驗證所有必要欄位都有值
+            $this->assertNotEmpty($savedOrder['o_driver_signature']);
+            $this->assertNotEmpty($savedOrder['o_from_signature']);
+            $this->assertNotEmpty($savedOrder['o_to_signature']);
+            $this->assertNotEmpty($savedOrder['o_unloading_time']);
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
+    }
+
+    /**
+     * 測試 createOrder - 所有欄位都為空時，狀態應為 STATUS_IN_PROGRESS
+     */
+    public function testCreateOrder_StatusInProgress_WhenAllFieldsEmpty()
+    {
+        $this->setupInitialInventory();
+
+        $orderData = [
+            'o_type' => 1,
+            'o_from_location' => 1,
+            'o_to_location' => 2,
+            'o_date' => '2024-01-01',
+            'o_car_number' => 'TEST-STATUS-002',
+            'o_driver_phone' => '0987654321',
+            'o_loading_time' => '2024-01-01 08:00:00',
+            'o_oxygen' => 0,
+            'o_acetylene' => 0,
+            'o_g_id' => null,
+            'o_remark' => null,
+            // 沒有 o_unloading_time
+        ];
+
+        $detailsData = [
+            ['od_pr_id' => 1, 'od_qty' => 5, 'od_length' => 50, 'od_weight' => 250]
+        ];
+
+        // 沒有上傳任何簽名
+        $orderId = $this->orderService->createOrder($orderData, $detailsData, [], 1);
+
+        $savedOrder = $this->orderModel->find($orderId);
+        
+        // ✅ 驗證狀態為進行中
+        $this->assertEquals(OrderModel::STATUS_IN_PROGRESS, (int)$savedOrder['o_status'],
+            '當所有必要欄位都為空時，狀態應為 STATUS_IN_PROGRESS');
+    }
+
+    /**
+     * 測試 createOrder - 只有三個簽名有值但沒有 o_unloading_time，狀態應為 STATUS_IN_PROGRESS
+     */
+    public function testCreateOrder_StatusInProgress_WhenSignaturesPresentButNoUnloadingTime()
+    {
+        $this->setupInitialInventory();
+
+        $orderData = [
+            'o_type' => 1,
+            'o_from_location' => 1,
+            'o_to_location' => 2,
+            'o_date' => '2024-01-01',
+            'o_car_number' => 'TEST-STATUS-003',
+            'o_driver_phone' => '0987654321',
+            'o_loading_time' => '2024-01-01 08:00:00',
+            'o_oxygen' => 0,
+            'o_acetylene' => 0,
+            'o_g_id' => null,
+            'o_remark' => null,
+            // 沒有 o_unloading_time
+        ];
+
+        $detailsData = [
+            ['od_pr_id' => 1, 'od_qty' => 5, 'od_length' => 50, 'od_weight' => 250]
+        ];
+
+        // 模擬三個簽名都上傳，但沒有 o_unloading_time
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => 'driver_signature.png',
+            'o_from_signature' => 'from_signature.png',
+            'o_to_signature' => 'to_signature.png',
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null
+        ]);
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $orderId = $this->orderService->createOrder($orderData, $detailsData, [], 1);
+
+            $savedOrder = $this->orderModel->find($orderId);
+            
+            // ✅ 驗證狀態為進行中（因為缺少 o_unloading_time）
+            $this->assertEquals(OrderModel::STATUS_IN_PROGRESS, (int)$savedOrder['o_status'],
+                '當三個簽名有值但沒有卸貨時間時，狀態應為 STATUS_IN_PROGRESS');
+            
+            $this->assertNotEmpty($savedOrder['o_driver_signature']);
+            $this->assertNotEmpty($savedOrder['o_from_signature']);
+            $this->assertNotEmpty($savedOrder['o_to_signature']);
+            $this->assertEmpty($savedOrder['o_unloading_time']);
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
+    }
+
+    /**
+     * 測試 createOrder - 有 o_unloading_time 但簽名不全，狀態應為 STATUS_IN_PROGRESS
+     */
+    public function testCreateOrder_StatusInProgress_WhenUnloadingTimePresentButSignaturesIncomplete()
+    {
+        $this->setupInitialInventory();
+
+        $orderData = [
+            'o_type' => 1,
+            'o_from_location' => 1,
+            'o_to_location' => 2,
+            'o_date' => '2024-01-01',
+            'o_car_number' => 'TEST-STATUS-004',
+            'o_driver_phone' => '0987654321',
+            'o_loading_time' => '2024-01-01 08:00:00',
+            'o_unloading_time' => '2024-01-01 17:00:00', // 有卸貨時間
+            'o_oxygen' => 0,
+            'o_acetylene' => 0,
+            'o_g_id' => null,
+            'o_remark' => null,
+        ];
+
+        $detailsData = [
+            ['od_pr_id' => 1, 'od_qty' => 5, 'od_length' => 50, 'od_weight' => 250]
+        ];
+
+        // 只上傳一個簽名
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => 'driver_signature.png',
+            'o_from_signature' => null,
+            'o_to_signature' => null,
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null
+        ]);
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $orderId = $this->orderService->createOrder($orderData, $detailsData, [], 1);
+
+            $savedOrder = $this->orderModel->find($orderId);
+            
+            // ✅ 驗證狀態為進行中（因為簽名不全）
+            $this->assertEquals(OrderModel::STATUS_IN_PROGRESS, (int)$savedOrder['o_status'],
+                '當有卸貨時間但簽名不全時，狀態應為 STATUS_IN_PROGRESS');
+            
+            $this->assertNotEmpty($savedOrder['o_unloading_time']);
+            $this->assertNotEmpty($savedOrder['o_driver_signature']);
+            $this->assertEmpty($savedOrder['o_from_signature']);
+            $this->assertEmpty($savedOrder['o_to_signature']);
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
+    }
+
+    /**
+     * 測試 updateOrder - 從進行中更新為已完成（補齊所有必要欄位）
+     */
+    public function testUpdateOrder_StatusChangesFromInProgressToCompleted()
+    {
+        $this->setupInitialInventory();
+
+        // 建立一個只有部分欄位的訂單
+        $orderId = 1;
+        $this->orderModel->update($orderId, [
+            'o_driver_signature' => 'driver_existing.png',
+            'o_from_signature' => null,
+            'o_to_signature' => null,
+            'o_unloading_time' => null,
+            'o_status' => OrderModel::STATUS_IN_PROGRESS,
+        ]);
+
+        // 模擬更新補齊所有欄位
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => null,
+            'o_from_signature' => 'from_new.png',
+            'o_to_signature' => 'to_new.png',
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null
+        ]);
+        $customFileManager->method('deleteFiles')->willReturnCallback(function (array $files): void {
+            // 模擬刪除舊檔案，這裡不需要做任何事
+        });
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $updateData = [
+                'o_unloading_time' => '2024-01-01 17:00:00', // 補上卸貨時間
+            ];
+
+            $result = $this->orderService->updateOrder($orderId, $updateData, [], [], 1);
+
+            $this->assertTrue($result);
+
+            $updatedOrder = $this->orderModel->find($orderId);
+            
+            // ✅ 驗證狀態變為已完成
+            $this->assertEquals(OrderModel::STATUS_COMPLETED, (int)$updatedOrder['o_status'],
+                '當補齊所有必要欄位後，狀態應從 STATUS_IN_PROGRESS 變為 STATUS_COMPLETED');
+            
+            $this->assertNotEmpty($updatedOrder['o_driver_signature']);
+            $this->assertNotEmpty($updatedOrder['o_from_signature']);
+            $this->assertNotEmpty($updatedOrder['o_to_signature']);
+            $this->assertNotEmpty($updatedOrder['o_unloading_time']);
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
+    }
+
+    /**
+     * 測試 updateOrder - 從已完成變回進行中（移除必要欄位）
+     */
+    public function testUpdateOrder_StatusChangesFromCompletedToInProgress()
+    {
+        $this->setupInitialInventory();
+
+        // 建立一個已完成的訂單
+        $orderId = 1;
+        $this->orderModel->update($orderId, [
+            'o_driver_signature' => 'driver_existing.png',
+            'o_from_signature' => 'from_existing.png',
+            'o_to_signature' => 'to_existing.png',
+            'o_unloading_time' => '2024-01-01 17:00:00',
+            'o_status' => OrderModel::STATUS_COMPLETED,
+        ]);
+
+        // 模擬移除 o_unloading_time
+        $updateData = [
+            'o_unloading_time' => null, // 移除卸貨時間
+        ];
+
+        $result = $this->orderService->updateOrder($orderId, $updateData, [], [], 1);
+
+        $this->assertTrue($result);
+
+        $updatedOrder = $this->orderModel->find($orderId);
+        
+        // ✅ 驗證狀態變回進行中
+        $this->assertEquals(OrderModel::STATUS_IN_PROGRESS, (int)$updatedOrder['o_status'],
+            '當移除必要欄位後，狀態應從 STATUS_COMPLETED 變回 STATUS_IN_PROGRESS');
+        
+        $this->assertEmpty($updatedOrder['o_unloading_time']);
+    }
+
+    /**
+     * 測試邊界情況 - 空字串應視為空值
+     */
+    public function testCreateOrder_StatusInProgress_WhenFieldsAreEmptyStrings()
+    {
+        $this->setupInitialInventory();
+
+        $orderData = [
+            'o_type' => 1,
+            'o_from_location' => 1,
+            'o_to_location' => 2,
+            'o_date' => '2024-01-01',
+            'o_car_number' => 'TEST-STATUS-005',
+            'o_driver_phone' => '0987654321',
+            'o_loading_time' => '2024-01-01 08:00:00',
+            'o_unloading_time' => '', // 空字串
+            'o_oxygen' => 0,
+            'o_acetylene' => 0,
+            'o_g_id' => null,
+            'o_remark' => null,
+        ];
+
+        $detailsData = [
+            ['od_pr_id' => 1, 'od_qty' => 5, 'od_length' => 50, 'od_weight' => 250]
+        ];
+
+        // 模擬簽名為空字串
+        $customFileManager = $this->createMock(FileManager::class);
+        $customFileManager->method('uploadFiles')->willReturn([
+            'o_driver_signature' => '',
+            'o_from_signature' => '',
+            'o_to_signature' => '',
+            'o_img_car_head' => null,
+            'o_img_car_tail' => null
+        ]);
+
+        $reflection = new \ReflectionClass($this->orderService);
+        $fileManagerProperty = $reflection->getProperty('fileManager');
+        $fileManagerProperty->setAccessible(true);
+        $originalFileManager = $fileManagerProperty->getValue($this->orderService);
+        $fileManagerProperty->setValue($this->orderService, $customFileManager);
+
+        try {
+            $orderId = $this->orderService->createOrder($orderData, $detailsData, [], 1);
+
+            $savedOrder = $this->orderModel->find($orderId);
+            
+            // ✅ 驗證空字串視為空值，狀態應為進行中
+            $this->assertEquals(OrderModel::STATUS_IN_PROGRESS, (int)$savedOrder['o_status'],
+                '當欄位為空字串時應視為空值，狀態應為 STATUS_IN_PROGRESS');
+        } finally {
+            $fileManagerProperty->setValue($this->orderService, $originalFileManager);
+        }
+    }
 }

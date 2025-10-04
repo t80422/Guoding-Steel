@@ -54,7 +54,7 @@ class OrderService
             }
 
             // 設定訂單狀態和系統欄位
-            $orderData['o_status'] = OrderModel::STATUS_IN_PROGRESS;
+            $orderData['o_status'] = $this->determineOrderStatus($orderData);
             $orderData['o_number'] = $this->orderModel->generateOrderNumber();
             $orderData['o_create_by'] = $userId;
             $orderData['o_create_at'] = date('Y-m-d H:i:s');
@@ -121,14 +121,9 @@ class OrderService
             $orderData['o_update_by'] = $userId;
             $orderData['o_update_at'] = date('Y-m-d H:i:s');
             
-            // 更新簽名狀態 (只針對 API 更新)
-            if (isset($orderData['o_driver_signature']) || isset($orderData['o_from_signature']) || isset($orderData['o_to_signature'])) {
-                $orderData['o_status'] = (
-                    !empty($orderData['o_driver_signature']) &&
-                    !empty($orderData['o_from_signature']) &&
-                    !empty($orderData['o_to_signature'])
-                ) ? OrderModel::STATUS_COMPLETED : OrderModel::STATUS_IN_PROGRESS;
-            }
+            // 合併舊資料和新資料，用於判斷訂單狀態
+            $mergedData = array_merge($oldOrder, $orderData);
+            $orderData['o_status'] = $this->determineOrderStatus($mergedData);
 
             // 更新主表
             $this->orderModel->update($orderId, $orderData);
@@ -311,6 +306,28 @@ class OrderService
                 $data[$field] = null;
             }
         }
+    }
+
+    /**
+     * 判斷訂單狀態
+     * 當三個簽名欄位和卸貨時間都有值時，狀態為已完成；否則為進行中
+     */
+    private function determineOrderStatus(array $orderData): string
+    {
+        $requiredFields = [
+            'o_driver_signature',
+            'o_from_signature',
+            'o_to_signature',
+            'o_unloading_time'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($orderData[$field] ?? null)) {
+                return OrderModel::STATUS_IN_PROGRESS;
+            }
+        }
+
+        return OrderModel::STATUS_COMPLETED;
     }
 
     /**
