@@ -46,7 +46,7 @@ class ExcelImportService
         try {
             $filePath = $file->getTempName();
             $reader = IOFactory::createReaderForFile($filePath);
-            $reader->setReadDataOnly(true);
+            $reader->setReadDataOnly(false);
             $spreadsheet = $reader->load($filePath);
             $sheet = $spreadsheet->getSheet(0);
             $highestRow = $sheet->getHighestRow();
@@ -390,7 +390,7 @@ class ExcelImportService
     {
         $map = [];
         $mergeCells = $sheet->getMergeCells();
-
+        
         // 建立 quick lookup：row1 的合併區段
         $ranges = [];
         foreach ($mergeCells as $range) {
