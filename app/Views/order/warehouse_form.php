@@ -54,7 +54,7 @@
         .underlined-text {
             border-bottom: 1px solid #000;
             display: inline-block;
-            min-width: 240px;
+            min-width: 200px;
             text-align: center;
             padding-bottom: 2px;
         }
@@ -71,7 +71,7 @@
 
         .dynamic-details {
             flex-grow: 1;
-            min-height: 100px;
+            min-height: 90px;
         }
 
         .bottom-fixed {
@@ -123,15 +123,15 @@
                 出倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 1 ? 'checked' : '' ?>>
             </div>
             <!-- 基本資料列 -->
-            <table class="borderless mb-1 fs-6">
+            <table class="borderless mb-1">
                 <tr>
                     <td class="text-center pt-2">
-                        名稱地址：<span class="underlined-text"><?= esc($order['from_location_name'] ?? '') ?></span>
+                        名稱地址：<span class="underlined-text fs-5"><?= esc($order['from_location_name'] ?? '') ?></span>
                         <span>至</span>
-                        <span class="underlined-text"><?= esc($order['to_location_name'] ?? '') ?></span>
+                        <span class="underlined-text fs-5"><?= esc($order['to_location_name'] ?? '') ?></span>
                     </td>
                     <td class="text-center pt-2">
-                        日期：<?= esc($order['o_date'] ?? '') ?>
+                        <span class="fs-5">日期：<?= esc($order['o_date'] ?? '') ?></span>
                     </td>
                 </tr>
             </table>
@@ -159,7 +159,7 @@
                                     <?php if ($cell): ?>
                                         <td><?= esc($cell['name'] ?? '') ?></td>
                                         <td><?= esc($cell['unit'] ?? '') ?></td>
-                                        <td><?= esc($cell['qty'] ?? '') ?></td>
+                                        <td class="fw-bold"><?= esc($cell['qty'] ?? '') ?></td>
                                     <?php else: ?>
                                         <td></td>
                                         <td></td>
@@ -181,7 +181,7 @@
                     ?>
                         <tr>
                             <td style="width:5%; text-align:left;"><?= $label ?></td>
-                            <td class="dashed" style="width:95%; text-align:left;"><?= esc($d['spec'] ?? '') ?></td>
+                            <td class="dashed text-break" style="width:95%; text-align:left;"><?= esc($d['spec'] ?? '') ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </table>
@@ -213,7 +213,8 @@
             <table>
                 <tr>
                     <td style="text-align:left; width:25%;">
-                        車號：<?= esc($order['o_car_number'] ?? '') ?><br>
+                        車種:<br>
+                        <span class="fw-bold fs-6">車號：<?= esc($order['o_car_number'] ?? '') ?></span><br>
                         司機電話：<?= esc($order['o_driver_phone'] ?? '') ?>
                     </td>
                     <td class="text-center" style="width:25%; vertical-align:top;">
