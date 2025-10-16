@@ -33,6 +33,12 @@
             <input type="text" class="form-control" name="mic_unit" value="<?= old('mic_unit', $data['mic_unit'] ?? '') ?>">
         </div>
     
+        <div class="mb-3">
+            <input type="hidden" name="mic_is_default" value="0">
+            <input type="checkbox" class="form-check-input" id="micIsDefault" name="mic_is_default" value="1" <?= (old('mic_is_default', $data['mic_is_default'] ?? 0) == 1) ? 'checked' : '' ?>>
+            <label for="micIsDefault" class="form-label">是否預設顯示在料單</label>
+        </div>
+
         <?php if(!$isEdit): ?>
         <div class="mb-3">
             <div class="form-check">

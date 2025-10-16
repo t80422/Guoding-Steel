@@ -79,7 +79,7 @@
             <tbody>
                 <?php if (empty($data)): ?>
                     <tr>
-                        <td colspan="10" class="text-center">查無資料</td>
+                        <td colspan="12" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($data as $item): ?>
@@ -147,6 +147,18 @@
         </table>
     </div>
 </div>
+
+<!-- 分頁控件 -->
+<?= view('components/pagination', [
+    'pager' => $pagination,
+    'baseUrl' => url_to('OrderController::index'),
+    'params' => [
+        'keyword' => $keyword,
+        'order_date_start' => $order_date_start,
+        'order_date_end' => $order_date_end,
+        'type' => $type,
+    ],
+]) ?>
 
 <script src="<?= base_url('js/script.js') ?>"></script>
 

@@ -15,7 +15,8 @@ class MinorCategoryModel extends Model
         'mic_update_by',
         'mic_update_at',
         'mic_mc_id',
-        'mic_unit'
+        'mic_unit',
+        'mic_is_default'
     ];
 
     public function getList($keyword)

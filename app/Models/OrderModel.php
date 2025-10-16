@@ -106,7 +106,7 @@ class OrderModel extends Model
      * @param string|null $orderDateEnd
      * @return array
      */
-    public function getList($keyword = null, $orderDateStart = null, $orderDateEnd = null, $type = null)
+    public function getList($keyword = null, $orderDateStart = null, $orderDateEnd = null, $type = null, int $page = 1, int $perPage = 10)
     {
         $builder = $this->baseQuery();
 
@@ -142,7 +142,16 @@ class OrderModel extends Model
 
         $builder->orderBy('o.o_date', 'DESC');
 
-        $results = $builder->get()->getResultArray();
+        $page = max(1, $page);
+        $offset = ($page - 1) * $perPage;
+
+        $totalCount = $builder->countAllResults(false);
+        $totalPages = (int) ceil($totalCount / $perPage);
+
+        $results = $builder
+            ->limit($perPage, $offset)
+            ->get()
+            ->getResultArray();
 
         foreach ($results as &$row) {
             $row['typeName'] = self::getTypeName($row['o_type']);
@@ -152,7 +161,15 @@ class OrderModel extends Model
             $row['o_total_tons'] = number_format($sumKg / 1000, 2, '.', '');
         }
 
-        return $results;
+        return [
+            'data' => $results,
+            'pagination' => [
+                'currentPage' => $page,
+                'perPage' => $perPage,
+                'totalCount' => $totalCount,
+                'totalPages' => $totalPages,
+            ],
+        ];
     }
 
     /**

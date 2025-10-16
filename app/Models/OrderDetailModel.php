@@ -204,7 +204,7 @@ class OrderDetailModel extends Model
             ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
             ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
             ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
-            ->select('od.od_pr_id, od.od_qty, p.pr_name, mic.mic_name, mic.mic_unit, mc.mc_name, p.pr_id')
+            ->select('od.od_pr_id, od.od_qty, p.pr_name, mic.mic_id, mic.mic_name, mic.mic_unit, mc.mc_name, p.pr_id')
             ->where('od.od_o_id', $orderId)
             ->orderBy('p.pr_id', 'ASC')
             ->get()
