@@ -197,7 +197,7 @@ class OrderController extends BaseController
             $micName = (string) ($item['mic_name'] ?? '');
             $micUnit = (string) ($item['mic_unit'] ?? '');
             $prName = (string) ($item['pr_name'] ?? '');
-            $qty = (int) ($item['od_qty'] ?? 0);
+            $qty = $item['od_qty'] ?? 0;
             $prId = (int) ($item['pr_id'] ?? 0);
 
             if ($micId === 0) {
@@ -260,7 +260,7 @@ class OrderController extends BaseController
                         'name' => $micName,
                         'unit' => $unit,
                         'qty' => (string) array_sum(array_map(static function ($product) {
-                            return (int) ($product['qty'] ?? 0);
+                            return $product['qty'] ?? 0;
                         }, $products)),
                     ];
                 } else {
@@ -315,7 +315,7 @@ class OrderController extends BaseController
                         'name' => $micName,
                         'unit' => $unit,
                         'qty' => (string) array_sum(array_map(static function ($product) {
-                            return (int) ($product['qty'] ?? 0);
+                            return $product['qty'] ?? 0;
                         }, $products)),
                     ];
                 } else {

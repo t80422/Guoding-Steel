@@ -219,6 +219,33 @@
         let itemQuantityData = [];
         let originalQuantities = {};
 
+        const FLOAT_TOLERANCE = 0.000001;
+
+        function toNumber(value) {
+            const parsed = typeof value === 'number' ? value : parseFloat(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        function isEffectivelyZero(value) {
+            return Math.abs(toNumber(value)) < FLOAT_TOLERANCE;
+        }
+
+        function isDifferentNumber(a, b) {
+            return Math.abs(toNumber(a) - toNumber(b)) > FLOAT_TOLERANCE;
+        }
+
+        function formatDisplayNumber(value) {
+            const numberValue = toNumber(value);
+            if (Number.isInteger(numberValue)) {
+                return numberValue.toString();
+            }
+
+            return numberValue
+                .toFixed(4)
+                .replace(/(?:\.0+|0+)$/, '')
+                .replace(/\.$/, '');
+        }
+
         // 當項目數量表模態框開啟時載入數據
         if (document.getElementById('itemQuantityModal')) {
             document.getElementById('itemQuantityModal').addEventListener('show.bs.modal', function() {
@@ -291,7 +318,7 @@
                     const QTY_KEY = '<?= $payloadFieldMap['qty'] ?>';
                     itemQuantityData.existingQuantities.forEach(item => {
                         const key = `${item[DETAIL_KEY]}_${item[PI_KEY]}`;
-                        originalQuantities[key] = parseInt(item[QTY_KEY]) || 0;
+                        originalQuantities[key] = toNumber(item[QTY_KEY]);
                     });
                     
                     // 4. 所有數據都載入完成，開始渲染
@@ -363,30 +390,34 @@
                     const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name 
                         ? `${orderDetail.mic_name} ${orderDetail.pr_name}` 
                         : (orderDetail.od_pr_name || orderDetail.pr_name);
+
+                    const detailId = orderDetail['<?= $detailIdKey ?>'];
+                    const totalQty = toNumber(orderDetail['<?= $qtyField ?>']);
+                    const totalLength = toNumber(orderDetail['<?= $lengthField ?>']);
                     
                     tableHtml += `
                         <tr>
                             <td class="product-name">${displayName}</td>
-                            <td class="total-quantity">${orderDetail['<?= $qtyField ?>'] || 0}</td>
-                            <td class="total-length">${orderDetail['<?= $lengthField ?>'] || 0}</td>
+                            <td class="total-quantity">${formatDisplayNumber(totalQty)}</td>
+                            <td class="total-length">${formatDisplayNumber(totalLength)}</td>
                     `;
 
                     // 渲染每個分類的數量欄位
                     projectItems.forEach(projectItem => {
-                        const key = `${orderDetail['<?= $detailIdKey ?>']}_${projectItem.pi_id}`;
-                        const existingQty = originalQuantities[key] || 0;
-                        const maxQty = orderDetail['<?= $qtyField ?>'] || 0;
+                        const key = `${detailId}_${projectItem.pi_id}`;
+                        const existingQty = toNumber(originalQuantities[key]);
+                        const maxQty = totalQty;
                         
                         tableHtml += `
                             <td class="category-cell">
                                 <input type="number" 
                                        class="form-control category-input" 
-                                       data-detail-id="${orderDetail['<?= $detailIdKey ?>']}" 
+                                       data-detail-id="${detailId}" 
                                        data-pi-id="${projectItem.pi_id}"
-                                       data-max-qty="${maxQty}"
-                                       value="${existingQty}" 
-                                       max="${maxQty}"
-                                       step="1">
+                                       data-max-qty="${formatDisplayNumber(maxQty)}"
+                                       value="${formatDisplayNumber(existingQty)}" 
+                                       max="${formatDisplayNumber(maxQty)}"
+                                       step="any">
                             </td>
                         `;
                     });
@@ -421,14 +452,14 @@
         // 驗證單行數量總和
         function validateRowQuantity(changedInput) {
             const detailId = changedInput.dataset.detailId;
-            const maxQty = parseInt(changedInput.dataset.maxQty) || 0;
+            const maxQty = toNumber(changedInput.dataset.maxQty);
             
             // 找到同一行的所有input
             const rowInputs = document.querySelectorAll(`#itemQuantityModal .category-input[data-detail-id="${detailId}"]`);
             let totalAssigned = 0;
             
             rowInputs.forEach(input => {
-                const value = parseInt(input.value) || 0;
+                const value = toNumber(input.value);
                 totalAssigned += value;
                 
                 // 移除之前的錯誤樣式
@@ -437,15 +468,15 @@
             });
             
             // 檢查是否超過限制
-            if (totalAssigned > maxQty) {
+                if (totalAssigned - maxQty > FLOAT_TOLERANCE) {
                 // 標記所有相關input為錯誤
                 rowInputs.forEach(input => {
                     input.classList.add('is-invalid');
-                    input.title = `總分配數量 ${totalAssigned} 超過訂單數量 ${maxQty}`;
+                    input.title = `總分配數量 ${formatDisplayNumber(totalAssigned)} 超過訂單數量 ${formatDisplayNumber(maxQty)}`;
                 });
                 
                 // 顯示錯誤訊息
-                showValidationError(`產品分配數量總和 (${totalAssigned}) 不能超過訂單數量 (${maxQty})`);
+                showValidationError(`產品分配數量總和 (${formatDisplayNumber(totalAssigned)}) 不能超過訂單數量 (${formatDisplayNumber(maxQty)})`);
                 return false;
             } else {
                 // 清除錯誤訊息
@@ -516,24 +547,24 @@
                     const detailId = input.dataset.detailId;
                     const piId = input.dataset.piId;
                     const key = `${detailId}_${piId}`;
-                    const originalQty = originalQuantities[key] || 0;
-                    const newQty = parseInt(input.value) || 0;
+                    const originalQty = toNumber(originalQuantities[key]);
+                    const newQty = toNumber(input.value);
 
-                    if (originalQty === 0 && newQty > 0) {
+                    if (isEffectivelyZero(originalQty) && !isEffectivelyZero(newQty)) {
                         // 新增：原本沒有，現在有值
                         operations.create.push({
                             '<?= $payloadFieldMap['detail'] ?>': detailId,
                             '<?= $payloadFieldMap['pi'] ?>': piId,
                             '<?= $payloadFieldMap['qty'] ?>': newQty
                         });
-                    } else if (originalQty > 0 && newQty > 0 && originalQty !== newQty) {
+                    } else if (!isEffectivelyZero(originalQty) && !isEffectivelyZero(newQty) && isDifferentNumber(originalQty, newQty)) {
                         // 更新：原本有值，現在也有值，但數量不同
                         operations.update.push({
                             '<?= $payloadFieldMap['detail'] ?>': detailId,
                             '<?= $payloadFieldMap['pi'] ?>': piId,
                             '<?= $payloadFieldMap['qty'] ?>': newQty
                         });
-                    } else if (originalQty > 0 && newQty === 0) {
+                    } else if (!isEffectivelyZero(originalQty) && isEffectivelyZero(newQty)) {
                         // 刪除：原本有值，現在變成0
                         operations.delete.push({
                             '<?= $payloadFieldMap['detail'] ?>': detailId,
@@ -581,9 +612,9 @@
                         const detailId = input.dataset.detailId;
                         const piId = input.dataset.piId;
                         const key = `${detailId}_${piId}`;
-                        const newQty = parseInt(input.value) || 0;
-                        
-                        if (newQty > 0) {
+                        const newQty = toNumber(input.value);
+
+                        if (!isEffectivelyZero(newQty)) {
                             originalQuantities[key] = newQty;
                         } else {
                             delete originalQuantities[key];
