@@ -193,7 +193,7 @@
             <!-- 配件／氧氣／乙炔 & GPS & 時間 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td class="fs-6" style="width:33%; text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
+                    <td class="fw-bold fs-6" colspan="3" style="text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
                     <td></td>
                     <td></td>
                 </tr>

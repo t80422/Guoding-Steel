@@ -3,12 +3,14 @@
     --bs-primary-rgb: 87, 145, 87;
     --bs-primary-hover: #4a7c4a;
     
-    /* 覆蓋 info 和 danger 顏色用於表格操作按鈕 */
+    /* 覆蓋 info 顏色用於表格操作按鈕 */
     --bs-info: #91A595;
     --bs-info-rgb: 145, 165, 149;
     --bs-info-hover: #7d9180;
-    --bs-danger: #91A595;
-    --bs-danger-rgb: 145, 165, 149;
+    
+    /* 定義自訂的灰綠色用於 danger 按鈕，但保留原本的紅色用於文字 */
+    --custom-btn-danger: #91A595;
+    --custom-btn-danger-hover: #7d9180;
 }
 
 /* ===== 基本布局樣式 ===== */
@@ -164,8 +166,14 @@ body {
 }
 
 .btn-outline-danger {
-    color: var(--bs-danger);
-    border-color: var(--bs-danger);
+    color: var(--custom-btn-danger);
+    border-color: var(--custom-btn-danger);
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--custom-btn-danger-hover);
+    border-color: var(--custom-btn-danger-hover);
+    color: #fff;
 } 
 
 /* ===== Sidebar 子選單樣式 ===== */

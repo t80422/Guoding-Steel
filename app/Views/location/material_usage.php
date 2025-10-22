@@ -149,17 +149,24 @@
                                     <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
                                         <?php
                                         $productData = $order['projects'][$projectName][$productKey] ?? null;
+                                        $isIncrease = $order['is_increase'] ?? false;
+                                        $colorClass = $isIncrease ? 'text-success' : 'text-danger';
+                                        $prefix = $isIncrease ? '+' : '-';
                                         ?>
                                         <td class="text-center border-end">
                                             <?php if ($productData && (float)($productData['quantity'] ?? 0) > 0): ?>
-                                                <span class="fw-bold text-primary"><?= (float)($productData['quantity'] ?? 0) ?></span>
+                                                <span class="fw-bold <?= $colorClass ?>">
+                                                    <?= $prefix ?><?= (float)($productData['quantity'] ?? 0) ?>
+                                                </span>
                                             <?php else: ?>
                                                 <span class="text-muted">-</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($productData && (float)($productData['quantity'] ?? 0) > 0): ?>
-                                                <span class="text-muted small"><?= number_format((float)($productData['length'] ?? 0), 2) ?>m</span>
+                                                <span class="<?= $colorClass ?>">
+                                                    <?= $prefix ?><?= number_format((float)($productData['length'] ?? 0), 2) ?>m
+                                                </span>
                                             <?php else: ?>
                                                 <span class="text-muted">-</span>
                                             <?php endif; ?>
@@ -174,10 +181,11 @@
                 <!-- 總計行 -->
                 <?php if (!empty($orders)): ?>
                     <?php
-                    // 計算各產品總計 (進倉庫 - 出倉庫)
+                    // 計算各產品總計（加 - 減）
                     $totals = [];
                     foreach ($orders as $order) {
-                        $multiplier = ($order['type'] == '進倉庫') ? 1 : -1;
+                        // 根據 is_increase 判斷是加還是減
+                        $multiplier = ($order['is_increase'] ?? false) ? 1 : -1;
 
                         foreach ($order['projects'] as $projectName => $products) {
                             foreach ($products as $productKey => $productData) {
@@ -194,7 +202,7 @@
                                 $length = (float)($productData['length'] ?? 0);
 
                                 $totals[$projectName][$productKey]['quantity'] += $quantity * $multiplier;
-                                $totals[$projectName][$productKey]['length'] += ($quantity * $length) * $multiplier;
+                                $totals[$projectName][$productKey]['length'] += $length * $multiplier;
                             }
                         }
                     }

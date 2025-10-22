@@ -311,12 +311,16 @@ class OrderModel extends Model
             
             // 初始化訂單基本資訊
             if (!isset($orders[$orderId])) {
+                // 判斷是加還是減：當前工地在 o_to_location 是加，在 o_from_location 是減
+                $isIncrease = ($row['o_to_location'] == $locationId);
+                
                 $orders[$orderId] = [
                     'o_id' => $orderId,
                     'vehicle_no' => $row['o_car_number'],
                     'date' => $row['o_date'],
                     'type' => self::getTypeName($row['o_type']),
                     'warehouse' => $this->getWarehouseName($row, $locationId),
+                    'is_increase' => $isIncrease,
                     'projects' => []
                 ];
             }
@@ -325,16 +329,16 @@ class OrderModel extends Model
             if ($row['project_name'] && $row['product_name']) {
                 $projectName = $row['project_name'];
                 $productName = $row['product_name'];
-                $length = $row['od_length'] > 0 ? $row['od_length'] . 'm' : 'N/A';
+                $length = (float)($row['od_length'] ?? 0);
+                $quantity = (int)($row['odpi_qty'] ?? 0);
                 
-                // 使用複合鍵來區分相同產品的不同長度，但顯示時只顯示產品名稱
-                $productKey = $productName . '|' . $length; // 內部識別用
+                // 使用產品名稱作為唯一鍵（合併相同產品的不同長度）
+                $productKey = $productName;
                 
                 // 記錄所有出現過的項目和產品（用於動態表頭）
                 $allProjects[$projectName] = true;
                 $allProducts[$projectName][$productKey] = [
-                    'display_name' => $productName,
-                    'length' => $length
+                    'display_name' => $productName
                 ];
                 
                 // 整理項目下的產品資料
@@ -345,17 +349,24 @@ class OrderModel extends Model
                 if (!isset($orders[$orderId]['projects'][$projectName][$productKey])) {
                     $orders[$orderId]['projects'][$projectName][$productKey] = [
                         'quantity' => 0,
-                        'length' => $length,
+                        'length' => 0,
                         'display_name' => $productName
                     ];
                 }
                 
-                $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $row['odpi_qty'];
+                // 累加數量和總米數
+                $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
+                $orders[$orderId]['projects'][$projectName][$productKey]['length'] += ($quantity * $length);
             }
         }
 
+        // 過濾掉沒有產品明細的訂單（projects 為空的訂單）
+        $filteredOrders = array_filter($orders, function($order) {
+            return !empty($order['projects']);
+        });
+
         return [
-            'orders' => array_values($orders),
+            'orders' => array_values($filteredOrders),
             'all_projects' => array_keys($allProjects),
             'all_products' => $allProducts
         ];

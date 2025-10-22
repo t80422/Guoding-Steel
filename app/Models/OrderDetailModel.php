@@ -104,6 +104,7 @@ class OrderDetailModel extends Model
             ->join('major_categories mc', 'mc.mc_id = mic.mic_mc_id', 'left')
             ->select('p.pr_id, p.pr_name, mic.mic_name, od.od_length, od.od_qty')
             ->where('od.od_o_id', $orderId)
+            ->where('mc.mc_name', '型鋼')
             ->where('p.pr_is_length', true)
             ->get()
             ->getResultArray();
@@ -147,12 +148,12 @@ class OrderDetailModel extends Model
             $groups[$prId]['total_length'] += ($lengthVal * $qtyVal);
         }
 
-        // 數字格式化：整數不顯示小數，否則 1 位小數
+        // 數字格式化：整數不顯示小數，有小數則移除尾隨的0
         $formatNumber = static function (float $num): string {
             if (floor($num) == $num) {
                 return (string) ((int) $num);
             }
-            return number_format($num, 2, '.', '');
+            return rtrim(rtrim(number_format($num, 2, '.', ''), '0'), '.');
         };
 
         // 依 pr_id 升冪輸出
@@ -178,11 +179,19 @@ class OrderDetailModel extends Model
                 $parts[] = $lenStr;
             }
 
-            $prefix = trim(($group['mic_name'] ?? '') . ' ' . ($group['pr_name'] ?? ''));
+            // 如果小分類名稱與產品名稱相同，只顯示一次
+            $micName = trim($group['mic_name'] ?? '');
+            $prName = trim($group['pr_name'] ?? '');
+            if ($micName === $prName) {
+                $prefix = $micName;
+            } else {
+                $prefix = trim($micName . ' ' . $prName);
+            }
+            
             $summary = '計 ' . (int) $group['total_count'] . '支, ' . $formatNumber((float) $group['total_length']) . 'M';
             $spec = $prefix;
             if (!empty($parts)) {
-                $spec .= ' / ' . implode('/', $parts);
+                $spec .= ' ' . implode('/', $parts);
             }
             $spec .= ' ' . $summary;
 

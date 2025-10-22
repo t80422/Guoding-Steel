@@ -193,6 +193,7 @@ class OrderController extends BaseController
         // 以小分類彙整訂單明細
         $minorCategoryMap = [];
         foreach ($orderProducts as $item) {
+            $mcName = (string) ($item['mc_name'] ?? '');
             $micId = (int) ($item['mic_id'] ?? 0);
             $micName = (string) ($item['mic_name'] ?? '');
             $micUnit = (string) ($item['mic_unit'] ?? '');
@@ -231,11 +232,20 @@ class OrderController extends BaseController
             }
 
             // 如果是長度產品，按長度分組
-            if ($prIsLength) {
-                if (!isset($minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength])) {
-                    $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength] = 0;
+            if ($prIsLength && $mcName !== '型鋼') {
+                // 正規化長度值為字串 key，避免浮點數精度問題
+                $lengthKey = rtrim(rtrim(number_format($odLength, 6, '.', ''), '0'), '.');
+                if ($lengthKey === '') {
+                    $lengthKey = '0';
                 }
-                $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength] += $qty;
+                
+                if (!isset($minorCategoryMap[$micId]['products'][$prId]['length_groups'][$lengthKey])) {
+                    $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$lengthKey] = [
+                        'value' => $odLength,
+                        'qty' => 0,
+                    ];
+                }
+                $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$lengthKey]['qty'] += $qty;
             }
 
             $minorCategoryMap[$micId]['products'][$prId]['qty'] += $qty;
@@ -266,17 +276,24 @@ class OrderController extends BaseController
                     $isLength = !empty($product['is_length']);
 
                     if ($isLength && !empty($product['length_groups'])) {
-                        // 按長度排序（由小到大）
+                        // 按長度值排序（由小到大）
                         $lengthGroups = $product['length_groups'];
-                        ksort($lengthGroups, SORT_NUMERIC);
+                        uasort($lengthGroups, function($a, $b) {
+                            return $a['value'] <=> $b['value'];
+                        });
 
-                        $lengths = array_keys($lengthGroups);
-                        $qtys = array_values($lengthGroups);
-
-                        // 格式化長度（移除小數點後的0）
-                        $formattedLengths = array_map(function($length) {
-                            return rtrim(rtrim(number_format((float)$length, 2, '.', ''), '0'), '.');
-                        }, $lengths);
+                        $formattedLengths = [];
+                        $qtys = [];
+                        
+                        foreach ($lengthGroups as $group) {
+                            $lengthValue = $group['value'];
+                            $qtyValue = $group['qty'];
+                            
+                            // 格式化長度（保留小數，移除不必要的尾隨0，加上單位m）
+                            $formatted = rtrim(rtrim(number_format((float)$lengthValue, 2, '.', ''), '0'), '.');
+                            $formattedLengths[] = $formatted . 'm';
+                            $qtys[] = $qtyValue;
+                        }
 
                         $productNames[] = $baseName . ' ' . implode('/', $formattedLengths);
                         $quantities[] = implode('/', $qtys);
@@ -341,17 +358,24 @@ class OrderController extends BaseController
                     $isLength = !empty($product['is_length']);
 
                     if ($isLength && !empty($product['length_groups'])) {
-                        // 按長度排序（由小到大）
+                        // 按長度值排序（由小到大）
                         $lengthGroups = $product['length_groups'];
-                        ksort($lengthGroups, SORT_NUMERIC);
+                        uasort($lengthGroups, function($a, $b) {
+                            return $a['value'] <=> $b['value'];
+                        });
 
-                        $lengths = array_keys($lengthGroups);
-                        $qtys = array_values($lengthGroups);
-
-                        // 格式化長度（移除小數點後的0）
-                        $formattedLengths = array_map(function($length) {
-                            return rtrim(rtrim(number_format((float)$length, 2, '.', ''), '0'), '.');
-                        }, $lengths);
+                        $formattedLengths = [];
+                        $qtys = [];
+                        
+                        foreach ($lengthGroups as $group) {
+                            $lengthValue = $group['value'];
+                            $qtyValue = $group['qty'];
+                            
+                            // 格式化長度（保留小數，移除不必要的尾隨0，加上單位m）
+                            $formatted = rtrim(rtrim(number_format((float)$lengthValue, 2, '.', ''), '0'), '.');
+                            $formattedLengths[] = $formatted . 'm';
+                            $qtys[] = $qtyValue;
+                        }
 
                         $productNames[] = $baseName . ' ' . implode('/', $formattedLengths);
                         $quantities[] = implode('/', $qtys);
