@@ -41,7 +41,7 @@ class LocationModel extends Model
     public function getList($filter = [], $page = 1)
     {
         $builder = $this->builder('locations l')
-            ->join('users u1', 'u1.u_id=l.l_create_by')
+            ->join('users u1', 'u1.u_id=l.l_create_by','left')
             ->join('users u2', 'u2.u_id=l.l_update_by', 'left')
             ->select('l.l_id, l.l_name, l.l_type, l.l_create_at, l.l_update_at, u1.u_name as creator, u2.u_name as updater');
 
@@ -50,7 +50,7 @@ class LocationModel extends Model
         }
 
         // 新增 l_type 篩選條件
-        if (isset($filter['type'])) {
+        if (isset($filter['type']) && $filter['type'] !== '') {
             $builder->where('l.l_type', $filter['type']);
         }
 

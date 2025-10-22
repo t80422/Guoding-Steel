@@ -199,6 +199,8 @@ class OrderController extends BaseController
             $prName = (string) ($item['pr_name'] ?? '');
             $qty = $item['od_qty'] ?? 0;
             $prId = (int) ($item['pr_id'] ?? 0);
+            $prIsLength = !empty($item['pr_is_length']);
+            $odLength = (float) ($item['od_length'] ?? 0);
 
             if ($micId === 0) {
                 // 沒有小分類資訊就略過，避免放入無效資料列
@@ -222,9 +224,20 @@ class OrderController extends BaseController
                 $minorCategoryMap[$micId]['products'][$prId] = [
                     'pr_id' => $prId,
                     'name' => $prName,
+                    'is_length' => $prIsLength,
                     'qty' => 0,
+                    'length_groups' => [],
                 ];
             }
+
+            // 如果是長度產品，按長度分組
+            if ($prIsLength) {
+                if (!isset($minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength])) {
+                    $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength] = 0;
+                }
+                $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$odLength] += $qty;
+            }
+
             $minorCategoryMap[$micId]['products'][$prId]['qty'] += $qty;
 
             if ($prId > 0 && $prId < $minorCategoryMap[$micId]['min_pr_id']) {
@@ -245,23 +258,44 @@ class OrderController extends BaseController
                 ksort($products);
                 $products = array_values($products);
 
-                $productNames = array_map(static function ($product) {
-                    return (string) $product['name'];
-                }, $products);
-                $quantities = array_map(static function ($product) {
-                    return (string) $product['qty'];
-                }, $products);
+                $productNames = [];
+                $quantities = [];
+
+                foreach ($products as $product) {
+                    $baseName = (string) $product['name'];
+                    $isLength = !empty($product['is_length']);
+
+                    if ($isLength && !empty($product['length_groups'])) {
+                        // 按長度排序（由小到大）
+                        $lengthGroups = $product['length_groups'];
+                        ksort($lengthGroups, SORT_NUMERIC);
+
+                        $lengths = array_keys($lengthGroups);
+                        $qtys = array_values($lengthGroups);
+
+                        // 格式化長度（移除小數點後的0）
+                        $formattedLengths = array_map(function($length) {
+                            return rtrim(rtrim(number_format((float)$length, 2, '.', ''), '0'), '.');
+                        }, $lengths);
+
+                        $productNames[] = $baseName . ' ' . implode('/', $formattedLengths);
+                        $quantities[] = implode('/', $qtys);
+                    } else {
+                        $productNames[] = $baseName;
+                        $quantities[] = (string) $product['qty'];
+                    }
+                }
+
                 $allNamesMatchCategory = !empty($productNames) && empty(array_filter($productNames, static function ($name) use ($micName) {
-                    return trim((string) $name) !== $micName;
+                    $cleanName = explode(' ', trim((string) $name))[0];
+                    return $cleanName !== $micName;
                 }));
 
-                if ($allNamesMatchCategory) {
+                if ($allNamesMatchCategory && count($productNames) === 1) {
                     $items[] = [
-                        'name' => $micName,
+                        'name' => $productNames[0],
                         'unit' => $unit,
-                        'qty' => (string) array_sum(array_map(static function ($product) {
-                            return $product['qty'] ?? 0;
-                        }, $products)),
+                        'qty' => $quantities[0],
                     ];
                 } else {
                     $displayName = $micName;
@@ -299,24 +333,44 @@ class OrderController extends BaseController
                 ksort($products);
                 $products = array_values($products);
 
-                $productNames = array_map(static function ($product) {
-                    return (string) $product['name'];
-                }, $products);
-                $quantities = array_map(static function ($product) {
-                    return (string) $product['qty'];
-                }, $products);
+                $productNames = [];
+                $quantities = [];
+
+                foreach ($products as $product) {
+                    $baseName = (string) $product['name'];
+                    $isLength = !empty($product['is_length']);
+
+                    if ($isLength && !empty($product['length_groups'])) {
+                        // 按長度排序（由小到大）
+                        $lengthGroups = $product['length_groups'];
+                        ksort($lengthGroups, SORT_NUMERIC);
+
+                        $lengths = array_keys($lengthGroups);
+                        $qtys = array_values($lengthGroups);
+
+                        // 格式化長度（移除小數點後的0）
+                        $formattedLengths = array_map(function($length) {
+                            return rtrim(rtrim(number_format((float)$length, 2, '.', ''), '0'), '.');
+                        }, $lengths);
+
+                        $productNames[] = $baseName . ' ' . implode('/', $formattedLengths);
+                        $quantities[] = implode('/', $qtys);
+                    } else {
+                        $productNames[] = $baseName;
+                        $quantities[] = (string) $product['qty'];
+                    }
+                }
 
                 $allNamesMatchCategory = !empty($productNames) && empty(array_filter($productNames, static function ($name) use ($micName) {
-                    return trim((string) $name) !== $micName;
+                    $cleanName = explode(' ', trim((string) $name))[0];
+                    return $cleanName !== $micName;
                 }));
 
-                if ($allNamesMatchCategory) {
+                if ($allNamesMatchCategory && count($productNames) === 1) {
                     $items[] = [
-                        'name' => $micName,
+                        'name' => $productNames[0],
                         'unit' => $unit,
-                        'qty' => (string) array_sum(array_map(static function ($product) {
-                            return $product['qty'] ?? 0;
-                        }, $products)),
+                        'qty' => $quantities[0],
                     ];
                 } else {
                     $displayName = $micName;

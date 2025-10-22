@@ -193,14 +193,16 @@
             <!-- 配件／氧氣／乙炔 & GPS & 時間 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td style="width:20%; text-align:left;">配件：</td>
+                    <td class="fs-6" style="width:33%; text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
                     <td></td>
-                    <td><span style="font-weight:bold; font-size:1.5em;">總噸數:<?= $totalWeight ?></span></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <td style="width:33%; text-align:left;">氧氣：<?= esc($order['o_oxygen'] ?? '') ?></td>
                     <td style="width:34%; text-align:left;">乙炔：<?= esc($order['o_acetylene'] ?? '') ?></td>
-                    <td style="width:33%; text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
+                    <td style="width:33%; text-align:right;">
+                        <span style="font-weight:bold; font-size:1.5em;">總噸數:<?= $totalWeight ?></span>
+                    </td>
                 </tr>
                 <tr>
                     <td style="width:33%; text-align:left;">GPS：<?= esc($order['gps_name'] ?? '') ?></td>

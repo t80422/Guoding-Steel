@@ -5,23 +5,27 @@
 <div class="container py-4">
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0 fw-bold">工地用料情況</h3>
+        <h3 class="mb-0 fw-bold">工地用料情況-<?= esc($location['l_name']) ?></h3>
         <a href="<?= url_to('LocationController::index') ?>" class="btn btn-secondary">
             <i class="bi bi-arrow-left me-1"></i> 回到地點管理
         </a>
     </div>
 
-    <!-- 工地資訊 -->
-    <div class="alert alert-info mb-4">
-        <strong>工地名稱：</strong> <?= esc($location['l_name']) ?>
-    </div>
-
     <!-- 搜尋表單 -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="card-title mb-0">搜尋條件</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">搜尋條件</h5>
+                <button class="btn btn-sm btn-link text-decoration-none p-0" type="button" 
+                        data-bs-toggle="collapse" data-bs-target="#searchFormCollapse" 
+                        aria-expanded="false" aria-controls="searchFormCollapse"
+                        id="toggleSearchBtn">
+                    <i class="bi bi-chevron-down fs-5" id="toggleIcon"></i>
+                </button>
+            </div>
         </div>
-        <div class="card-body">
+        <div class="collapse" id="searchFormCollapse">
+            <div class="card-body">
             <form method="GET" action="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -65,18 +69,19 @@
                     </div>
                 </div>
             </form>
+            </div>
         </div>
     </div>
 
     <!-- 用料統計表 -->
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-light">
+    <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+        <table class="table table-bordered table-hover align-middle" style="white-space: nowrap;">
+            <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
                 <tr>
-                    <th rowspan="3" class="text-center align-middle">車號</th>
-                    <th rowspan="3" class="text-center align-middle">日期</th>
-                    <th rowspan="3" class="text-center align-middle">倉庫</th>
-                    <th rowspan="3" class="text-center align-middle">類型</th>
+                    <th rowspan="3" class="text-center align-middle" style="min-width: 120px;">車號</th>
+                    <th rowspan="3" class="text-center align-middle" style="min-width: 110px;">日期</th>
+                    <th rowspan="3" class="text-center align-middle" style="min-width: 150px;">倉庫</th>
+                    <th rowspan="3" class="text-center align-middle" style="min-width: 80px;">類型</th>
                     <?php if (!empty($all_projects)): ?>
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php $productCount = count($all_products[$projectName] ?? []); ?>
@@ -91,7 +96,7 @@
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php if (!empty($all_products[$projectName])): ?>
                                 <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
-                                    <th colspan="2" class="text-center" style="min-width: 120px;">
+                                    <th colspan="2" class="text-center" style="min-width: 180px;">
                                         <?= esc($productInfo['display_name']) ?>
                                     </th>
                                 <?php endforeach; ?>
@@ -104,8 +109,8 @@
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php if (!empty($all_products[$projectName])): ?>
                                 <?php foreach ($all_products[$projectName] as $productKey => $productInfo): ?>
-                                    <th class="text-center border-end" style="min-width: 60px;">數量</th>
-                                    <th class="text-center" style="min-width: 60px;">米數</th>
+                                    <th class="text-center border-end" style="min-width: 80px;">數量</th>
+                                    <th class="text-center" style="min-width: 100px;">米數</th>
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         <?php endforeach; ?>
@@ -225,5 +230,23 @@
     </div>
 
 </div>
+
+<script>
+    // 搜尋表單展開/收合圖示切換
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchFormCollapse = document.getElementById('searchFormCollapse');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        searchFormCollapse.addEventListener('show.bs.collapse', function() {
+            toggleIcon.classList.remove('bi-chevron-down');
+            toggleIcon.classList.add('bi-chevron-up');
+        });
+        
+        searchFormCollapse.addEventListener('hide.bs.collapse', function() {
+            toggleIcon.classList.remove('bi-chevron-up');
+            toggleIcon.classList.add('bi-chevron-down');
+        });
+    });
+</script>
 
 <?= $this->endSection() ?>
