@@ -107,10 +107,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="imageModalLabel">圖片預覽</h5>
+                <div class="ms-auto me-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="rotateImage(-90)" title="逆時針旋轉">
+                        <i class="bi bi-arrow-counterclockwise"></i> 逆時針
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="rotateImage(90)" title="順時針旋轉">
+                        <i class="bi bi-arrow-clockwise"></i> 順時針
+                    </button>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center">
-                <img id="modalImage" src="" alt="" class="img-fluid" style="max-height: 70vh;">
+                <img id="modalImage" src="" alt="" class="img-fluid" style="max-height: 70vh; transition: transform 0.3s ease;">
             </div>
         </div>
     </div>
@@ -119,6 +127,9 @@
 <script src="<?= base_url('js/script.js') ?>"></script>
 
 <script>
+    // 圖片旋轉角度
+    let currentRotation = 0;
+
     // 搜尋
     function search(url) {
         const memo = document.getElementById('r_memo').value.trim();
@@ -139,12 +150,24 @@
 
     // 顯示圖片彈窗
     function showImageModal(imageSrc, imageTitle) {
+        // 重置旋轉角度
+        currentRotation = 0;
+        
+        const modalImage = document.getElementById('modalImage');
         document.getElementById('imageModalLabel').textContent = imageTitle;
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('modalImage').alt = imageTitle;
+        modalImage.src = imageSrc;
+        modalImage.alt = imageTitle;
+        modalImage.style.transform = 'rotate(0deg)';
         
         const modal = new bootstrap.Modal(document.getElementById('imageModal'));
         modal.show();
+    }
+
+    // 旋轉圖片
+    function rotateImage(degrees) {
+        currentRotation += degrees;
+        const modalImage = document.getElementById('modalImage');
+        modalImage.style.transform = `rotate(${currentRotation}deg)`;
     }
 </script>
 

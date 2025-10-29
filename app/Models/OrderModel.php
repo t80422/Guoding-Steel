@@ -354,9 +354,10 @@ class OrderModel extends Model
                     ];
                 }
                 
-                // 累加數量和總米數
+                // 累加數量和米數
                 $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
-                $orders[$orderId]['projects'][$projectName][$productKey]['length'] += ($quantity * $length);
+                // $orders[$orderId]['projects'][$projectName][$productKey]['length'] += ($quantity * $length);
+                $orders[$orderId]['projects'][$projectName][$productKey]['length'] +=  $length;
             }
         }
 
