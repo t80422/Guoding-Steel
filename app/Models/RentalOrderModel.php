@@ -151,4 +151,139 @@ class RentalOrderModel extends Model
         }
         return $rows;
     }
+
+    /**
+     * 取得工地用料情況（包含工地項目和產品明細）
+     *
+     * @param int $locationId
+     * @param array $searchParams
+     * @return array
+     */
+    public function getMaterialDetailsByLocation($locationId, $searchParams = [])
+    {
+        $builder = $this->db->table('rental_orders ro')
+            ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id', 'left')
+            ->join('rental_order_details rod', 'ro.ro_id = rod.rod_ro_id', 'left')
+            ->join('products p', 'rod.rod_pr_id = p.pr_id', 'left')
+            ->join('minor_categories mic', 'p.pr_mic_id = mic.mic_id', 'left')
+            ->join('rental_order_detail_project_items rodpi', 'rod.rod_id = rodpi.rodpi_rod_id', 'left')
+            ->join('project_items pi', 'rodpi.rodpi_pi_id = pi.pi_id', 'left')
+            ->select('
+                ro.ro_id,
+                ro.ro_car_number,
+                ro.ro_date,
+                ro.ro_type,
+                ro.ro_l_id,
+                m.ma_name as manufacturer_name,
+                pi.pi_name as project_name,
+                CASE 
+                    WHEN mic.mic_name = p.pr_name THEN p.pr_name
+                    ELSE CONCAT(mic.mic_name, p.pr_name)
+                END as product_name,
+                rod.rod_length,
+                rodpi.rodpi_qty
+            ')
+            ->where('ro.ro_l_id', $locationId);
+
+        // 加入搜尋條件
+        if (!empty($searchParams['start_date'])) {
+            $builder->where('ro.ro_date >=', $searchParams['start_date']);
+        }
+        
+        if (!empty($searchParams['end_date'])) {
+            $builder->where('ro.ro_date <=', $searchParams['end_date']);
+        }
+        
+        if (!empty($searchParams['keyword'])) {
+            $builder->like('ro.ro_car_number', $searchParams['keyword']);
+        }
+
+        $builder->orderBy('ro.ro_date', 'DESC')
+            ->orderBy('ro.ro_id', 'ASC');
+
+        $rawResults = $builder->get()->getResultArray();
+
+        // 整理資料結構
+        return $this->formatRentalMaterialUsageData($rawResults, $locationId);
+    }
+
+    /**
+     * 格式化租賃單用料情況資料
+     *
+     * @param array $rawResults
+     * @param int $locationId
+     * @return array
+     */
+    private function formatRentalMaterialUsageData($rawResults, $locationId)
+    {
+        $orders = [];
+        $allProjects = [];
+        $allProducts = [];
+
+        // 按租賃單分組處理資料
+        foreach ($rawResults as $row) {
+            $rentalId = $row['ro_id'];
+            
+            // 初始化租賃單基本資訊
+            if (!isset($orders[$rentalId])) {
+                // 判斷是加還是減：進工地(0)是加，出工地(1)是減
+                $isIncrease = ($row['ro_type'] == self::TYPE_IN);
+                
+                $orders[$rentalId] = [
+                    'ro_id' => $rentalId,
+                    'vehicle_no' => $row['ro_car_number'],
+                    'date' => $row['ro_date'],
+                    'type' => self::getTypeName($row['ro_type']),
+                    'warehouse' => $row['manufacturer_name'] ?? '',
+                    'is_increase' => $isIncrease,
+                    'projects' => []
+                ];
+            }
+
+            // 如果有項目和產品資料
+            if ($row['project_name'] && $row['product_name']) {
+                $projectName = $row['project_name'];
+                $productName = $row['product_name'];
+                $length = (float)($row['rod_length'] ?? 0);
+                $quantity = (int)($row['rodpi_qty'] ?? 0);
+                
+                // 使用產品名稱作為唯一鍵
+                $productKey = $productName;
+                
+                // 記錄所有出現過的項目和產品（用於動態表頭）
+                $allProjects[$projectName] = true;
+                $allProducts[$projectName][$productKey] = [
+                    'display_name' => $productName
+                ];
+                
+                // 整理項目下的產品資料
+                if (!isset($orders[$rentalId]['projects'][$projectName])) {
+                    $orders[$rentalId]['projects'][$projectName] = [];
+                }
+                
+                if (!isset($orders[$rentalId]['projects'][$projectName][$productKey])) {
+                    $orders[$rentalId]['projects'][$projectName][$productKey] = [
+                        'quantity' => 0,
+                        'length' => 0,
+                        'display_name' => $productName
+                    ];
+                }
+                
+                // 累加數量和米數
+                $orders[$rentalId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
+                $orders[$rentalId]['projects'][$projectName][$productKey]['length'] += $length;
+            }
+        }
+
+        // 過濾掉沒有產品明細的租賃單
+        $filteredOrders = array_filter($orders, function($order) {
+            return !empty($order['projects']);
+        });
+
+        return [
+            'orders' => array_values($filteredOrders),
+            'all_projects' => array_keys($allProjects),
+            'all_products' => $allProducts
+        ];
+    }
 }

@@ -49,9 +49,17 @@ class RentalController extends BaseController
         $filter = [
             'r_memo' => $this->request->getGet('memo')
         ];
+        
+        $page = $this->request->getGet('page') ?? 1;
+        $page = max(1, (int)$page);
 
-        $data = $this->rentalModel->getList($filter);
-        return view('rental', ['data' => $data, 'filter' => $filter]);
+        $result = $this->rentalModel->getList($filter, $page);
+        
+        return view('rental', [
+            'data' => $result['data'],
+            'filter' => $filter,
+            'pagination' => $result['pagination']
+        ]);
     }
 
     // 提供圖片檔案存取

@@ -4,17 +4,17 @@ namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
-use App\Models\OrderModel;
+use App\Services\LocationMaterialService;
 
 class LocationController extends BaseController
 {
     private $locationModel;
-    private $orderModel;
+    private $locationMaterialService;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
-        $this->orderModel = new OrderModel();
+        $this->locationMaterialService = new LocationMaterialService();
     }
 
     public function getLocations($type)
@@ -37,7 +37,7 @@ class LocationController extends BaseController
         ];
 
         // 取得詳細用料情況（包含工地項目和產品明細）
-        $materialData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($id, $searchParams);
+        $materialData = $this->locationMaterialService->getMaterialUsage($id, $searchParams);
 
         return $this->response->setJSON([
             'location' => $location,

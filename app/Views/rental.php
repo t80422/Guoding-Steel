@@ -100,6 +100,15 @@
             </tbody>
         </table>
     </div>
+
+    <!-- 分頁控件 -->
+    <?= view('components/pagination', [
+        'pager' => $pagination,
+        'baseUrl' => url_to('RentalController::index'),
+        'params' => [
+            'memo' => $filter['r_memo'] ?? '',
+        ],
+    ]) ?>
 </div>
 <!-- 圖片彈窗模態框 -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">

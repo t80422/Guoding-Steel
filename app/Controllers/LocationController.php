@@ -4,21 +4,21 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
-use App\Models\OrderModel;
 use App\Services\PermissionService;
+use App\Services\LocationMaterialService;
 use Throwable;
 
 class LocationController extends BaseController
 {
     private $locationModel;
-    private $orderModel;
     private $permissionService;
+    private $locationMaterialService;
 
     public function __construct()
     {
         $this->locationModel = new LocationModel();
-        $this->orderModel = new OrderModel();
         $this->permissionService = new PermissionService();
+        $this->locationMaterialService = new LocationMaterialService();
     }
 
     public function index()
@@ -118,8 +118,8 @@ class LocationController extends BaseController
             'keyword' => $this->request->getGet('keyword')
         ];
 
-        // 取得詳細用料情況（包含工地項目和產品明細）
-        $materialData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($id, $searchParams);
+        // 取得詳細用料情況（整合訂單和租賃單資料）
+        $materialData = $this->locationMaterialService->getMaterialUsage($id, $searchParams);
         
         return view('location/material_usage', [
             'location' => $location,

@@ -442,8 +442,8 @@ class ExcelImportService
     /**
      * 解析單列的所有明細，彙總成 (pr_id,length)=>total 與各項目配置
      * @return array{
-     *  details: array<int,array{pr_id:int, length:float, qty:int, allocations: array<int|null,int>}>,
-     *  projectAllocations: array<int,int>
+     *  details: array<int,array{pr_id:int, length:float, qty:float, allocations: array<int|null,float>}>,
+     *  projectAllocations: array<int,float>
      * }
      */
     private function collectDetailsForRow(
@@ -474,8 +474,8 @@ class ExcelImportService
             // 數量與米數
             $qtyRaw = $this->getCellCalculatedValue($sheet, $col, $row);
             $lenRaw = $this->getCellCalculatedValue($sheet, $col + 1, $row);
-            $qty = is_numeric($qtyRaw) ? (int) abs((float) $qtyRaw) : 0;
-            $length = is_numeric($lenRaw) ? (float) abs((float) $lenRaw) : 0.0;
+            $qty = is_numeric($qtyRaw) ? (float) abs($qtyRaw) : 0.0;
+            $length = is_numeric($lenRaw) ? (float) abs($lenRaw) : 0.0;
             if ($qty <= 0) {
                 continue; // 僅米數或無效數量 → 不保留
             }
@@ -503,14 +503,14 @@ class ExcelImportService
                 $detailMap[$key] = [
                     'pr_id' => $prId,
                     'length' => $length,
-                    'qty' => 0,
+                    'qty' => 0.0,
                     'allocations' => [] // pi_id => qty
                 ];
             }
             $detailMap[$key]['qty'] += $qty;
             if ($piId !== null) {
-                $detailMap[$key]['allocations'][$piId] = ($detailMap[$key]['allocations'][$piId] ?? 0) + $qty;
-                $allocMap[$piId] = ($allocMap[$piId] ?? 0) + $qty;
+                $detailMap[$key]['allocations'][$piId] = ($detailMap[$key]['allocations'][$piId] ?? 0.0) + $qty;
+                $allocMap[$piId] = ($allocMap[$piId] ?? 0.0) + $qty;
             }
         }
 
@@ -568,7 +568,7 @@ class ExcelImportService
     private function accumulateProjectStats(array &$stats, array $allocMap): void
     {
         foreach ($allocMap as $piId => $qty) {
-            $stats[$piId] = ($stats[$piId] ?? 0) + $qty;
+            $stats[$piId] = ($stats[$piId] ?? 0.0) + $qty;
         }
     }
 

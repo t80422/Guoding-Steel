@@ -20,7 +20,7 @@ class ExcelController extends BaseController
         return view('excel/index');
     }
 
-    // 匯入Excel（新版）
+    // 匯入Excel
     public function import()
     {
         try {

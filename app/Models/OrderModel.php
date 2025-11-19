@@ -330,7 +330,7 @@ class OrderModel extends Model
                 $projectName = $row['project_name'];
                 $productName = $row['product_name'];
                 $length = (float)($row['od_length'] ?? 0);
-                $quantity = (int)($row['odpi_qty'] ?? 0);
+                $quantity = (float)($row['odpi_qty'] ?? 0);
                 
                 // 使用產品名稱作為唯一鍵（合併相同產品的不同長度）
                 $productKey = $productName;
@@ -348,7 +348,7 @@ class OrderModel extends Model
                 
                 if (!isset($orders[$orderId]['projects'][$projectName][$productKey])) {
                     $orders[$orderId]['projects'][$projectName][$productKey] = [
-                        'quantity' => 0,
+                        'quantity' => 0.0,
                         'length' => 0,
                         'display_name' => $productName
                     ];
@@ -356,7 +356,6 @@ class OrderModel extends Model
                 
                 // 累加數量和米數
                 $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
-                // $orders[$orderId]['projects'][$projectName][$productKey]['length'] += ($quantity * $length);
                 $orders[$orderId]['projects'][$projectName][$productKey]['length'] +=  $length;
             }
         }
