@@ -252,4 +252,10 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 鋪路鋼板
     $routes->get('roadPlate', 'RoadPlateController::index');
+
+    // 開關
+    $routes->group('switch', function ($routes) {
+        $routes->get('/', 'SwitchController::getSwitch');
+        $routes->put('/', 'SwitchController::update');
+    });
 });
