@@ -248,6 +248,7 @@ class OrderModel extends Model
                 o.o_to_location,
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
+                pi.pi_id as project_id,
                 pi.pi_name as project_name,
                 CASE 
                     WHEN mic.mic_name = p.pr_name THEN p.pr_name
@@ -327,6 +328,7 @@ class OrderModel extends Model
 
             // 如果有項目和產品資料
             if ($row['project_name'] && $row['product_name']) {
+                $projectId = $row['project_id'];
                 $projectName = $row['project_name'];
                 $productName = $row['product_name'];
                 $length = (float)($row['od_length'] ?? 0);
@@ -335,8 +337,8 @@ class OrderModel extends Model
                 // 使用產品名稱作為唯一鍵（合併相同產品的不同長度）
                 $productKey = $productName;
                 
-                // 記錄所有出現過的項目和產品（用於動態表頭）
-                $allProjects[$projectName] = true;
+                // 記錄所有出現過的項目和產品（用於動態表頭），記錄 pi_id 用於排序
+                $allProjects[$projectName] = $projectId;
                 $allProducts[$projectName][$productKey] = [
                     'display_name' => $productName
                 ];
@@ -365,6 +367,9 @@ class OrderModel extends Model
             return !empty($order['projects']);
         });
 
+        // 按照 pi_id 排序專案
+        asort($allProjects);
+        
         return [
             'orders' => array_values($filteredOrders),
             'all_projects' => array_keys($allProjects),
