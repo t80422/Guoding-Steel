@@ -385,14 +385,31 @@ class OrderModel extends Model
             return [];
         }
 
-        $builder = $this->db->table('orders o')
-            ->join('order_details od', 'od.od_o_id = o.o_id')
-            ->select('o.o_to_location AS location_id, od.od_pr_id AS product_id, COALESCE(SUM(od.od_length), 0) AS total_length', false)
-            ->whereIn('o.o_to_location', $locationIds)
-            ->whereIn('od.od_pr_id', $productIds)
-            ->groupBy('o.o_to_location, od.od_pr_id');
+        // 建立 UNION ALL 查詢：to_location 為正，from_location 為負
+        $locationIdsStr = implode(',', array_map('intval', $locationIds));
+        $productIdsStr = implode(',', array_map('intval', $productIds));
 
-        $rows = $builder->get()->getResultArray();
+        $sql = "
+            SELECT location_id, product_id, SUM(length_change) AS total_length
+            FROM (
+                SELECT o.o_to_location AS location_id, od.od_pr_id AS product_id, od.od_length AS length_change
+                FROM orders o
+                JOIN order_details od ON od.od_o_id = o.o_id
+                WHERE o.o_to_location IN ({$locationIdsStr})
+                  AND od.od_pr_id IN ({$productIdsStr})
+                
+                UNION ALL
+                
+                SELECT o.o_from_location AS location_id, od.od_pr_id AS product_id, -od.od_length AS length_change
+                FROM orders o
+                JOIN order_details od ON od.od_o_id = o.o_id
+                WHERE o.o_from_location IN ({$locationIdsStr})
+                  AND od.od_pr_id IN ({$productIdsStr})
+            ) AS combined
+            GROUP BY location_id, product_id
+        ";
+
+        $rows = $this->db->query($sql)->getResultArray();
 
         // 正規化型別
         foreach ($rows as &$row) {
