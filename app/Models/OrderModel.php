@@ -249,6 +249,7 @@ class OrderModel extends Model
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
                 pi.pi_id as project_id,
+                pi.pi_sort as project_sort,
                 pi.pi_name as project_name,
                 CASE 
                     WHEN mic.mic_name = p.pr_name THEN p.pr_name
@@ -305,6 +306,7 @@ class OrderModel extends Model
         $orders = [];
         $allProjects = [];
         $allProducts = [];
+        $projectSorts = [];
 
         // 按訂單分組處理資料
         foreach ($rawResults as $row) {
@@ -333,12 +335,17 @@ class OrderModel extends Model
                 $productName = $row['product_name'];
                 $length = (float)($row['od_length'] ?? 0);
                 $quantity = (float)($row['odpi_qty'] ?? 0);
+                $projectSort = isset($row['project_sort']) ? (int)$row['project_sort'] : PHP_INT_MAX;
                 
                 // 使用產品名稱作為唯一鍵（合併相同產品的不同長度）
                 $productKey = $productName;
                 
                 // 記錄所有出現過的項目和產品（用於動態表頭），記錄 pi_id 用於排序
                 $allProjects[$projectName] = $projectId;
+                $projectSorts[$projectName] = [
+                    'sort' => $projectSort,
+                    'id' => $projectId ?? PHP_INT_MAX
+                ];
                 $allProducts[$projectName][$productKey] = [
                     'display_name' => $productName
                 ];
@@ -367,13 +374,27 @@ class OrderModel extends Model
             return !empty($order['projects']);
         });
 
-        // 按照 pi_id 排序專案
-        asort($allProjects);
+        // 按照 pi_sort（次要以 pi_id 與名稱）排序專案
+        $sortedProjects = array_keys($projectSorts);
+        usort($sortedProjects, function($a, $b) use ($projectSorts) {
+            $aSort = $projectSorts[$a]['sort'] ?? PHP_INT_MAX;
+            $bSort = $projectSorts[$b]['sort'] ?? PHP_INT_MAX;
+            if ($aSort === $bSort) {
+                $aId = $projectSorts[$a]['id'] ?? PHP_INT_MAX;
+                $bId = $projectSorts[$b]['id'] ?? PHP_INT_MAX;
+                if ($aId === $bId) {
+                    return strcmp($a, $b);
+                }
+                return $aId <=> $bId;
+            }
+            return $aSort <=> $bSort;
+        });
         
         return [
             'orders' => array_values($filteredOrders),
-            'all_projects' => array_keys($allProjects),
-            'all_products' => $allProducts
+            'all_projects' => $sortedProjects,
+            'all_products' => $allProducts,
+            'project_sorts' => $projectSorts
         ];
     }
 

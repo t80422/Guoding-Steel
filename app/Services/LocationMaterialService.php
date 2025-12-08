@@ -30,12 +30,36 @@ class LocationMaterialService
         
         // 取得租賃單資料
         $rentalData = $this->rentalOrderModel->getMaterialDetailsByLocation($locationId, $searchParams);
-        
-        // 合併所有項目（去重）
-        $allProjects = array_unique(array_merge(
-            $orderData['all_projects'] ?? [],
-            $rentalData['all_projects'] ?? []
-        ));
+
+        // 合併項目並依 pi_sort 排序
+        $projectSorts = [];
+        foreach ($orderData['project_sorts'] ?? [] as $name => $info) {
+            $projectSorts[$name] = $info;
+        }
+        foreach ($rentalData['project_sorts'] ?? [] as $name => $info) {
+            if (!isset($projectSorts[$name])) {
+                $projectSorts[$name] = $info;
+                continue;
+            }
+            // 合併時取較小的 sort 與 id 以避免資料缺漏
+            $projectSorts[$name]['sort'] = min($projectSorts[$name]['sort'], $info['sort']);
+            $projectSorts[$name]['id'] = min($projectSorts[$name]['id'], $info['id']);
+        }
+
+        $allProjects = array_keys($projectSorts);
+        usort($allProjects, function($a, $b) use ($projectSorts) {
+            $aSort = $projectSorts[$a]['sort'] ?? PHP_INT_MAX;
+            $bSort = $projectSorts[$b]['sort'] ?? PHP_INT_MAX;
+            if ($aSort === $bSort) {
+                $aId = $projectSorts[$a]['id'] ?? PHP_INT_MAX;
+                $bId = $projectSorts[$b]['id'] ?? PHP_INT_MAX;
+                if ($aId === $bId) {
+                    return strcmp($a, $b);
+                }
+                return $aId <=> $bId;
+            }
+            return $aSort <=> $bSort;
+        });
         
         // 合併產品資料
         $allProducts = [];

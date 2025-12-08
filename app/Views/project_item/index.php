@@ -40,6 +40,7 @@
             <thead class="table-light">
                 <tr>
                     <th>名稱</th>
+                    <th>排序</th>
                     <th>建立人</th>
                     <th>建立時間</th>
                     <th>更新人</th>
@@ -50,12 +51,13 @@
             <tbody>
                 <?php if (empty($data)): ?>
                     <tr>
-                        <td colspan="6" class="text-center">查無資料</td>
+                        <td colspan="7" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($data as $item): ?>
                         <tr>
                             <td><?= esc($item['pi_name']) ?></td>
+                            <td><?= esc($item['pi_sort']) ?></td>
                             <td><?= esc($item['creator']) ?></td>
                             <td><?= esc($item['pi_create_at']) ?></td>
                             <td><?= esc($item['updater']) ?></td>

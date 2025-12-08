@@ -25,6 +25,12 @@
             <input type="text" class="form-control" name="pi_name" value="<?= old('pi_name', $data['pi_name'] ?? '') ?>" required>
         </div>
 
+        <div class="mb-3">
+            <label for="piSort" class="form-label">排序</label>
+            <input type="number" class="form-control" name="pi_sort" value="<?= old('pi_sort', $data['pi_sort'] ?? '') ?>" required>
+            <small class="form-text text-muted">排序數字越小，越靠前</small>
+        </div>
+
         <?php if ($isEdit): ?>
             <div class="row mb-3">
                 <div class="col-md-3">

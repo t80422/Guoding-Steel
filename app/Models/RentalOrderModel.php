@@ -175,6 +175,8 @@ class RentalOrderModel extends Model
                 ro.ro_type,
                 ro.ro_l_id,
                 m.ma_name as manufacturer_name,
+                pi.pi_id as project_id,
+                pi.pi_sort as project_sort,
                 pi.pi_name as project_name,
                 CASE 
                     WHEN mic.mic_name = p.pr_name THEN p.pr_name
@@ -219,6 +221,7 @@ class RentalOrderModel extends Model
         $orders = [];
         $allProjects = [];
         $allProducts = [];
+        $projectSorts = [];
 
         // 按租賃單分組處理資料
         foreach ($rawResults as $row) {
@@ -242,16 +245,22 @@ class RentalOrderModel extends Model
 
             // 如果有項目和產品資料
             if ($row['project_name'] && $row['product_name']) {
+                $projectId = $row['project_id'] ?? null;
                 $projectName = $row['project_name'];
                 $productName = $row['product_name'];
                 $length = (float)($row['rod_length'] ?? 0);
                 $quantity = (int)($row['rodpi_qty'] ?? 0);
+                $projectSort = isset($row['project_sort']) ? (int)$row['project_sort'] : PHP_INT_MAX;
                 
                 // 使用產品名稱作為唯一鍵
                 $productKey = $productName;
                 
                 // 記錄所有出現過的項目和產品（用於動態表頭）
                 $allProjects[$projectName] = true;
+                $projectSorts[$projectName] = [
+                    'sort' => $projectSort,
+                    'id' => $projectId ?? PHP_INT_MAX
+                ];
                 $allProducts[$projectName][$productKey] = [
                     'display_name' => $productName
                 ];
@@ -283,7 +292,8 @@ class RentalOrderModel extends Model
         return [
             'orders' => array_values($filteredOrders),
             'all_projects' => array_keys($allProjects),
-            'all_products' => $allProducts
+            'all_products' => $allProducts,
+            'project_sorts' => $projectSorts
         ];
     }
 }

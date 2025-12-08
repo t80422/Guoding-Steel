@@ -10,6 +10,7 @@ class ProjectItemModel extends Model
     protected $primaryKey       = 'pi_id';
     protected $allowedFields    = [
         'pi_name',
+        'pi_sort',
         'pi_create_by',
         'pi_update_by',
         'pi_update_at'
@@ -18,13 +19,13 @@ class ProjectItemModel extends Model
     public function getList($filter = [], $page = 1)
     {
         $builder = $this->baseQuery()
-            ->select('pi.pi_id, pi.pi_name, pi.pi_create_at, pi.pi_update_at, u1.u_name as creator, u2.u_name as updater');
+            ->select('pi.pi_id, pi.pi_name, pi.pi_sort, pi.pi_create_at, pi.pi_update_at, u1.u_name as creator, u2.u_name as updater');
 
         if (!empty($filter['keyword'])) {
             $builder->like('pi.pi_name', $filter['keyword']);
         }
 
-        $builder->orderBy('pi.pi_id', 'DESC');
+        $builder->orderBy('pi.pi_sort', 'ASC');
 
         $total = $builder->countAllResults(false);
         $perPage = 10;
@@ -41,7 +42,7 @@ class ProjectItemModel extends Model
     public function getDetail($id)
     {
         return $this->baseQuery()
-            ->select('pi.pi_id, pi.pi_name, pi.pi_create_at, pi.pi_update_at, u1.u_name as creator, u2.u_name as updater')
+            ->select('pi.pi_id, pi.pi_name, pi.pi_sort, pi.pi_create_at, pi.pi_update_at, u1.u_name as creator, u2.u_name as updater')
             ->where('pi.pi_id', $id)
             ->get()->getRowArray();
     }
