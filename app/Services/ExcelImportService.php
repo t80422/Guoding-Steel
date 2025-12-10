@@ -141,20 +141,20 @@ class ExcelImportService
 
                 // 根據E欄是否包含廠商決定建立訂單或租賃單
                 $hasManufacturer = $eParseResult['has_manufacturer'];
-                
+
                 if (!$hasManufacturer) {
                     // 沒有廠商 → 建立訂單（兩端都是地點）
                     $locLeft = $eParseResult['left_data'];
                     $locRight = $eParseResult['right_data'];
-                    
+
                     $leftType = (int) $locLeft['l_type'];
                     $rightType = (int) $locRight['l_type'];
-                    
+
                     // 決定訂單類型和From/To邏輯
                     $oType = null;
                     $oFrom = (int) $locLeft['l_id'];
                     $oTo = (int) $locRight['l_id'];
-                    
+
                     // 根據地點組合決定類型
                     if ($leftType === LocationModel::TYPE_WAREHOUSE && $rightType === LocationModel::TYPE_WAREHOUSE) {
                         // 倉庫-倉庫：出倉庫
@@ -201,12 +201,12 @@ class ExcelImportService
                     $rightType = $eParseResult['right_type'];
                     $leftData = $eParseResult['left_data'];
                     $rightData = $eParseResult['right_data'];
-                    
+
                     // 找出廠商和工地
                     $manufacturer = null;
                     $location = null;
                     $manufacturerOnLeft = false;
-                    
+
                     if ($leftType === 'manufacturer') {
                         $manufacturer = $leftData;
                         $location = $rightData;
@@ -216,8 +216,8 @@ class ExcelImportService
                         $location = $leftData;
                         $manufacturerOnLeft = false;
                     }
-                    
-                    
+
+
                     // 地點在前 → 出貨(1)，地點在後 → 進貨(0)
                     $roType = $manufacturerOnLeft ? 0 : 1;
 
@@ -236,11 +236,11 @@ class ExcelImportService
                     $detailsBundle = $this->collectDetailsForRow($sheet, $row, $startCol, $highestCol, $projectItemHeaderMap, $productHeaderByPair, $dict, $errors);
                     $rowResult['details'] = $detailsBundle['details'];
                     $stats['rental_count']++;
-                    
+
                     // 統計工地的租賃單數量
                     $locationName = $location['l_name'];
                     $stats['location_counts'][$locationName] = ($stats['location_counts'][$locationName] ?? 0) + 1;
-                    
+
                     $this->accumulateProjectStats($stats['project_item_counts'], $detailsBundle['projectAllocations']);
                     $rentals[] = $rowResult;
                 }
@@ -275,12 +275,12 @@ class ExcelImportService
         } catch (ReaderException $e) {
             return [
                 'success' => false,
-                'errors' => [[ 'type' => 'reader_exception', 'message' => $e->getMessage() ]]
+                'errors' => [['type' => 'reader_exception', 'message' => $e->getMessage()]]
             ];
         } catch (\Throwable $e) {
             return [
                 'success' => false,
-                'errors' => [[ 'type' => 'exception', 'message' => $e->getMessage() ]]
+                'errors' => [['type' => 'exception', 'message' => $e->getMessage()]]
             ];
         }
     }
@@ -355,7 +355,7 @@ class ExcelImportService
         foreach ($locRows as $r) {
             $locationsByName[$r['l_name']] = $r;
         }
-        
+
 
 
         // 廠商
@@ -390,7 +390,7 @@ class ExcelImportService
     {
         $map = [];
         $mergeCells = $sheet->getMergeCells();
-        
+
         // 建立 quick lookup：row1 的合併區段
         $ranges = [];
         foreach ($mergeCells as $range) {
@@ -475,7 +475,7 @@ class ExcelImportService
             $qtyRaw = $this->getCellCalculatedValue($sheet, $col, $row);
             $lenRaw = $this->getCellCalculatedValue($sheet, $col + 1, $row);
             $qty = is_numeric($qtyRaw) ? (float) abs($qtyRaw) : 0.0;
-            $length = is_numeric($lenRaw) ? (float) abs($lenRaw) : 0.0;
+            $length = is_numeric($lenRaw) ? (float) abs($lenRaw) / $qty : 0.0;
             if ($qty <= 0) {
                 continue; // 僅米數或無效數量 → 不保留
             }
@@ -483,10 +483,10 @@ class ExcelImportService
             // 項目（第1列，以右欄為對應即可）
             $piName = $projectItemHeaderMap[$col + 1] ?? '';
             $piId = null;
-            
+
             if ($piName !== '') {
                 $piId = $dict['project_items_by_name'][$piName] ?? null;
-                
+
                 if ($piId === null) {
                     $errors[] = [
                         'row' => $row,

@@ -278,9 +278,9 @@ class RentalOrderModel extends Model
                     ];
                 }
                 
-                // 累加數量和米數
+                // 累加數量並將米數乘以數量
                 $orders[$rentalId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
-                $orders[$rentalId]['projects'][$projectName][$productKey]['length'] += $length;
+                $orders[$rentalId]['projects'][$projectName][$productKey]['length'] += $length * $quantity;
             }
         }
 
