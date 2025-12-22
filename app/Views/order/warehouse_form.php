@@ -181,7 +181,10 @@
                     ?>
                         <tr>
                             <td style="width:5%; text-align:left;"><?= $label ?></td>
-                            <td class="dashed text-break" style="width:95%; text-align:left;"><?= esc($d['spec'] ?? '') ?></td>
+                            <td class="dashed text-break" style="width:95%; text-align:left;">
+                                <?= esc($d['spec'] ?? '') ?><br>
+                            <?= esc($d['detail'] ?? '') ?>
+                        </td>
                         </tr>
                     <?php endforeach; ?>
                 </table>

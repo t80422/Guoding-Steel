@@ -189,14 +189,15 @@ class OrderDetailModel extends Model
             }
             
             $summary = '計 ' . (int) $group['total_count'] . '支, ' . $formatNumber((float) $group['total_length']) . 'M';
-            $spec = $prefix;
+            $spec = $prefix . "\n";
             if (!empty($parts)) {
-                $spec .= ' ' . implode('/', $parts);
+                $detail= implode('/', $parts) . ' ';
             }
-            $spec .= ' ' . $summary;
+            $detail .= $summary;
 
             $formatted[] = [
                 'spec' => $spec,
+                'detail'=>$detail,
             ];
         }
 
