@@ -54,244 +54,186 @@
         max-width: 90%;
     }
 
-    #itemQuantityModal .table {
-        margin-bottom: 0;
+    /* ========== 表格容器 ========== */
+    .iqt-container {
+        max-height: 70vh;
+        overflow: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
     }
 
-    #itemQuantityModal .table th {
-        background: linear-gradient(135deg, #EBF1EC 0%, #d4edda 100%) !important;
-        border: none;
+    /* ========== 表格本體 ========== */
+    .iqt-table {
+        margin: 0;
+        font-size: 13px;
+        white-space: nowrap;
+        /* 關鍵：必須使用 separate 才能讓 sticky 生效 */
+        border-collapse: separate;
+        border-spacing: 0;
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .iqt-table th,
+    .iqt-table td {
+        border: 1px solid #dee2e6;
+        padding: 10px 8px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* ========== 凍結欄位 - 共用 ========== */
+    .iqt-table .sticky-col {
+        position: sticky;
+        background: #fff;
+    }
+
+    /* 第1欄：產品 (left: 0) */
+    .iqt-table .sticky-col-1 {
+        left: 0;
+        z-index: 2;
+        min-width: 180px;
+        width: 180px;
+        background: #f8f9fa;
+    }
+
+    /* 第2欄：數量 (left: 180px) */
+    .iqt-table .sticky-col-2 {
+        left: 180px;
+        z-index: 2;
+        min-width: 80px;
+        width: 80px;
+        background: #fafafa;
+    }
+
+    /* 第3欄：長度 (left: 260px) - 加陰影 */
+    .iqt-table .sticky-col-3 {
+        left: 260px;
+        z-index: 2;
+        min-width: 80px;
+        width: 80px;
+        background: #fafafa;
+        box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* ========== 表頭樣式 ========== */
+    .iqt-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        font-weight: 600;
+    }
+
+    /* 表頭凍結欄位需要更高的 z-index */
+    .iqt-table thead th.sticky-col {
+        z-index: 4;
+    }
+
+    .iqt-table thead th.sticky-col-1 {
+        background: linear-gradient(135deg, #EBF1EC 0%, #d4edda 100%);
+    }
+
+    .iqt-table thead th.sticky-col-2,
+    .iqt-table thead th.sticky-col-3 {
+        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    }
+
+    .iqt-table thead th.category-col {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        min-width: 100px;
+    }
+
+    /* ========== 資料列樣式 ========== */
+    .iqt-table tbody td.sticky-col-1 {
         font-weight: 600;
         color: #495057;
-        font-size: 13px;
-        padding: 12px 8px;
-        text-align: center;
-        vertical-align: middle;
-    }
-
-    #itemQuantityModal .table td {
-        padding: 8px;
-        vertical-align: middle;
-        border-color: #f1f3f4;
-        text-align: center;
-    }
-
-    #itemQuantityModal .quantity-input-field {
-        border: 1.5px solid #dee2e6;
-        border-radius: 6px;
-        padding: 8px 12px;
-        font-size: 14px;
-        text-align: center;
-        transition: all 0.3s ease;
-        width: 100px;
-    }
-
-    #itemQuantityModal .quantity-input-field:focus {
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.2rem rgba(87, 145, 87, 0.25);
-    }
-
-    #itemQuantityModal .item-name {
         text-align: left;
+        padding-left: 12px;
+        background: #f8f9fa;
+    }
+
+    .iqt-table tbody td.sticky-col-2,
+    .iqt-table tbody td.sticky-col-3 {
         font-weight: 500;
         color: #495057;
+        background: #fafafa;
     }
 
-    /* 雙表格容器 */
-    .dual-table-container {
-        display: flex;
-        max-height: 70vh;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        overflow: hidden;
+    .iqt-table tbody td.category-col {
+        background: #fff;
+        padding: 6px;
     }
 
-    /* 固定欄位容器 */
-    .fixed-columns-wrapper {
-        flex-shrink: 0;
-        overflow-y: auto;
-        overflow-x: hidden;
-        border-right: 2px solid #495057;
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
-        z-index: 2;
-    }
-
-    /* 可滾動欄位容器 */
-    .scrollable-columns-wrapper {
-        flex: 1;
-        overflow: auto;
-    }
-
-    /* 隱藏滾動條但保持滾動功能（固定欄位） */
-    .fixed-columns-wrapper::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
-    }
-
-    .fixed-columns-wrapper {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-
-    /* 固定欄位表格 */
-    .fixed-columns-table {
-        margin-bottom: 0;
-        font-size: 13px;
-        white-space: nowrap;
-        border-right: none !important;
-    }
-
-    .fixed-columns-table th,
-    .fixed-columns-table td {
-        border-right: none !important;
-    }
-
-    /* 可滾動欄位表格 */
-    .scrollable-columns-table {
-        margin-bottom: 0;
-        font-size: 13px;
-        white-space: nowrap;
-    }
-
-    .scrollable-columns-table th:first-child,
-    .scrollable-columns-table td:first-child {
-        border-left: none !important;
-    }
-
-    /* 產品欄樣式 */
-    .fixed-columns-table .product-header {
-        background: linear-gradient(135deg, #EBF1EC 0%, #d4edda 100%) !important;
-        font-weight: 700;
-        text-align: center;
-        vertical-align: middle;
-        width: 180px;
-        min-width: 180px;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    /* 數量、長度欄樣式 */
-    .fixed-columns-table .basic-header {
-        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%) !important;
-        font-weight: 600;
-        text-align: center;
-        vertical-align: middle;
+    /* ========== 輸入框樣式 ========== */
+    .iqt-table .form-control {
         font-size: 12px;
-        padding: 8px 6px;
-        width: 100px;
-        min-width: 100px;
-        border: 1px solid #dee2e6;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .fixed-columns-table .product-name,
-    .fixed-columns-table .total-quantity,
-    .fixed-columns-table .total-length {
-        background: #f8f9fa !important;
-        font-weight: 600;
-        color: #495057;
-        text-align: center;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        padding: 8px 4px;
-    }
-
-    .fixed-columns-table .product-name {
-        width: 180px;
-        min-width: 180px;
-    }
-
-    .fixed-columns-table .total-quantity,
-    .fixed-columns-table .total-length {
-        width: 100px;
-        min-width: 100px;
-    }
-
-    /* 可滾動表格的分類欄位 */
-    .scrollable-columns-table .category-header {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
-        font-weight: 600;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 12px;
-        padding: 8px 4px;
-        border: 1px solid #dee2e6;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .scrollable-columns-table .category-cell {
-        padding: 4px;
-        text-align: center;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        width: 100px;
-        min-width: 80px;
-    }
-
-    .fixed-columns-table .form-control,
-    .scrollable-columns-table .form-control {
-        font-size: 12px;
-        padding: 4px 6px;
+        padding: 6px 8px;
         text-align: center;
         border: 1px solid #ced4da;
         border-radius: 4px;
-        width: 100%;
-        min-width: 60px;
+        width: 80px;
+        min-width: 80px;
     }
 
-    .fixed-columns-table .form-control:focus,
-    .scrollable-columns-table .form-control:focus {
+    .iqt-table .form-control:focus {
         border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.1rem rgba(87, 145, 87, 0.25);
+        box-shadow: 0 0 0 0.15rem rgba(87, 145, 87, 0.25);
+        outline: none;
     }
 
-    .fixed-columns-table .form-control.is-invalid,
-    .scrollable-columns-table .form-control.is-invalid {
+    .iqt-table .form-control.is-invalid {
         border-color: #dc3545;
-        box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.25);
+        box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.25);
         background-color: #fff5f5;
     }
 
-    .fixed-columns-table .form-control.is-invalid:focus,
-    .scrollable-columns-table .form-control.is-invalid:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.1rem rgba(220, 53, 69, 0.25);
+    /* ========== Hover 效果 ========== */
+    .iqt-table tbody tr:hover td {
+        background-color: #f0f7f0 !important;
     }
 
-    /* 響應式調整 */
+    .iqt-table tbody tr:hover td.sticky-col-1 {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%) !important;
+    }
+
+    .iqt-table tbody tr:hover td.sticky-col-2,
+    .iqt-table tbody tr:hover td.sticky-col-3 {
+        background: linear-gradient(135deg, #e8f5e9 0%, #dcedc8 100%) !important;
+    }
+
+    /* ========== 響應式調整 ========== */
     @media (max-width: 768px) {
-        .fixed-columns-table,
-        .scrollable-columns-table {
+        .iqt-table {
             font-size: 11px;
         }
 
-        .fixed-columns-table .form-control,
-        .scrollable-columns-table .form-control {
-            font-size: 10px;
-            padding: 2px 4px;
-        }
-
-        .scrollable-columns-table .category-header,
-        .fixed-columns-table .basic-header,
-        .fixed-columns-table .product-header {
-            font-size: 10px;
-            padding: 4px 2px;
-        }
-
-        .fixed-columns-table .product-name {
-            width: 120px;
+        .iqt-table .sticky-col-1 {
             min-width: 120px;
+            width: 120px;
         }
 
-        .fixed-columns-table .total-quantity,
-        .fixed-columns-table .total-length {
-            width: 70px;
-            min-width: 70px;
+        .iqt-table .sticky-col-2 {
+            left: 120px;
+            min-width: 60px;
+            width: 60px;
+        }
+
+        .iqt-table .sticky-col-3 {
+            left: 180px;
+            min-width: 60px;
+            width: 60px;
+        }
+
+        .iqt-table th,
+        .iqt-table td {
+            padding: 6px 4px;
+        }
+
+        .iqt-table .form-control {
+            font-size: 10px;
+            padding: 4px 6px;
+            width: 60px;
+            min-width: 60px;
         }
     }
 </style>
@@ -370,7 +312,7 @@
                 })
                 .then(projectItemsData => {
                     itemQuantityData.projectItems = projectItemsData;
-                    
+
                     // 2. 取得單據明細（訂單/租賃）
                     return fetch('<?= $detailUrl ?>');
                 })
@@ -382,7 +324,7 @@
                 })
                 .then(orderDetailsData => {
                     itemQuantityData.orderDetails = orderDetailsData;
-                    
+
                     // 3. 取得已有的項目數量資料
                     return fetch('<?= $assignmentGetUrl ?>');
                 })
@@ -394,7 +336,7 @@
                 })
                 .then(quantityResult => {
                     itemQuantityData.existingQuantities = quantityResult.data || [];
-                    
+
                     // 建立原始數量索引 (detailId + "_" + pi_id)
                     const DETAIL_KEY = '<?= $payloadFieldMap['detail'] ?>';
                     const PI_KEY = '<?= $payloadFieldMap['pi'] ?>';
@@ -403,13 +345,13 @@
                         const key = `${item[DETAIL_KEY]}_${item[PI_KEY]}`;
                         originalQuantities[key] = toNumber(item[QTY_KEY]);
                     });
-                    
+
                     // 4. 所有數據都載入完成，開始渲染
                     renderItemQuantityTable();
                 })
                 .catch(error => {
                     console.error('載入數據失敗:', error);
-                    
+
                     // 錯誤處理：顯示錯誤訊息
                     const container = document.getElementById('itemQuantityTableContainer');
                     container.innerHTML = `
@@ -434,96 +376,67 @@
                 return;
             }
 
-            const { projectItems, orderDetails } = itemQuantityData;
+            const {
+                projectItems,
+                orderDetails
+            } = itemQuantityData;
 
-            // 使用雙表格結構：左側固定表格 + 右側可滾動表格
-            let tableHtml = `
-                <div class="dual-table-container">
-                    <div class="fixed-columns-wrapper">
-                        <table class="table table-bordered table-hover fixed-columns-table">
-                            <thead>
-                                <tr>
-                                    <th class="product-header">產品</th>
-                                    <th class="basic-header">數量</th>
-                                    <th class="basic-header">長度</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fixedTableBody">
+            // 建立單一表格 HTML（使用 CSS sticky 實現凍結）
+            let html = `
+                <div class="iqt-container">
+                    <table class="iqt-table">
+                        <thead>
+                            <tr>
+                                <th class="sticky-col sticky-col-1">產品</th>
+                                <th class="sticky-col sticky-col-2">數量</th>
+                                <th class="sticky-col sticky-col-3">長度</th>
             `;
 
-            // 渲染固定欄位的產品行
-            if (!orderDetails || orderDetails.length === 0) {
-                tableHtml += `
-                    <tr>
-                        <td colspan="3" class="text-center text-muted py-4">
-                            <i class="bi bi-info-circle me-2"></i>
-                            此單據暫無明細資料
-                        </td>
-                    </tr>`;
-            } else {
-                orderDetails.forEach(orderDetail => {
-                    const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name 
-                        ? `${orderDetail.mic_name} ${orderDetail.pr_name}` 
-                        : (orderDetail.od_pr_name || orderDetail.pr_name);
-                    const totalQty = toNumber(orderDetail['<?= $qtyField ?>']);
-                    const totalLength = toNumber(orderDetail['<?= $lengthField ?>']);
-                    
-                    tableHtml += `
-                        <tr>
-                            <td class="product-name">${displayName}</td>
-                            <td class="total-quantity">${formatDisplayNumber(totalQty)}</td>
-                            <td class="total-length">${formatDisplayNumber(totalLength)}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            tableHtml += `
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="scrollable-columns-wrapper">
-                        <table class="table table-bordered table-hover scrollable-columns-table">
-                            <thead>
-                                <tr>
-            `;
-
-            // 渲染分類表頭（每個分類只有一個欄位）
+            // 渲染施工項目表頭
             projectItems.forEach(projectItem => {
-                tableHtml += `<th class="category-header">${projectItem.pi_name}</th>`;
+                html += `<th class="category-col">${projectItem.pi_name}</th>`;
             });
 
-            tableHtml += `
-                                </tr>
-                            </thead>
-                            <tbody id="scrollableTableBody">
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
             `;
 
-            // 渲染可滾動欄位的產品行
+            // 渲染資料列
             if (!orderDetails || orderDetails.length === 0) {
-                tableHtml += `
+                const colSpan = 3 + projectItems.length;
+                html += `
                     <tr>
-                        <td colspan="${projectItems.length}" class="text-center text-muted py-4">
-                            <i class="bi bi-info-circle me-2"></i>
-                            此單據暫無明細資料
+                        <td colspan="${colSpan}" class="text-center text-muted py-4">
+                            <i class="bi bi-info-circle me-2"></i>此單據暫無明細資料
                         </td>
-                    </tr>`;
+                    </tr>
+                `;
             } else {
-                // 渲染產品行的可滾動部分
                 orderDetails.forEach(orderDetail => {
                     const detailId = orderDetail['<?= $detailIdKey ?>'];
+                    const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name ?
+                        `${orderDetail.mic_name} ${orderDetail.pr_name}` :
+                        (orderDetail.od_pr_name || orderDetail.pr_name);
                     const totalQty = toNumber(orderDetail['<?= $qtyField ?>']);
-                    
-                    tableHtml += `<tr>`;
+                    const totalLength = toNumber(orderDetail['<?= $lengthField ?>']);
 
-                    // 渲染每個分類的數量欄位
+                    html += `
+                        <tr>
+                            <td class="sticky-col sticky-col-1">${displayName}</td>
+                            <td class="sticky-col sticky-col-2">${formatDisplayNumber(totalQty)}</td>
+                            <td class="sticky-col sticky-col-3">${formatDisplayNumber(totalLength)}</td>
+                    `;
+
+                    // 渲染每個施工項目的數量輸入欄位
                     projectItems.forEach(projectItem => {
                         const key = `${detailId}_${projectItem.pi_id}`;
                         const existingQty = toNumber(originalQuantities[key]);
                         const maxQty = totalQty;
-                        
-                        tableHtml += `
-                            <td class="category-cell">
+
+                        html += `
+                            <td class="category-col">
                                 <input type="number" 
                                        class="form-control category-input" 
                                        data-detail-id="${detailId}" 
@@ -536,60 +449,26 @@
                         `;
                     });
 
-                    tableHtml += `</tr>`;
+                    html += `</tr>`;
                 });
             }
 
-            tableHtml += `
-                            </tbody>
-                        </table>
-                    </div>
+            html += `
+                        </tbody>
+                    </table>
                 </div>
             `;
 
-            container.innerHTML = tableHtml;
-            
-            // 同步垂直滾動
-            synchronizeScrolling();
-            
+            container.innerHTML = html;
+
             // 綁定數量驗證事件
             bindQuantityValidation();
-        }
-
-        // 同步兩個表格的垂直滾動
-        function synchronizeScrolling() {
-            const fixedWrapper = document.querySelector('.fixed-columns-wrapper');
-            const scrollableWrapper = document.querySelector('.scrollable-columns-wrapper');
-            
-            if (!fixedWrapper || !scrollableWrapper) return;
-            
-            let isSyncing = false;
-            
-            scrollableWrapper.addEventListener('scroll', function() {
-                if (!isSyncing) {
-                    isSyncing = true;
-                    fixedWrapper.scrollTop = scrollableWrapper.scrollTop;
-                    requestAnimationFrame(() => {
-                        isSyncing = false;
-                    });
-                }
-            });
-            
-            fixedWrapper.addEventListener('scroll', function() {
-                if (!isSyncing) {
-                    isSyncing = true;
-                    scrollableWrapper.scrollTop = fixedWrapper.scrollTop;
-                    requestAnimationFrame(() => {
-                        isSyncing = false;
-                    });
-                }
-            });
         }
 
         // 數量驗證函數
         function bindQuantityValidation() {
             const categoryInputs = document.querySelectorAll('#itemQuantityModal .category-input');
-            
+
             categoryInputs.forEach(input => {
                 input.addEventListener('input', function() {
                     validateRowQuantity(this);
@@ -601,28 +480,28 @@
         function validateRowQuantity(changedInput) {
             const detailId = changedInput.dataset.detailId;
             const maxQty = toNumber(changedInput.dataset.maxQty);
-            
+
             // 找到同一行的所有input
             const rowInputs = document.querySelectorAll(`#itemQuantityModal .category-input[data-detail-id="${detailId}"]`);
             let totalAssigned = 0;
-            
+
             rowInputs.forEach(input => {
                 const value = toNumber(input.value);
                 totalAssigned += value;
-                
+
                 // 移除之前的錯誤樣式
                 input.classList.remove('is-invalid');
                 input.title = '';
             });
-            
+
             // 檢查是否超過限制
-                if (totalAssigned - maxQty > FLOAT_TOLERANCE) {
+            if (totalAssigned - maxQty > FLOAT_TOLERANCE) {
                 // 標記所有相關input為錯誤
                 rowInputs.forEach(input => {
                     input.classList.add('is-invalid');
                     input.title = `總分配數量 ${formatDisplayNumber(totalAssigned)} 超過訂單數量 ${formatDisplayNumber(maxQty)}`;
                 });
-                
+
                 // 顯示錯誤訊息
                 showValidationError(`產品分配數量總和 (${formatDisplayNumber(totalAssigned)}) 不能超過訂單數量 (${formatDisplayNumber(maxQty)})`);
                 return false;
@@ -640,11 +519,11 @@
                 errorDiv = document.createElement('div');
                 errorDiv.id = 'quantityValidationError';
                 errorDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
-                
+
                 const modalBody = document.querySelector('#itemQuantityModal .modal-body');
                 modalBody.insertBefore(errorDiv, modalBody.firstChild);
             }
-            
+
             errorDiv.innerHTML = `
                 <i class="bi bi-exclamation-triangle me-2"></i>
                 ${message}
@@ -666,7 +545,7 @@
                 // 先進行最終驗證
                 const categoryInputs = document.querySelectorAll('#itemQuantityModal .category-input');
                 let hasValidationError = false;
-                
+
                 // 檢查每一行是否有驗證錯誤
                 const processedRows = new Set();
                 categoryInputs.forEach(input => {
@@ -678,7 +557,7 @@
                         }
                     }
                 });
-                
+
                 if (hasValidationError) {
                     showValidationError('請修正數量超過限制的項目後再提交');
                     return;
@@ -737,50 +616,50 @@
 
                 // 發送數據到後端
                 fetch('<?= $assignmentSaveUrl ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify(operations)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('儲存失敗');
-                    }
-                    return response.json();
-                })
-                .then(result => {
-                    // 恢復按鈕狀態
-                    saveButton.disabled = false;
-                    saveButton.innerHTML = originalText;
-
-                    // 更新原始數量記錄
-                    categoryInputs.forEach(input => {
-                        const detailId = input.dataset.detailId;
-                        const piId = input.dataset.piId;
-                        const key = `${detailId}_${piId}`;
-                        const newQty = toNumber(input.value);
-
-                        if (!isEffectivelyZero(newQty)) {
-                            originalQuantities[key] = newQty;
-                        } else {
-                            delete originalQuantities[key];
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify(operations)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('儲存失敗');
                         }
+                        return response.json();
+                    })
+                    .then(result => {
+                        // 恢復按鈕狀態
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = originalText;
+
+                        // 更新原始數量記錄
+                        categoryInputs.forEach(input => {
+                            const detailId = input.dataset.detailId;
+                            const piId = input.dataset.piId;
+                            const key = `${detailId}_${piId}`;
+                            const newQty = toNumber(input.value);
+
+                            if (!isEffectivelyZero(newQty)) {
+                                originalQuantities[key] = newQty;
+                            } else {
+                                delete originalQuantities[key];
+                            }
+                        });
+
+                        bootstrap.Modal.getInstance(document.getElementById('itemQuantityModal')).hide();
+                    })
+                    .catch(error => {
+                        console.error('儲存項目數量表失敗:', error);
+
+                        // 恢復按鈕狀態
+                        saveButton.disabled = false;
+                        saveButton.innerHTML = originalText;
+
+                        // 顯示錯誤訊息
+                        alert('儲存項目數量表失敗：' + error.message);
                     });
-
-                    bootstrap.Modal.getInstance(document.getElementById('itemQuantityModal')).hide();
-                })
-                .catch(error => {
-                    console.error('儲存項目數量表失敗:', error);
-
-                    // 恢復按鈕狀態
-                    saveButton.disabled = false;
-                    saveButton.innerHTML = originalText;
-
-                    // 顯示錯誤訊息
-                    alert('儲存項目數量表失敗：' + error.message);
-                });
             });
         }
     });

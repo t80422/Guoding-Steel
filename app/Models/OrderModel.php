@@ -140,7 +140,8 @@ class OrderModel extends Model
             $builder->where('o.o_type', $type);
         }
 
-        $builder->orderBy('o.o_date', 'DESC');
+        $builder->orderBy('o.o_date', 'DESC')
+        ->orderBy('o.o_id', 'DESC');
 
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;

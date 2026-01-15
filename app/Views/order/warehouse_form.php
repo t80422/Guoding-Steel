@@ -159,7 +159,7 @@
                                     <?php if ($cell): ?>
                                         <td><?= esc($cell['name'] ?? '') ?></td>
                                         <td><?= esc($cell['unit'] ?? '') ?></td>
-                                        <td class="fw-bold"><?= esc($cell['qty'] ?? '') ?></td>
+                                        <td class="fw-bold" style="color:red;"><?= esc($cell['qty'] ?? '') ?></td>
                                     <?php else: ?>
                                         <td></td>
                                         <td></td>
@@ -180,8 +180,8 @@
                         $label = ($index + 1) . '.'; // 動態產生序號
                     ?>
                         <tr>
-                            <td style="width:5%; text-align:left;"><?= $label ?></td>
-                            <td class="dashed text-break" style="width:95%; text-align:left;">
+                            <td style="width:5%; text-align:left;color:red;"><?= $label ?></td>
+                            <td class="dashed text-break" style="width:95%; text-align:left;color:red;">
                                 <?= esc($d['spec'] ?? '') ?><br>
                             <?= esc($d['detail'] ?? '') ?>
                         </td>
@@ -196,7 +196,7 @@
             <!-- 配件／氧氣／乙炔 & GPS & 時間 -->
             <table class="borderless mb-1">
                 <tr>
-                    <td class="fw-bold fs-6" colspan="3" style="text-align:left;">備註：<?= esc($order['o_remark'] ?? '') ?></td>
+                    <td class="fw-bold fs-6" colspan="3" style="text-align:left;">備註：<span style="color:red;"><?= esc($order['o_remark'] ?? '') ?></span></td>
                     <td></td>
                     <td></td>
                 </tr>

@@ -137,22 +137,30 @@ class InventoryService
      */
     private function handleDeleteOrder($orderId)
     {
-        $order = $this->orderModel->find($orderId);
-        if (!$order) {
-            throw new Exception('訂單不存在');
-        }
-
-        $orderDetails = $this->orderDetailModel->getByOrderId($orderId);
-        
-        foreach ($orderDetails as $detail) {
-            // 回復出庫地點庫存 (DELETE 操作跳過庫存檢查)
-            $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], $detail['od_qty'], true);
+        try
+        {
+            $order = $this->orderModel->find($orderId);
+            if (!$order) {
+                throw new Exception('訂單不存在');
+            }
+    
+            $orderDetails = $this->orderDetailModel->getByOrderId($orderId);
             
-            // 回復入庫地點庫存 (DELETE 操作跳過庫存檢查)
-            $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], -$detail['od_qty'], true);
+            foreach ($orderDetails as $detail) {
+                // 回復出庫地點庫存 (DELETE 操作跳過庫存檢查)
+                $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], $detail['od_qty'], true);
+                
+                // 回復入庫地點庫存 (DELETE 操作跳過庫存檢查)
+                $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], -$detail['od_qty'], true);
+            }
+    
+            return true;
         }
-
-        return true;
+        catch (Exception $e) {
+            log_message('error', 'InventoryService::handleDeleteOrder - ' . $e->getMessage());
+            throw $e;
+        }
+        
     }
 
     /**
@@ -198,7 +206,7 @@ class InventoryService
             ->getProductInventoryByLocation($productId, $locationId);
 
         if (!$inventory) {
-            throw new Exception('庫存記錄不存在');
+            throw new Exception('庫存記錄不存在: productId=' . $productId . ', locationId=' . $locationId);
         }
 
         // 計算新的庫存數量
