@@ -48,6 +48,7 @@ class OrderController extends BaseController
         $orderDateEnd = $query['order_date_end'] ?? null;
         $type = $query['type'] ?? null;
         $page = isset($query['page']) ? (int) $query['page'] : 1;
+        $returnUrl = (string) current_url(true)->setQuery(http_build_query($query));
 
         $result = $this->orderModel->getList($keyword, $orderDateStart, $orderDateEnd, $type, $page);
 
@@ -58,6 +59,7 @@ class OrderController extends BaseController
             'order_date_end' => $orderDateEnd,
             'type' => $type,
             'pagination' => $result['pagination'],
+            'return_url' => $returnUrl,
         ]);
     }
 
@@ -72,11 +74,13 @@ class OrderController extends BaseController
 
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
         $gpsOptions = $this->gpsModel->getOptions();
+        $returnUrl = $this->request->getGet('return_url');
 
         $data = [
             'order' => $order,
             'orderDetails' => $orderDetails,
             'gpsOptions' => $gpsOptions,
+            'return_url' => $returnUrl,
         ];
 
         return view('order/form', ['data' => $data, 'isEdit' => true]);
@@ -95,6 +99,7 @@ class OrderController extends BaseController
             $data = $this->request->getPost();
             $files = $this->request->getFiles();
             $userId = session()->get('userId');
+            $returnUrl = $data['return_url'] ?? null;
             
             if (!$userId) {
                 return redirect()->to(url_to('AuthController::index'))
@@ -108,13 +113,41 @@ class OrderController extends BaseController
             $success = $this->orderService->updateOrder((int)$orderId, $data, $detailsData, $files, (int)$userId);
 
             if ($success) {
+                if ($this->isSafeReturnUrl($returnUrl)) {
+                    return redirect()->to($returnUrl)->with('success', '訂單更新成功');
+                }
                 return redirect()->to(url_to('OrderController::index'))->with('success', '訂單更新成功');
             } else {
+                if ($this->isSafeReturnUrl($returnUrl)) {
+                    return redirect()->to($returnUrl)->with('error', '儲存失敗');
+                }
                 return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗');
             }
         } catch (Exception $e) {
+            if ($this->isSafeReturnUrl($returnUrl)) {
+                return redirect()->to($returnUrl)->with('error', '儲存失敗：' . $e->getMessage());
+            }
             return redirect()->to(url_to('OrderController::index'))->with('error', '儲存失敗：' . $e->getMessage());
         }
+    }
+
+    private function isSafeReturnUrl(?string $returnUrl): bool
+    {
+        if (empty($returnUrl)) {
+            return false;
+        }
+
+        $parsed = parse_url($returnUrl);
+        if ($parsed === false) {
+            return false;
+        }
+
+        if (!isset($parsed['host'])) {
+            return true;
+        }
+
+        $baseHost = parse_url(base_url(), PHP_URL_HOST);
+        return !empty($baseHost) && $parsed['host'] === $baseHost;
     }
 
     // 提供簽名圖片

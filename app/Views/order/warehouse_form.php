@@ -232,7 +232,7 @@
                         </div>
                     </td>
                     <td class="text-center" style="width:25%; vertical-align:top;">
-                        <div style="font-weight:bold; margin-bottom:5px;">倉庫簽收</div>
+                        <div style="font-weight:bold; margin-bottom:5px;">出發地簽收</div>
                         <div class="signature" style="height:50px; border:1px solid #ccc; display:flex; align-items:center; justify-content:center;">
                             <?php if (!empty($order['o_from_signature'])): ?>
                                 <img src="<?= url_to('OrderController::serveSignature', $order['o_from_signature']) ?>"
@@ -241,7 +241,7 @@
                         </div>
                     </td>
                     <td class="text-center" style="width:25%; vertical-align:top;">
-                        <div style="font-weight:bold; margin-bottom:5px;">工地簽收</div>
+                        <div style="font-weight:bold; margin-bottom:5px;">目的地簽收</div>
                         <div class="signature" style="height:50px; border:1px solid #ccc; display:flex; align-items:center; justify-content:center;">
                             <?php if (!empty($order['o_to_signature'])): ?>
                                 <img src="<?= url_to('OrderController::serveSignature', $order['o_to_signature']) ?>"

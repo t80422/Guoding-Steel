@@ -3,13 +3,14 @@
 <?= $this->section('content') ?>
 
 <div class="container-fluid py-4">
+    <?php $returnUrl = $data['return_url'] ?? ''; ?>
     <!-- 頁面標題區 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">料單管理</h1>
         </div>
         <div class="d-flex gap-2">
-            <a href="<?= url_to('OrderController::index') ?>" class="btn btn-outline-secondary">
+            <a href="<?= !empty($returnUrl) ? esc($returnUrl) : url_to('OrderController::index') ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-2"></i>返回列表
             </a>
             <button type="submit" form="orderForm" class="btn btn-primary">
@@ -30,6 +31,7 @@
         <?php if ($isEdit): ?>
             <input type="hidden" name="o_id" value="<?= $data['order']['o_id'] ?? old('o_id') ?>">
         <?php endif; ?>
+        <input type="hidden" name="return_url" value="<?= esc($returnUrl) ?>">
 
         <div class="row g-4">
             <!-- 左側主要內容 -->

@@ -59,6 +59,7 @@
     </div>
     <!-- 列表 -->
     <div class="table-responsive">
+        <?php $encodedReturnUrl = isset($return_url) ? rawurlencode($return_url) : ''; ?>
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
@@ -133,7 +134,7 @@
                                 <button class="btn btn-sm btn-outline-info" onclick="window.open('<?= url_to('OrderController::print', $item['o_id']) ?>', '_blank')" title="列印">
                                     <i class="bi bi-printer"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('OrderController::edit', $item['o_id']) ?>')" title="編輯">
+                                <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('OrderController::edit', $item['o_id']) ?><?= $encodedReturnUrl ? '?return_url=' . $encodedReturnUrl : '' ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('OrderController::delete', $item['o_id']) ?>')" title="刪除">
