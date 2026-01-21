@@ -49,16 +49,20 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold">料單類型</label>
                                 <div class="btn-group w-100" role="group">
-                                    <input type="radio" class="btn-check" name="o_type" id="o_type_0" value="0"
-                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '0' ? 'checked' : '' ?>>
-                                    <label class="btn btn-outline-primary" for="o_type_0">
-                                        <i class="bi bi-box-arrow-in-down me-1"></i>進倉庫
-                                    </label>
-                                    <input type="radio" class="btn-check" name="o_type" id="o_type_1" value="1"
-                                        autocomplete="off" <?= old('o_type', $data['order']['o_type'] ?? '') == '1' ? 'checked' : '' ?> >
-                                    <label class="btn btn-outline-primary" for="o_type_1">
-                                        <i class="bi bi-box-arrow-up me-1"></i>出倉庫
-                                    </label>
+                                    <?php 
+                                    $types = [
+                                        '0' => ['label' => '進倉庫', 'icon' => 'bi-box-arrow-in-down'],
+                                        '1' => ['label' => '出倉庫', 'icon' => 'bi-box-arrow-up'],
+                                        '2' => ['label' => '轉倉庫', 'icon' => 'bi-arrow-left-right'],
+                                    ];
+                                    foreach ($types as $val => $info): 
+                                    ?>
+                                        <input type="radio" class="btn-check" name="o_type" id="o_type_<?= $val ?>" value="<?= $val ?>"
+                                            autocomplete="off" <?= (string)old('o_type', $data['order']['o_type'] ?? '0') === (string)$val ? 'checked' : '' ?>>
+                                        <label class="btn btn-outline-primary" for="o_type_<?= $val ?>">
+                                            <i class="<?= $info['icon'] ?> me-1"></i><?= $info['label'] ?>
+                                        </label>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 
@@ -187,12 +191,12 @@
                             </h5>
                             <div class="d-flex gap-2">
                                 <?php if ($isEdit): ?>
-                                <button type="button" class="btn btn-primary btn-sm" id="itemQuantityTableBtn"
+                                <button type="button" class="btn btn-outline-info btn-sm" id="itemQuantityTableBtn"
                                     data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
                                     <i class="bi bi-table me-1"></i>項目數量表
                                 </button>
                                 <?php endif; ?>
-                                <button type="button" class="btn btn-success btn-sm" id="addDetailBtn">
+                                <button type="button" class="btn btn-outline-success btn-sm" id="addDetailBtn">
                                     <i class="bi bi-plus-lg me-1"></i>新增明細
                                 </button>
                             </div>
@@ -489,6 +493,20 @@
                         </div>
                     </div>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- 底部操作按鈕區 -->
+        <div class="card shadow-sm border-0 mt-4 mb-5">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="<?= !empty($returnUrl) ? esc($returnUrl) : url_to('OrderController::index') ?>" class="btn btn-outline-secondary px-4">
+                        <i class="bi bi-arrow-left me-2"></i>返回列表
+                    </a>
+                    <button type="submit" form="orderForm" class="btn btn-primary px-5 shadow-sm">
+                        <i class="bi bi-check-lg me-2"></i>保存訂單
+                    </button>
+                </div>
             </div>
         </div>
     </form>
@@ -1043,20 +1061,28 @@
             const isLength = row.dataset.productIsLength === '1';
             
             let totalWeightKg = 0;
+            const lengthInput = row.querySelector('.length-input');
             
             if (isLength) {
                 // 按長度計算：總重量 = pr_weight × od_length × od_qty
-                if (length <= 0) {
-                    // 按長度計算的產品，長度為0或空要提醒
-                    if (weightPerUnit > 0) { // 只有選擇了產品才提醒
-                        alert('此產品按長度計算重量，請輸入長度！');
-                        return;
+                if (length <= 0 && weightPerUnit > 0) {
+                    // 顯示驗證錯誤反饋
+                    lengthInput.classList.add('is-invalid');
+                    if (!lengthInput.nextElementSibling || !lengthInput.nextElementSibling.classList.contains('invalid-feedback')) {
+                        const feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        feedback.textContent = '請輸入長度';
+                        lengthInput.parentNode.appendChild(feedback);
                     }
+                    return;
+                } else {
+                    lengthInput.classList.remove('is-invalid');
                 }
                 totalWeightKg = weightPerUnit * length * quantity;
             } else {
                 // 按數量計算：總重量 = pr_weight × od_qty  
                 totalWeightKg = weightPerUnit * quantity;
+                if (lengthInput) lengthInput.classList.remove('is-invalid');
             }
             
             // 儲存公斤值至隱藏欄位，給後端使用

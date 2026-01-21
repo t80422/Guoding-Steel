@@ -56,11 +56,11 @@ class RentalOrderModel extends Model
     private function baseQuery()
     {
         return $this->builder('rental_orders ro')
-            ->join('locations l', 'l.l_id = ro.ro_l_id','left')
-            ->join('users u1', 'u1.u_id = ro.ro_create_by','left')
+            ->join('locations l', 'l.l_id = ro.ro_l_id', 'left')
+            ->join('users u1', 'u1.u_id = ro.ro_create_by', 'left')
             ->join('users u2', 'u2.u_id = ro.ro_update_by', 'left')
             ->join('gps g', 'g.g_id = ro.ro_g_id', 'left')
-            ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id','left')
+            ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id', 'left')
             ->select('
                 ro.*, l.l_name, m.ma_name, u1.u_name as creator, u2.u_name as updater, g.g_name');
     }
@@ -191,13 +191,20 @@ class RentalOrderModel extends Model
         if (!empty($searchParams['start_date'])) {
             $builder->where('ro.ro_date >=', $searchParams['start_date']);
         }
-        
+
         if (!empty($searchParams['end_date'])) {
             $builder->where('ro.ro_date <=', $searchParams['end_date']);
         }
-        
+
+        if (isset($searchParams['type']) && $searchParams['type'] !== '') {
+            $builder->where('ro.ro_type', $searchParams['type']);
+        }
+
         if (!empty($searchParams['keyword'])) {
-            $builder->like('ro.ro_car_number', $searchParams['keyword']);
+            $builder->groupStart()
+                ->like('ro.ro_car_number', $searchParams['keyword'])
+                ->orLike('m.ma_name', $searchParams['keyword'])
+                ->groupEnd();
         }
 
         $builder->orderBy('ro.ro_date', 'DESC')
@@ -226,12 +233,12 @@ class RentalOrderModel extends Model
         // 按租賃單分組處理資料
         foreach ($rawResults as $row) {
             $rentalId = $row['ro_id'];
-            
+
             // 初始化租賃單基本資訊
             if (!isset($orders[$rentalId])) {
                 // 判斷是加還是減：進工地(0)是加，出工地(1)是減
                 $isIncrease = ($row['ro_type'] == self::TYPE_IN);
-                
+
                 $orders[$rentalId] = [
                     'ro_id' => $rentalId,
                     'vehicle_no' => $row['ro_car_number'],
@@ -251,10 +258,10 @@ class RentalOrderModel extends Model
                 $length = (float)($row['rod_length'] ?? 0);
                 $quantity = (int)($row['rodpi_qty'] ?? 0);
                 $projectSort = isset($row['project_sort']) ? (int)$row['project_sort'] : PHP_INT_MAX;
-                
+
                 // 使用產品名稱作為唯一鍵
                 $productKey = $productName;
-                
+
                 // 記錄所有出現過的項目和產品（用於動態表頭）
                 $allProjects[$projectName] = true;
                 $projectSorts[$projectName] = [
@@ -264,12 +271,12 @@ class RentalOrderModel extends Model
                 $allProducts[$projectName][$productKey] = [
                     'display_name' => $productName
                 ];
-                
+
                 // 整理項目下的產品資料
                 if (!isset($orders[$rentalId]['projects'][$projectName])) {
                     $orders[$rentalId]['projects'][$projectName] = [];
                 }
-                
+
                 if (!isset($orders[$rentalId]['projects'][$projectName][$productKey])) {
                     $orders[$rentalId]['projects'][$projectName][$productKey] = [
                         'quantity' => 0,
@@ -277,7 +284,7 @@ class RentalOrderModel extends Model
                         'display_name' => $productName
                     ];
                 }
-                
+
                 // 累加數量並將米數乘以數量
                 $orders[$rentalId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
                 $orders[$rentalId]['projects'][$projectName][$productKey]['length'] += $length * $quantity;
@@ -285,7 +292,7 @@ class RentalOrderModel extends Model
         }
 
         // 過濾掉沒有產品明細的租賃單
-        $filteredOrders = array_filter($orders, function($order) {
+        $filteredOrders = array_filter($orders, function ($order) {
             return !empty($order['projects']);
         });
 

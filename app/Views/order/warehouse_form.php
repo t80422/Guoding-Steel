@@ -23,6 +23,21 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            position: relative; /* 為了浮水印定位 */
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 150px;
+            color: rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 0;
+            pointer-events: none;
+            user-select: none;
         }
 
         table {
@@ -57,6 +72,11 @@
             min-width: 200px;
             text-align: center;
             padding-bottom: 2px;
+        }
+
+        .type-label {
+            cursor: pointer;
+            margin: 0 8px;
         }
 
         .signature {
@@ -98,6 +118,17 @@
 
 <body>
     <div class="a4">
+        <?php 
+            $watermarkText = '';
+            switch((int)($order['o_type'] ?? -1)) {
+                case 0: $watermarkText = '進倉庫'; break;
+                case 1: $watermarkText = '出倉庫'; break;
+                case 2: $watermarkText = '轉倉庫'; break;
+            }
+        ?>
+        <?php if ($watermarkText): ?>
+            <div class="watermark"><?= $watermarkText ?></div>
+        <?php endif; ?>
         <div class="main-content">
             <!-- 表頭 -->
             <table class="borderless mb-1">
@@ -119,8 +150,11 @@
             <!-- 進倉庫/出倉庫選項 - 置中顯示 -->
             <div class="text-center fs-4 mb-2">
                 請詳細打√&nbsp;&nbsp;
-                進倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 0 ? 'checked' : '' ?>>&nbsp;&nbsp;
-                出倉庫<input type="checkbox" <?= isset($order['o_type']) && (int)$order['o_type'] === 1 ? 'checked' : '' ?>>
+                <?php foreach (['進倉庫', '出倉庫', '轉倉庫'] as $index => $label): ?>
+                    <label class="type-label">
+                        <?= $label ?> <input type="radio" name="o_type" <?= (int)($order['o_type'] ?? -1) === $index ? 'checked' : '' ?>>
+                    </label>
+                <?php endforeach; ?>
             </div>
             <!-- 基本資料列 -->
             <table class="borderless mb-1">

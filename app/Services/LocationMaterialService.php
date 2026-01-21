@@ -27,10 +27,8 @@ class LocationMaterialService
     {
         // 取得一般訂單資料
         $orderData = $this->orderModel->getMaterialDetailsWithProjectsByLocation($locationId, $searchParams);
-        
         // 取得租賃單資料
         $rentalData = $this->rentalOrderModel->getMaterialDetailsByLocation($locationId, $searchParams);
-
         // 合併項目並依 pi_sort 排序
         $projectSorts = [];
         foreach ($orderData['project_sorts'] ?? [] as $name => $info) {

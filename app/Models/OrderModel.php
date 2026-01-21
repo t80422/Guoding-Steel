@@ -35,6 +35,7 @@ class OrderModel extends Model
 
     public const TYPE_IN_WAREHOUSE = 0; // 進倉庫
     public const TYPE_OUT_WAREHOUSE = 1; // 出倉庫
+    public const TYPE_TRANSFER_WAREHOUSE = 2; // 轉倉庫
 
     public const STATUS_IN_PROGRESS = 0; // 進行中
     public const STATUS_COMPLETED = 1; // 完成
@@ -52,6 +53,8 @@ class OrderModel extends Model
                 return '進倉庫';
             case self::TYPE_OUT_WAREHOUSE:
                 return '出倉庫';
+            case self::TYPE_TRANSFER_WAREHOUSE:
+                return '轉倉庫';
             default:
                 return '';
         }
@@ -117,7 +120,7 @@ class OrderModel extends Model
             ->getCompiledSelect();
 
         $builder->join("($subSql) od_sum", 'od_sum.od_o_id = o.o_id', 'left')
-                ->select('COALESCE(od_sum.total_kg, 0) AS total_kg', false);
+            ->select('COALESCE(od_sum.total_kg, 0) AS total_kg', false);
 
         if ($keyword) {
             $builder->groupStart()
@@ -141,7 +144,7 @@ class OrderModel extends Model
         }
 
         $builder->orderBy('o.o_date', 'DESC')
-        ->orderBy('o.o_id', 'DESC');
+            ->orderBy('o.o_id', 'DESC');
 
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
@@ -196,8 +199,8 @@ class OrderModel extends Model
     {
         $builder = $this->baseQuery()
             ->groupStart()
-                ->where('o.o_from_location', $locationId)
-                ->orWhere('o.o_to_location', $locationId)
+            ->where('o.o_from_location', $locationId)
+            ->orWhere('o.o_to_location', $locationId)
             ->groupEnd()
             ->orderBy('o.o_date', 'DESC');
 
@@ -206,14 +209,14 @@ class OrderModel extends Model
         // 格式化資料並加入中文名稱
         foreach ($results as &$row) {
             $row['typeName'] = self::getTypeName($row['o_type']);
-            
+
             // 判斷倉庫名稱（如果是從該地點出去，顯示目的地；如果是到該地點，顯示來源地）
             if ($row['o_from_location'] == $locationId) {
                 $row['warehouse'] = $row['to_location_name'] ?? '未知地點';
             } else {
                 $row['warehouse'] = $row['from_location_name'] ?? '未知地點';
             }
-            
+
             // 格式化顯示用的欄位
             $row['vehicle_no'] = $row['o_car_number'];
             $row['date'] = $row['o_date'];
@@ -260,30 +263,30 @@ class OrderModel extends Model
                 odpi.odpi_qty
             ')
             ->groupStart()
-                ->where('o.o_from_location', $locationId)
-                ->orWhere('o.o_to_location', $locationId)
+            ->where('o.o_from_location', $locationId)
+            ->orWhere('o.o_to_location', $locationId)
             ->groupEnd();
 
         // 加入搜尋條件
         if (!empty($searchParams['start_date'])) {
             $builder->where('o.o_date >=', $searchParams['start_date']);
         }
-        
+
         if (!empty($searchParams['end_date'])) {
             $builder->where('o.o_date <=', $searchParams['end_date']);
         }
-        
-        if (isset($searchParams['type'])) {
+
+        if (isset($searchParams['type']) && $searchParams['type'] !== '') {
             $builder->where('o.o_type', $searchParams['type']);
         }
-        
+
         if (!empty($searchParams['keyword'])) {
             $keyword = $searchParams['keyword'];
             $builder->groupStart()
                 ->like('o.o_car_number', $keyword)
                 ->orLike('l1.l_name', $keyword)
                 ->orLike('l2.l_name', $keyword)
-            ->groupEnd();
+                ->groupEnd();
         }
 
         $builder->orderBy('o.o_date', 'DESC')
@@ -312,12 +315,12 @@ class OrderModel extends Model
         // 按訂單分組處理資料
         foreach ($rawResults as $row) {
             $orderId = $row['o_id'];
-            
+
             // 初始化訂單基本資訊
             if (!isset($orders[$orderId])) {
                 // 判斷是加還是減：當前工地在 o_to_location 是加，在 o_from_location 是減
                 $isIncrease = ($row['o_to_location'] == $locationId);
-                
+
                 $orders[$orderId] = [
                     'o_id' => $orderId,
                     'vehicle_no' => $row['o_car_number'],
@@ -337,10 +340,10 @@ class OrderModel extends Model
                 $length = (float)($row['od_length'] ?? 0);
                 $quantity = (float)($row['odpi_qty'] ?? 0);
                 $projectSort = isset($row['project_sort']) ? (int)$row['project_sort'] : PHP_INT_MAX;
-                
+
                 // 使用產品名稱作為唯一鍵（合併相同產品的不同長度）
                 $productKey = $productName;
-                
+
                 // 記錄所有出現過的項目和產品（用於動態表頭），記錄 pi_id 用於排序
                 $allProjects[$projectName] = $projectId;
                 $projectSorts[$projectName] = [
@@ -350,12 +353,12 @@ class OrderModel extends Model
                 $allProducts[$projectName][$productKey] = [
                     'display_name' => $productName
                 ];
-                
+
                 // 整理項目下的產品資料
                 if (!isset($orders[$orderId]['projects'][$projectName])) {
                     $orders[$orderId]['projects'][$projectName] = [];
                 }
-                
+
                 if (!isset($orders[$orderId]['projects'][$projectName][$productKey])) {
                     $orders[$orderId]['projects'][$projectName][$productKey] = [
                         'quantity' => 0.0,
@@ -363,7 +366,7 @@ class OrderModel extends Model
                         'display_name' => $productName
                     ];
                 }
-                
+
                 // 累加數量並將米數乘以數量
                 $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
                 $orders[$orderId]['projects'][$projectName][$productKey]['length'] += $length * $quantity;
@@ -371,13 +374,13 @@ class OrderModel extends Model
         }
 
         // 過濾掉沒有產品明細的訂單（projects 為空的訂單）
-        $filteredOrders = array_filter($orders, function($order) {
+        $filteredOrders = array_filter($orders, function ($order) {
             return !empty($order['projects']);
         });
 
         // 按照 pi_sort（次要以 pi_id 與名稱）排序專案
         $sortedProjects = array_keys($projectSorts);
-        usort($sortedProjects, function($a, $b) use ($projectSorts) {
+        usort($sortedProjects, function ($a, $b) use ($projectSorts) {
             $aSort = $projectSorts[$a]['sort'] ?? PHP_INT_MAX;
             $bSort = $projectSorts[$b]['sort'] ?? PHP_INT_MAX;
             if ($aSort === $bSort) {
@@ -390,7 +393,7 @@ class OrderModel extends Model
             }
             return $aSort <=> $bSort;
         });
-        
+
         return [
             'orders' => array_values($filteredOrders),
             'all_projects' => $sortedProjects,
@@ -495,7 +498,8 @@ class OrderModel extends Model
      *
      * @return string
      */
-    public function generateOrderNumber(){
+    public function generateOrderNumber()
+    {
         $prefix = date('Ym');
         $lastOrder = $this->like('o_number', $prefix, 'after')->orderBy('o_number', 'DESC')->first();
 
