@@ -57,6 +57,16 @@ $routes->group('minorCategory', function ($routes) {
     $routes->get('getMinorCategories/(:num)', 'MinorCategoryController::getMinorCategories/$1');
 });
 
+// 車種管理
+$routes->group('car-type', function ($routes) {
+    $routes->get('/', 'CarTypeController::index');
+    $routes->get('create', 'CarTypeController::create');
+    $routes->get('edit/(:num)', 'CarTypeController::edit/$1');
+    $routes->get('delete/(:num)', 'CarTypeController::delete/$1');
+    $routes->post('save', 'CarTypeController::save');
+});
+
+
 // 產品
 $routes->group('product', function ($routes) {
     $routes->get('/', 'ProductController::index');
@@ -240,6 +250,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
 
     // 取得GPS
     $routes->get('gps/getOptions', 'GpsController::getOptions');
+
+    // 取得車種
+    $routes->get('car-type/getOptions', 'CarTypeController::getOptions');
 
     // 上傳租賃單
     $routes->post('rental', 'RentalController::create');

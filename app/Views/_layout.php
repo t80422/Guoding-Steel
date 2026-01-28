@@ -125,6 +125,9 @@
                 <a href="<?= url_to('ProjectItemController::index') ?>" class="list-group-item list-group-item-action">
                     <i class="bi bi-list-ul"></i>施工項目
                 </a>
+                <a href="<?= url_to('CarTypeController::index') ?>" class="list-group-item list-group-item-action">
+                    <i class="bi bi-truck"></i>車種管理
+                </a>
             </div>
         </div>
         <!-- Page Content -->
@@ -134,7 +137,7 @@
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         document.getElementById('sidebarToggle').addEventListener('click', function() {
@@ -157,11 +160,11 @@
             });
         });
     </script>
-    
+
     <script>
         // 權限檢查全局變數
         const isReadonlyUser = <?= session()->get('isReadonly') ? 'true' : 'false' ?>;
-        
+
         // 檢查是否為唯讀使用者並顯示提示
         function checkReadonlyPermission(actionName = '此操作') {
             if (isReadonlyUser) {
@@ -170,18 +173,18 @@
             }
             return true;
         }
-        
+
         // 包裝原有的確認刪除函數  
         function confirmDelete(url) {
             if (!checkReadonlyPermission('刪除操作')) {
                 return false;
             }
-            
+
             if (confirm('確定要刪除這筆資料嗎？')) {
                 location.href = url;
             }
         }
-        
+
         // 檢查編輯權限
         function checkEditPermission(url) {
             if (!checkReadonlyPermission('編輯操作')) {
@@ -189,7 +192,7 @@
             }
             window.location.href = url;
         }
-        
+
         // 檢查新增權限
         function checkCreatePermission(url) {
             if (!checkReadonlyPermission('新增操作')) {

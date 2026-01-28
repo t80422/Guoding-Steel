@@ -252,7 +252,7 @@
             <table>
                 <tr>
                     <td style="text-align:left; width:25%;">
-                        車種:<br>
+                        車種 : <?= esc($order['ct_name'] ?? '') ?><br>
                         <span class="fw-bold fs-6">車號：<?= esc($order['o_car_number'] ?? '') ?></span><br>
                         司機電話：<?= esc($order['o_driver_phone'] ?? '') ?>
                     </td>

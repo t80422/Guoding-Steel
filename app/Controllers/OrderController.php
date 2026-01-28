@@ -9,6 +9,7 @@ use App\Models\OrderDetailProjectItemModel;
 use App\Models\LocationModel;
 use App\Models\GpsModel;
 use App\Models\MinorCategoryModel;
+use App\Models\CarTypeModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use Exception;
 use App\Libraries\OrderService;
@@ -23,6 +24,7 @@ class OrderController extends BaseController
     protected $locationModel;
     protected $gpsModel;
     protected $minorCategoryModel;
+    protected $carTypeModel;
     protected $permissionService;
     private ?array $defaultMinorCategories = null;
 
@@ -35,6 +37,7 @@ class OrderController extends BaseController
         $this->locationModel = new LocationModel();
         $this->gpsModel = new GpsModel();
         $this->minorCategoryModel = new MinorCategoryModel();
+        $this->carTypeModel = new CarTypeModel();
         $this->permissionService = new PermissionService();
     }
 
@@ -74,12 +77,14 @@ class OrderController extends BaseController
 
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
         $gpsOptions = $this->gpsModel->getOptions();
+        $carTypes = $this->carTypeModel->getDropdown();
         $returnUrl = $this->request->getGet('return_url');
 
         $data = [
             'order' => $order,
             'orderDetails' => $orderDetails,
             'gpsOptions' => $gpsOptions,
+            'carTypes' => $carTypes,
             'return_url' => $returnUrl,
         ];
 
@@ -100,7 +105,7 @@ class OrderController extends BaseController
             $files = $this->request->getFiles();
             $userId = session()->get('userId');
             $returnUrl = $data['return_url'] ?? null;
-            
+
             if (!$userId) {
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
@@ -179,7 +184,7 @@ class OrderController extends BaseController
         try {
             // 使用 OrderService 統一處理
             $success = $this->orderService->deleteOrder((int)$id);
-            
+
             if ($success) {
                 return redirect()->to(url_to('OrderController::index'))->with('success', '刪除成功');
             } else {
@@ -271,7 +276,7 @@ class OrderController extends BaseController
                 if ($lengthKey === '') {
                     $lengthKey = '0';
                 }
-                
+
                 if (!isset($minorCategoryMap[$micId]['products'][$prId]['length_groups'][$lengthKey])) {
                     $minorCategoryMap[$micId]['products'][$prId]['length_groups'][$lengthKey] = [
                         'value' => $odLength,
@@ -311,17 +316,17 @@ class OrderController extends BaseController
                     if ($isLength && !empty($product['length_groups'])) {
                         // 按長度值排序（由小到大）
                         $lengthGroups = $product['length_groups'];
-                        uasort($lengthGroups, function($a, $b) {
+                        uasort($lengthGroups, function ($a, $b) {
                             return $a['value'] <=> $b['value'];
                         });
 
                         $formattedLengths = [];
                         $qtys = [];
-                        
+
                         foreach ($lengthGroups as $group) {
                             $lengthValue = $group['value'];
                             $qtyValue = $group['qty'];
-                            
+
                             // 格式化長度（保留小數，移除不必要的尾隨0，加上單位m）
                             $formatted = rtrim(rtrim(number_format((float)$lengthValue, 2, '.', ''), '0'), '.');
                             $formattedLengths[] = $formatted . 'm';
@@ -393,17 +398,17 @@ class OrderController extends BaseController
                     if ($isLength && !empty($product['length_groups'])) {
                         // 按長度值排序（由小到大）
                         $lengthGroups = $product['length_groups'];
-                        uasort($lengthGroups, function($a, $b) {
+                        uasort($lengthGroups, function ($a, $b) {
                             return $a['value'] <=> $b['value'];
                         });
 
                         $formattedLengths = [];
                         $qtys = [];
-                        
+
                         foreach ($lengthGroups as $group) {
                             $lengthValue = $group['value'];
                             $qtyValue = $group['qty'];
-                            
+
                             // 格式化長度（保留小數，移除不必要的尾隨0，加上單位m）
                             $formatted = rtrim(rtrim(number_format((float)$lengthValue, 2, '.', ''), '0'), '.');
                             $formattedLengths[] = $formatted . 'm';
@@ -476,7 +481,7 @@ class OrderController extends BaseController
         if (!$order) {
             throw new PageNotFoundException('找不到該訂單: ' . $orderId);
         }
-
+        log_message('debug',print_r($order, true));
         $itemsGrid = $this->buildMaterialGrid((int) $orderId);
 
         // 取得項目明細統計

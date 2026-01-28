@@ -49,13 +49,13 @@
                             <div class="col-12">
                                 <label class="form-label fw-bold">料單類型</label>
                                 <div class="btn-group w-100" role="group">
-                                    <?php 
+                                    <?php
                                     $types = [
                                         '0' => ['label' => '進倉庫', 'icon' => 'bi-box-arrow-in-down'],
                                         '1' => ['label' => '出倉庫', 'icon' => 'bi-box-arrow-up'],
                                         '2' => ['label' => '轉倉庫', 'icon' => 'bi-arrow-left-right'],
                                     ];
-                                    foreach ($types as $val => $info): 
+                                    foreach ($types as $val => $info):
                                     ?>
                                         <input type="radio" class="btn-check" name="o_type" id="o_type_<?= $val ?>" value="<?= $val ?>"
                                             autocomplete="off" <?= (string)old('o_type', $data['order']['o_type'] ?? '0') === (string)$val ? 'checked' : '' ?>>
@@ -113,6 +113,19 @@
                                     <?php foreach ($data['gpsOptions'] as $gps): ?>
                                         <option value="<?= $gps['g_id'] ?>" <?= old('o_g_id', $data['order']['o_g_id'] ?? '') == $gps['g_id'] ? 'selected' : '' ?>>
                                             <?= esc($gps['g_name']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="o_ct_id" class="form-label fw-bold">
+                                    <i class="bi bi-truck me-1"></i>車種
+                                </label>
+                                <select class="form-select" name="o_ct_id" id="o_ct_id">
+                                    <option value="" <?= empty(old('o_ct_id', $data['order']['o_ct_id'] ?? '')) ? 'selected' : '' ?>>請選擇車種</option>
+                                    <?php foreach ($data['carTypes'] as $ct): ?>
+                                        <option value="<?= $ct['ct_id'] ?>" <?= old('o_ct_id', $data['order']['o_ct_id'] ?? '') == $ct['ct_id'] ? 'selected' : '' ?>>
+                                            <?= esc($ct['ct_name']) ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -191,10 +204,10 @@
                             </h5>
                             <div class="d-flex gap-2">
                                 <?php if ($isEdit): ?>
-                                <button type="button" class="btn btn-outline-info btn-sm" id="itemQuantityTableBtn"
-                                    data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
-                                    <i class="bi bi-table me-1"></i>項目數量表
-                                </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" id="itemQuantityTableBtn"
+                                        data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
+                                        <i class="bi bi-table me-1"></i>項目數量表
+                                    </button>
                                 <?php endif; ?>
                                 <button type="button" class="btn btn-outline-success btn-sm" id="addDetailBtn">
                                     <i class="bi bi-plus-lg me-1"></i>新增明細
@@ -252,10 +265,10 @@
                                                 </td>
                                                 <td class="align-middle">
                                                     <!-- 隱藏欄位：儲存公斤值給後端 -->
-                                                    <input type="hidden" class="weight-value" 
+                                                    <input type="hidden" class="weight-value"
                                                         name="details[<?= $index ?>][od_weight]"
                                                         value="<?= $detail['od_weight'] ?>">
-                                                    
+
                                                     <!-- 顯示區域：顯示噸數給用戶 -->
                                                     <div class="weight-display">
                                                         <span class="weight-number fw-bold text-primary">0.00</span>
@@ -291,9 +304,9 @@
                                             </td>
                                             <td class="align-middle">
                                                 <!-- 隱藏欄位：儲存公斤值給後端 -->
-                                                <input type="hidden" class="weight-value" 
+                                                <input type="hidden" class="weight-value"
                                                     name="details[0][od_weight]">
-                                                
+
                                                 <!-- 顯示區域：顯示噸數給用戶 -->
                                                 <div class="weight-display">
                                                     <span class="weight-number fw-bold text-primary">0.00</span>
@@ -574,22 +587,22 @@
 </div>
 
 <?php if ($isEdit): ?>
-<!-- 項目數量表（參數化） -->
-<?= view('components/item_quantity_table', [
-    'documentType' => 'order',
-    'documentId' => $data['order']['o_id'] ?? 0,
-    'detailUrl' => url_to('OrderController::getDetail', $data['order']['o_id'] ?? 0),
-    'assignmentGetUrl' => url_to('OrderDetailProjectItemController::getDetail', $data['order']['o_id'] ?? 0),
-    'assignmentSaveUrl' => url_to('OrderDetailProjectItemController::save'),
-    'detailIdKey' => 'od_id',
-    'qtyField' => 'od_qty',
-    'lengthField' => 'od_length',
-    'payloadFieldMap' => [
-        'detail' => 'odpi_od_id',
-        'pi' => 'odpi_pi_id',
-        'qty' => 'odpi_qty',
-    ],
-]) ?>
+    <!-- 項目數量表（參數化） -->
+    <?= view('components/item_quantity_table', [
+        'documentType' => 'order',
+        'documentId' => $data['order']['o_id'] ?? 0,
+        'detailUrl' => url_to('OrderController::getDetail', $data['order']['o_id'] ?? 0),
+        'assignmentGetUrl' => url_to('OrderDetailProjectItemController::getDetail', $data['order']['o_id'] ?? 0),
+        'assignmentSaveUrl' => url_to('OrderDetailProjectItemController::save'),
+        'detailIdKey' => 'od_id',
+        'qtyField' => 'od_qty',
+        'lengthField' => 'od_length',
+        'payloadFieldMap' => [
+            'detail' => 'odpi_od_id',
+            'pi' => 'odpi_pi_id',
+            'qty' => 'odpi_qty',
+        ],
+    ]) ?>
 <?php endif; ?>
 
 <!-- 產品選擇器 -->
@@ -1038,31 +1051,31 @@
             const hasChanged = row.dataset.hasChanged === 'true';
             const weightValue = row.querySelector('.weight-value');
             const weightNumber = row.querySelector('.weight-number');
-            
+
             // 如果是原始資料且未變更且不強制重新計算，使用原始重量
             if (isOriginal && !hasChanged && !forceRecalculate) {
                 const originalWeight = parseFloat(row.dataset.originalWeight) || 0;
-                
+
                 if (weightValue) {
                     weightValue.value = originalWeight.toFixed(2);
                 }
-                
+
                 if (weightNumber) {
                     const ton = originalWeight / 1000;
                     weightNumber.textContent = ton.toFixed(2);
                 }
                 return;
             }
-            
+
             // 新增資料或已變更的資料：根據產品類型使用不同計算公式
             const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
             const length = parseFloat(row.querySelector('.length-input').value) || 0;
             const weightPerUnit = parseFloat(row.querySelector('.product-weight-per-unit').value) || 0;
             const isLength = row.dataset.productIsLength === '1';
-            
+
             let totalWeightKg = 0;
             const lengthInput = row.querySelector('.length-input');
-            
+
             if (isLength) {
                 // 按長度計算：總重量 = pr_weight × od_length × od_qty
                 if (length <= 0 && weightPerUnit > 0) {
@@ -1084,12 +1097,12 @@
                 totalWeightKg = weightPerUnit * quantity;
                 if (lengthInput) lengthInput.classList.remove('is-invalid');
             }
-            
+
             // 儲存公斤值至隱藏欄位，給後端使用
             if (weightValue) {
                 weightValue.value = totalWeightKg.toFixed(2);
             }
-            
+
             // 顯示噸數（kg / 1000）給用戶看，保留 2 位小數
             if (weightNumber) {
                 const ton = totalWeightKg / 1000;

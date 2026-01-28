@@ -11,13 +11,13 @@ use Exception;
 class OrderService
 {
     const UPLOAD_PATH = WRITEPATH . 'uploads/signatures/';
-    
+
     // 支援的檔案類型
     const SIGNATURE_KEYS = [
-        'o_driver_signature', 
-        'o_from_signature', 
-        'o_to_signature', 
-        'o_img_car_head', 
+        'o_driver_signature',
+        'o_from_signature',
+        'o_to_signature',
+        'o_img_car_head',
         'o_img_car_tail'
     ];
 
@@ -47,7 +47,7 @@ class OrderService
         try {
             // 處理檔案上傳
             $uploadedFiles = $this->handleFileUploads($files);
-            
+
             // 將檔案名稱加入訂單資料
             foreach (self::SIGNATURE_KEYS as $key) {
                 $orderData[$key] = $uploadedFiles[$key] ?? null;
@@ -67,7 +67,7 @@ class OrderService
                 $detail['od_o_id'] = $orderId;
             }
             unset($detail);
-            
+
             if (!empty($detailsData)) {
                 $this->orderDetailModel->insertBatch($detailsData);
             }
@@ -77,15 +77,14 @@ class OrderService
 
             $this->db->transComplete();
             return $orderId;
-            
         } catch (Exception $e) {
             $this->db->transRollback();
-            
+
             // 清理已上傳的檔案
             if (isset($uploadedFiles)) {
                 $this->cleanupFiles($uploadedFiles);
             }
-            
+
             log_message('error', 'OrderService::createOrder - ' . $e->getMessage());
             throw $e;
         } finally {
@@ -107,7 +106,7 @@ class OrderService
             if (!$oldOrder) {
                 throw new Exception('訂單不存在');
             }
-            
+
             $oldOrderDetails = $this->orderDetailModel->getByOrderId($orderId);
 
             // 處理檔案上傳/更新
@@ -120,7 +119,7 @@ class OrderService
             // 設定更新欄位
             $orderData['o_update_by'] = $userId;
             $orderData['o_update_at'] = date('Y-m-d H:i:s');
-            
+
             // 合併舊資料和新資料，用於判斷訂單狀態
             $mergedData = array_merge($oldOrder, $orderData);
             $orderData['o_status'] = $this->determineOrderStatus($mergedData);
@@ -138,7 +137,6 @@ class OrderService
 
             $this->db->transComplete();
             return true;
-            
         } catch (Exception $e) {
             $this->db->transRollback();
             log_message('error', 'OrderService::updateOrder - ' . $e->getMessage());
@@ -175,7 +173,6 @@ class OrderService
 
             $this->db->transComplete();
             return true;
-            
         } catch (Exception $e) {
             $this->db->transRollback();
             log_message('error', 'OrderService::deleteOrder - ' . $e->getMessage());
@@ -204,7 +201,7 @@ class OrderService
         try {
             $filesToDelete = [];
             $updatedData = $requestData;
-            
+
             // 處理每個檔案欄位
             foreach (self::SIGNATURE_KEYS as $key) {
                 if (isset($files[$key]) && $files[$key]->isValid() && !$files[$key]->hasMoved()) {
@@ -225,15 +222,15 @@ class OrderService
                     }
                 }
             }
-            
+
             // 刪除舊檔案
             if (!empty($filesToDelete)) {
                 $this->fileManager->deleteFiles($filesToDelete);
             }
-            
+
             // 上傳新檔案
             $uploadedFiles = $this->fileManager->uploadFiles(self::SIGNATURE_KEYS, $files);
-            
+
             // 將新上傳的檔案名稱更新到資料中
             foreach (self::SIGNATURE_KEYS as $key) {
                 if ($uploadedFiles[$key] !== null) {
@@ -259,18 +256,18 @@ class OrderService
     {
         try {
             $filesToDelete = [];
-            
+
             foreach (self::SIGNATURE_KEYS as $key) {
                 if (!empty($orderData[$key] ?? null)) {
                     $filesToDelete[] = $orderData[$key];
                 }
             }
-            
+
             if (!empty($filesToDelete)) {
                 $result = $this->fileManager->deleteFiles($filesToDelete);
                 return $result !== null ? $result : true;
             }
-            
+
             return true;
         } catch (Exception $e) {
             log_message('error', 'OrderService::deleteOrderFiles - ' . $e->getMessage());
@@ -300,7 +297,7 @@ class OrderService
      */
     private function sanitizeForeignKeys(array &$data): void
     {
-        $foreignKeyFields = ['o_g_id', 'o_from_location', 'o_to_location'];
+        $foreignKeyFields = ['o_g_id', 'o_from_location', 'o_to_location', 'o_ct_id'];
         foreach ($foreignKeyFields as $field) {
             if (isset($data[$field]) && $data[$field] === '') {
                 $data[$field] = null;
@@ -381,7 +378,6 @@ class OrderService
             if (!empty($toInsert)) {
                 $this->orderDetailModel->insertBatch($toInsert);
             }
-
         } catch (Exception $e) {
             throw $e;
         }

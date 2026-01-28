@@ -30,7 +30,8 @@ class OrderModel extends Model
         'o_status',
         'o_number',
         'o_img_car_head',
-        'o_img_car_tail'
+        'o_img_car_tail',
+        'o_ct_id'
     ];
 
     public const TYPE_IN_WAREHOUSE = 0; // 進倉庫
@@ -91,13 +92,15 @@ class OrderModel extends Model
             ->join('users u1', 'u1.u_id = o.o_create_by', 'left')
             ->join('users u2', 'u2.u_id = o.o_update_by', 'left')
             ->join('gps g', 'g.g_id = o.o_g_id', 'left')
+            ->join('car_types ct', 'ct.ct_id = o.o_ct_id', 'left')
             ->select('
                 o.*,
                 l1.l_name as from_location_name,
                 l2.l_name as to_location_name,
                 u1.u_name as create_name,
                 u2.u_name as update_name,
-                g.g_name as gps_name
+                g.g_name as gps_name,
+                ct.ct_name
             ');
     }
 
