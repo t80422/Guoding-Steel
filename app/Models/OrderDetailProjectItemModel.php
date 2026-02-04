@@ -12,12 +12,14 @@ class OrderDetailProjectItemModel extends Model
         'odpi_od_id',
         'odpi_pi_id',
         'odpi_qty',
+        'odpi_type', // 0: Source, 1: Target
     ];
 
-    public function getByODIdAndPIId($odId, $piId)
+    public function getByUniqueKey($odId, $piId, $type)
     {
         return $this->where('odpi_od_id', $odId)
             ->where('odpi_pi_id', $piId)
+            ->where('odpi_type', $type)
             ->first();
     }
 

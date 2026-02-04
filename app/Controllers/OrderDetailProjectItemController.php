@@ -68,6 +68,7 @@ class OrderDetailProjectItemController extends BaseController
                         'odpi_od_id' => $item['odpi_od_id'],
                         'odpi_pi_id' => $item['odpi_pi_id'],
                         'odpi_qty' => $item['odpi_qty'],
+                        'odpi_type' => $item['odpi_type'] ?? 1, // 預設為 Target (1)
                     ]);
                     $processedCount++;
                 }
@@ -76,7 +77,8 @@ class OrderDetailProjectItemController extends BaseController
             // 處理更新操作
             if (isset($json['update']) && !empty($json['update'])) {
                 foreach ($json['update'] as $item) {
-                    $existing = $this->odpiModel->getByODIdAndPIId($item['odpi_od_id'], $item['odpi_pi_id']);
+                    $type = $item['odpi_type'] ?? 1;
+                    $existing = $this->odpiModel->getByUniqueKey($item['odpi_od_id'], $item['odpi_pi_id'], $type);
                     if ($existing) {
                         $this->odpiModel->update($existing['odpi_id'], [
                             'odpi_qty' => $item['odpi_qty'],
@@ -89,7 +91,8 @@ class OrderDetailProjectItemController extends BaseController
             // 處理刪除操作
             if (isset($json['delete']) && !empty($json['delete'])) {
                 foreach ($json['delete'] as $item) {
-                    $existing = $this->odpiModel->getByODIdAndPIId($item['odpi_od_id'], $item['odpi_pi_id']);
+                    $type = $item['odpi_type'] ?? 1;
+                    $existing = $this->odpiModel->getByUniqueKey($item['odpi_od_id'], $item['odpi_pi_id'], $type);
                     if ($existing) {
                         $this->odpiModel->delete($existing['odpi_id']);
                         $processedCount++;

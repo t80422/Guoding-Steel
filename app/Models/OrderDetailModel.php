@@ -13,7 +13,8 @@ class OrderDetailModel extends Model
         'od_pr_id',
         'od_qty',
         'od_length',
-        'od_weight'
+        'od_weight',
+        'od_ma_id'
     ];
 
     /**
@@ -27,7 +28,8 @@ class OrderDetailModel extends Model
         return $this->builder('order_details od')
             ->join('products p', 'p.pr_id = od.od_pr_id', 'left')
             ->join('minor_categories mic', 'mic.mic_id = p.pr_mic_id', 'left')
-            ->select('od.*, p.pr_name, mic.mic_name, p.pr_weight AS pr_weight_per_unit, p.pr_is_length')
+            ->join('manufacturers ma', 'ma.ma_id = od.od_ma_id', 'left')
+            ->select('od.*, p.pr_name, mic.mic_name, p.pr_weight AS pr_weight_per_unit, p.pr_is_length, ma.ma_name')
             ->where('od.od_o_id', $orderId)
             ->get()->getResultArray();
     }

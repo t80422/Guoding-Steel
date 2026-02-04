@@ -221,101 +221,14 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th class="text-center" style="width: 5%;">操作</th>
-                                        <th style="width: 50%;">產品</th>
+                                        <th style="width: 30%;">產品</th>
+                                        <th style="width: 20%;">廠商</th>
                                         <th style="width: 15%;">數量</th>
                                         <th style="width: 15%;">長度(m)</th>
                                         <th style="width: 15%;">重量(噸)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="detailTableBody">
-                                    <?php if ($isEdit && isset($data['orderDetails']) && !empty($data['orderDetails'])): ?>
-                                        <?php foreach ($data['orderDetails'] as $index => $detail): ?>
-                                            <tr data-index="<?= $index ?>" data-is-original="true" data-original-weight="<?= $detail['od_weight'] ?>" data-product-is-length="<?= $detail['pr_is_length'] ?? 0 ?>">
-                                                <td class="text-center align-middle">
-                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <?php if ($isEdit && !empty($detail['od_id'])): ?>
-                                                        <input type="hidden" name="details[<?= $index ?>][od_id]" value="<?= $detail['od_id'] ?>">
-                                                    <?php endif; ?>
-                                                    <input type="hidden" name="details[<?= $index ?>][od_pr_id]" value="<?= $detail['od_pr_id'] ?? '' ?>">
-                                                    <input type="hidden" class="product-weight-per-unit" value="<?= $detail['pr_weight_per_unit'] ?? 0 ?>">
-                                                    <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
-                                                        data-bs-target="#productModal" data-target-index="<?= $index ?>" style="cursor: pointer;">
-                                                        <span class="product-text">
-                                                            <?= isset($detail['pr_name']) ?
-                                                                esc($detail['mic_name'] != $detail['pr_name'] ? $detail['mic_name'] . ' ' . $detail['pr_name']
-                                                                    : $detail['pr_name']) : '請選擇產品' ?>
-                                                        </span>
-                                                    </div>
-                                                </td>
-                                                <td class="align-middle">
-                                                    <input type="number" class="form-control quantity-input"
-                                                        name="details[<?= $index ?>][od_qty]"
-                                                        value="<?= $detail['od_qty'] ?>"
-                                                        step="0.01" min="0">
-                                                </td>
-                                                <td class="align-middle">
-                                                    <input type="number" class="form-control length-input"
-                                                        name="details[<?= $index ?>][od_length]"
-                                                        value="<?= $detail['od_length'] ?>"
-                                                        step="0.01" min="0">
-                                                </td>
-                                                <td class="align-middle">
-                                                    <!-- 隱藏欄位：儲存公斤值給後端 -->
-                                                    <input type="hidden" class="weight-value"
-                                                        name="details[<?= $index ?>][od_weight]"
-                                                        value="<?= $detail['od_weight'] ?>">
-
-                                                    <!-- 顯示區域：顯示噸數給用戶 -->
-                                                    <div class="weight-display">
-                                                        <span class="weight-number fw-bold text-primary">0.00</span>
-                                                        <small class="text-muted ms-1">噸</small>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr data-index="0" data-is-original="false">
-                                            <td class="text-center align-middle">
-                                                <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="hidden" name="details[0][od_pr_id]" value="">
-                                                <input type="hidden" class="product-weight-per-unit" value="0">
-                                                <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
-                                                    data-bs-target="#productModal" data-target-index="0" style="cursor: pointer;">
-                                                    <span class="product-text text-muted">請選擇產品</span>
-                                                </div>
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="number" class="form-control quantity-input"
-                                                    name="details[0][od_qty]"
-                                                    step="0.01" min="0">
-                                            </td>
-                                            <td class="align-middle">
-                                                <input type="number" class="form-control length-input"
-                                                    name="details[0][od_length]"
-                                                    step="0.01" min="0">
-                                            </td>
-                                            <td class="align-middle">
-                                                <!-- 隱藏欄位：儲存公斤值給後端 -->
-                                                <input type="hidden" class="weight-value"
-                                                    name="details[0][od_weight]">
-
-                                                <!-- 顯示區域：顯示噸數給用戶 -->
-                                                <div class="weight-display">
-                                                    <span class="weight-number fw-bold text-primary">0.00</span>
-                                                    <small class="text-muted ms-1">噸</small>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
+                                <tbody id="detailTableBody"></tbody>
                             </table>
                         </div>
                     </div>
@@ -601,6 +514,7 @@
             'detail' => 'odpi_od_id',
             'pi' => 'odpi_pi_id',
             'qty' => 'odpi_qty',
+            'type' => 'odpi_type',
         ],
     ]) ?>
 <?php endif; ?>
@@ -610,6 +524,11 @@
     'modalId' => 'productModal',
     'fieldPrefix' => 'od'
 ]) ?>
+
+<script>
+    window.orderDetailData = <?= json_encode($data['orderDetails'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    window.manufacturerOptions = <?= json_encode($data['manufacturers'] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+</script>
 
 <style>
     /* ===== 現代化卡片樣式 ===== */
@@ -875,8 +794,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const detailData = Array.isArray(window.orderDetailData) ? window.orderDetailData : [];
+        const manufacturerData = Array.isArray(window.manufacturerOptions) ? window.manufacturerOptions : [];
         let currentTargetField = 'from';
-        let detailIndex = document.querySelectorAll('#detailTableBody tr').length;
+        let detailIndex = 0;
 
         // 圖片放大功能
         window.openImageModal = function(imageSrc, title) {
@@ -976,52 +897,110 @@
         // 新增明細行
         document.getElementById('addDetailBtn').addEventListener('click', function() {
             const tbody = document.getElementById('detailTableBody');
-            const newRow = createDetailRow(detailIndex);
+            const newRow = buildDetailRow(createEmptyDetail(), detailIndex);
             tbody.appendChild(newRow);
+            calculateRowWeight(newRow, false);
             detailIndex++;
         });
 
-        // 創建新的明細行
-        function createDetailRow(index) {
+        function createEmptyDetail() {
+            return {
+                od_id: '',
+                od_pr_id: '',
+                od_qty: '',
+                od_length: '',
+                od_weight: '',
+                pr_weight_per_unit: 0,
+                pr_is_length: 0,
+                od_ma_id: ''
+            };
+        }
+
+        function buildManufacturerOptions(selectEl, selectedId) {
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = '請選擇廠商';
+            selectEl.appendChild(emptyOption);
+
+            manufacturerData.forEach((ma) => {
+                const option = document.createElement('option');
+                option.value = ma.ma_id;
+                option.textContent = ma.ma_name;
+                if (selectedId !== undefined && selectedId !== null && String(selectedId) === String(ma.ma_id)) {
+                    option.selected = true;
+                }
+                selectEl.appendChild(option);
+            });
+        }
+
+        function buildDetailRow(detail, index) {
             const row = document.createElement('tr');
-            row.setAttribute('data-index', index);
-            row.setAttribute('data-is-original', 'false');
+            const isOriginal = detail.od_id ? 'true' : 'false';
+            const productName = detail.pr_name
+                ? ((detail.mic_name && detail.mic_name !== detail.pr_name) ? `${detail.mic_name} ${detail.pr_name}` : detail.pr_name)
+                : '請選擇產品';
+            const productTextClass = detail.pr_name ? '' : 'text-muted';
+
+            row.dataset.index = index;
+            row.dataset.isOriginal = isOriginal;
+            row.dataset.originalWeight = detail.od_weight ?? 0;
+            row.dataset.productIsLength = detail.pr_is_length ? '1' : '0';
+
             row.innerHTML = `
             <td class="text-center align-middle">
                 <button type="button" class="btn btn-outline-danger btn-sm remove-detail">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
-            <td class="align-middle">
+            <td class="align-middle product-cell">
                 <input type="hidden" name="details[${index}][od_pr_id]" value="">
                 <input type="hidden" class="product-weight-per-unit" value="0">
-                <div class="form-control product-selector border-dashed" data-bs-toggle="modal" 
-                     data-bs-target="#productModal" data-target-index="${index}" style="cursor: pointer;">
-                    <span class="product-text text-muted">請選擇產品</span>
+                <div class="form-control product-selector border-dashed" data-bs-toggle="modal"
+                    data-bs-target="#productModal" data-target-index="${index}" style="cursor: pointer;">
+                    <span class="product-text ${productTextClass}"></span>
                 </div>
             </td>
             <td class="align-middle">
-                <input type="number" class="form-control quantity-input" 
-                       name="details[${index}][od_qty]" 
-                       step="0.01" min="0" required>
+                <select class="form-select manufacturer-select" name="details[${index}][od_ma_id]"></select>
             </td>
             <td class="align-middle">
-                <input type="number" class="form-control length-input" 
-                       name="details[${index}][od_length]" 
-                       step="0.01" min="0">
+                <input type="number" class="form-control quantity-input"
+                    name="details[${index}][od_qty]"
+                    step="0.01" min="0" required>
             </td>
             <td class="align-middle">
-                <!-- 隱藏欄位：儲存公斤值給後端 -->
-                <input type="hidden" class="weight-value" 
-                       name="details[${index}][od_weight]">
-                
-                <!-- 顯示區域：顯示噸數給用戶 -->
+                <input type="number" class="form-control length-input"
+                    name="details[${index}][od_length]"
+                    step="0.01" min="0">
+            </td>
+            <td class="align-middle">
+                <input type="hidden" class="weight-value"
+                    name="details[${index}][od_weight]">
                 <div class="weight-display">
                     <span class="weight-number fw-bold text-primary">0.00</span>
                     <small class="text-muted ms-1">噸</small>
                 </div>
             </td>
         `;
+
+            const productCell = row.querySelector('.product-cell');
+            if (detail.od_id) {
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = `details[${index}][od_id]`;
+                idInput.value = detail.od_id;
+                productCell.prepend(idInput);
+            }
+
+            row.querySelector('.product-text').textContent = productName;
+            row.querySelector(`input[name="details[${index}][od_pr_id]"]`).value = detail.od_pr_id ?? '';
+            row.querySelector('.product-weight-per-unit').value = detail.pr_weight_per_unit ?? 0;
+            row.querySelector(`input[name="details[${index}][od_qty]"]`).value = detail.od_qty ?? '';
+            row.querySelector(`input[name="details[${index}][od_length]"]`).value = detail.od_length ?? '';
+            row.querySelector(`input[name="details[${index}][od_weight]"]`).value = detail.od_weight ?? '';
+
+            const manufacturerSelect = row.querySelector('.manufacturer-select');
+            buildManufacturerOptions(manufacturerSelect, detail.od_ma_id);
 
             bindDetailEvents(row);
             return row;
@@ -1110,12 +1089,21 @@
             }
         }
 
-        // 初始化現有明細行的事件
-        document.querySelectorAll('#detailTableBody tr').forEach(row => {
-            bindDetailEvents(row);
-            // 初始化時不強制重新計算，原始資料會顯示已儲存的重量
-            calculateRowWeight(row, false);
-        });
+        function renderDetailRows() {
+            const tbody = document.getElementById('detailTableBody');
+            tbody.innerHTML = '';
+
+            const rowsData = detailData.length > 0 ? detailData : [createEmptyDetail()];
+            rowsData.forEach((detail, index) => {
+                const row = buildDetailRow(detail, index);
+                tbody.appendChild(row);
+                calculateRowWeight(row, false);
+            });
+
+            detailIndex = tbody.querySelectorAll('tr').length;
+        }
+
+        renderDetailRows();
 
         // 初始化產品選擇器
         const productSelector = window.createProductSelector({

@@ -263,11 +263,18 @@ class OrderModel extends Model
                     ELSE CONCAT(mic.mic_name, p.pr_name)
                 END as product_name,
                 od.od_length,
-                odpi.odpi_qty
+                odpi.odpi_qty,
+                odpi.odpi_type
             ')
             ->groupStart()
-            ->where('o.o_from_location', $locationId)
-            ->orWhere('o.o_to_location', $locationId)
+                ->groupStart()
+                    ->where('o.o_from_location', $locationId)
+                    ->where('odpi.odpi_type', 0)
+                ->groupEnd()
+                ->orGroupStart()
+                    ->where('o.o_to_location', $locationId)
+                    ->where('odpi.odpi_type', 1)
+                ->groupEnd()
             ->groupEnd();
 
         // 加入搜尋條件

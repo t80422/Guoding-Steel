@@ -10,6 +10,7 @@ use App\Models\LocationModel;
 use App\Models\GpsModel;
 use App\Models\MinorCategoryModel;
 use App\Models\CarTypeModel;
+use App\Models\ManufacturerModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use Exception;
 use App\Libraries\OrderService;
@@ -25,6 +26,7 @@ class OrderController extends BaseController
     protected $gpsModel;
     protected $minorCategoryModel;
     protected $carTypeModel;
+    protected $manufacturerModel;
     protected $permissionService;
     private ?array $defaultMinorCategories = null;
 
@@ -38,6 +40,7 @@ class OrderController extends BaseController
         $this->gpsModel = new GpsModel();
         $this->minorCategoryModel = new MinorCategoryModel();
         $this->carTypeModel = new CarTypeModel();
+        $this->manufacturerModel = new ManufacturerModel();
         $this->permissionService = new PermissionService();
     }
 
@@ -78,6 +81,7 @@ class OrderController extends BaseController
         $orderDetails = $this->orderDetailModel->getDetailByOrderId($id);
         $gpsOptions = $this->gpsModel->getOptions();
         $carTypes = $this->carTypeModel->getDropdown();
+        $manufacturers = $this->manufacturerModel->getDropdown();
         $returnUrl = $this->request->getGet('return_url');
 
         $data = [
@@ -85,6 +89,7 @@ class OrderController extends BaseController
             'orderDetails' => $orderDetails,
             'gpsOptions' => $gpsOptions,
             'carTypes' => $carTypes,
+            'manufacturers' => $manufacturers,
             'return_url' => $returnUrl,
         ];
 
@@ -481,7 +486,6 @@ class OrderController extends BaseController
         if (!$order) {
             throw new PageNotFoundException('找不到該訂單: ' . $orderId);
         }
-        log_message('debug',print_r($order, true));
         $itemsGrid = $this->buildMaterialGrid((int) $orderId);
 
         // 取得項目明細統計

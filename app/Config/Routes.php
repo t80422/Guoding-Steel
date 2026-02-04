@@ -271,4 +271,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\Api'], function ($routes)
         $routes->get('/', 'SwitchController::getSwitch');
         $routes->put('/', 'SwitchController::update');
     });
+
+    // 廠商選單
+    $routes->get('manufacturer/dropdown', 'ManufacturerController::dropdown');
 });

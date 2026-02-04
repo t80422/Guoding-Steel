@@ -28,12 +28,43 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="itemQuantityTableContainer">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">載入中...</span>
+                <!-- Tabs -->
+                <ul class="nav nav-tabs mb-3" id="itemQuantityTabs" role="tablist">
+                    <li class="nav-item" role="presentation" id="source-tab-li">
+                        <button class="nav-link active" id="source-tab" data-bs-toggle="tab" data-bs-target="#source-panel" type="button" role="tab" aria-selected="true">
+                            <i class="bi bi-box-arrow-up me-1"></i>出發地配置
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation" id="target-tab-li">
+                        <button class="nav-link" id="target-tab" data-bs-toggle="tab" data-bs-target="#target-panel" type="button" role="tab" aria-selected="false">
+                            <i class="bi bi-box-arrow-in-down me-1"></i>目的地配置
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="itemQuantityTabContent">
+                    <!-- Source Panel -->
+                    <div class="tab-pane fade show active" id="source-panel" role="tabpanel">
+                         <div id="itemQuantityTableContainerSource">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">載入中...</span>
+                                </div>
+                                <div class="mt-2 text-muted">正在載入出發地配置...</div>
+                            </div>
                         </div>
-                        <div class="mt-2 text-muted">正在載入項目數量表...</div>
+                    </div>
+                    
+                    <!-- Target Panel -->
+                    <div class="tab-pane fade" id="target-panel" role="tabpanel">
+                         <div id="itemQuantityTableContainerTarget">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">載入中...</span>
+                                </div>
+                                <div class="mt-2 text-muted">正在載入目的地配置...</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -56,7 +87,7 @@
 
     /* ========== 表格容器 ========== */
     .iqt-container {
-        max-height: 70vh;
+        max-height: 60vh; /* 稍微縮小以適應 tabs */
         overflow: auto;
         border: 1px solid #dee2e6;
         border-radius: 8px;
@@ -97,18 +128,27 @@
         background: #f8f9fa;
     }
 
-    /* 第2欄：數量 (left: 180px) */
+    /* 第2欄：廠商 (left: 180px) */
     .iqt-table .sticky-col-2 {
         left: 180px;
+        z-index: 2;
+        min-width: 100px;
+        width: 100px;
+        background: #fafafa;
+    }
+
+    /* 第3欄：數量 (left: 280px) */
+    .iqt-table .sticky-col-3 {
+        left: 280px;
         z-index: 2;
         min-width: 80px;
         width: 80px;
         background: #fafafa;
     }
 
-    /* 第3欄：長度 (left: 260px) - 加陰影 */
-    .iqt-table .sticky-col-3 {
-        left: 260px;
+    /* 第4欄：長度 (left: 360px) - 加陰影 */
+    .iqt-table .sticky-col-4 {
+        left: 360px;
         z-index: 2;
         min-width: 80px;
         width: 80px;
@@ -134,7 +174,8 @@
     }
 
     .iqt-table thead th.sticky-col-2,
-    .iqt-table thead th.sticky-col-3 {
+    .iqt-table thead th.sticky-col-3,
+    .iqt-table thead th.sticky-col-4 {
         background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
     }
 
@@ -153,7 +194,8 @@
     }
 
     .iqt-table tbody td.sticky-col-2,
-    .iqt-table tbody td.sticky-col-3 {
+    .iqt-table tbody td.sticky-col-3,
+    .iqt-table tbody td.sticky-col-4 {
         font-weight: 500;
         color: #495057;
         background: #fafafa;
@@ -197,7 +239,8 @@
     }
 
     .iqt-table tbody tr:hover td.sticky-col-2,
-    .iqt-table tbody tr:hover td.sticky-col-3 {
+    .iqt-table tbody tr:hover td.sticky-col-3,
+    .iqt-table tbody tr:hover td.sticky-col-4 {
         background: linear-gradient(135deg, #e8f5e9 0%, #dcedc8 100%) !important;
     }
 
@@ -224,6 +267,12 @@
             width: 60px;
         }
 
+        .iqt-table .sticky-col-4 {
+            left: 240px;
+            min-width: 60px;
+            width: 60px;
+        }
+
         .iqt-table th,
         .iqt-table td {
             padding: 6px 4px;
@@ -245,6 +294,8 @@
         let originalQuantities = {};
 
         const FLOAT_TOLERANCE = 0.000001;
+        const TYPE_SOURCE = 0;
+        const TYPE_TARGET = 1;
 
         function toNumber(value) {
             const parsed = typeof value === 'number' ? value : parseFloat(value);
@@ -271,8 +322,15 @@
                 .replace(/\.$/, '');
         }
 
+        // 初始化 Tab 顯示狀態
+        function initTabs() {
+            const sourceTabBtn = document.getElementById('source-tab');
+            sourceTabBtn.click();
+        }
+
         // 當項目數量表模態框開啟時載入數據
         if (document.getElementById('itemQuantityModal')) {
+            initTabs();
             document.getElementById('itemQuantityModal').addEventListener('show.bs.modal', function() {
                 loadItemQuantityTable();
             });
@@ -280,17 +338,19 @@
 
         // 載入項目數量表數據
         function loadItemQuantityTable() {
-            const container = document.getElementById('itemQuantityTableContainer');
-
             // 顯示載入狀態
-            container.innerHTML = `
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">載入中...</span>
-                    </div>
-                    <div class="mt-2 text-muted">正在載入項目數量表...</div>
-                </div>
-            `;
+            const setRunning = (id) => {
+                 const el = document.getElementById(id);
+                 if(el) el.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">載入中...</span>
+                        </div>
+                        <div class="mt-2 text-muted">正在載入...</div>
+                    </div>`;
+            };
+            setRunning('itemQuantityTableContainerSource');
+            setRunning('itemQuantityTableContainerTarget');
 
             // 重置數據
             itemQuantityData = {
@@ -305,67 +365,67 @@
             // 1. 先取得施工項目
             fetch('<?= url_to('ProjectItemController::getItems') ?>')
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('請求施工項目失敗');
-                    }
+                    if (!response.ok) throw new Error('請求施工項目失敗');
                     return response.json();
                 })
                 .then(projectItemsData => {
                     itemQuantityData.projectItems = projectItemsData;
-
-                    // 2. 取得單據明細（訂單/租賃）
+                    // 2. 取得單據明細
                     return fetch('<?= $detailUrl ?>');
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('請求單據明細失敗');
-                    }
+                    if (!response.ok) throw new Error('請求單據明細失敗');
                     return response.json();
                 })
                 .then(orderDetailsData => {
                     itemQuantityData.orderDetails = orderDetailsData;
-
                     // 3. 取得已有的項目數量資料
                     return fetch('<?= $assignmentGetUrl ?>');
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('請求項目數量失敗');
-                    }
+                    if (!response.ok) throw new Error('請求項目數量失敗');
                     return response.json();
                 })
                 .then(quantityResult => {
                     itemQuantityData.existingQuantities = quantityResult.data || [];
 
-                    // 建立原始數量索引 (detailId + "_" + pi_id)
+                    // 建立原始數量索引 (detailId + "_" + pi_id + "_" + type)
                     const DETAIL_KEY = '<?= $payloadFieldMap['detail'] ?>';
                     const PI_KEY = '<?= $payloadFieldMap['pi'] ?>';
                     const QTY_KEY = '<?= $payloadFieldMap['qty'] ?>';
+                    
                     itemQuantityData.existingQuantities.forEach(item => {
-                        const key = `${item[DETAIL_KEY]}_${item[PI_KEY]}`;
+                        // 後端回傳資料需包含 odpi_type，若無則預設為 Target(1)
+                    const type = item.odpi_type !== undefined ? item.odpi_type : (item.rodpi_type !== undefined ? item.rodpi_type : 1); 
+                    const key = `${item[DETAIL_KEY]}_${item[PI_KEY]}_${type}`;
                         originalQuantities[key] = toNumber(item[QTY_KEY]);
                     });
 
-                    // 4. 所有數據都載入完成，開始渲染
-                    renderItemQuantityTable();
+                    // 4. 渲染表格
+                    renderTableByType(TYPE_SOURCE);
+                    renderTableByType(TYPE_TARGET);
                 })
                 .catch(error => {
                     console.error('載入數據失敗:', error);
-
-                    // 錯誤處理：顯示錯誤訊息
-                    const container = document.getElementById('itemQuantityTableContainer');
-                    container.innerHTML = `
-                        <div class="alert alert-danger" role="alert">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            載入項目數量表失敗：${error.message}
-                        </div>
-                    `;
+                    const showError = (id) => {
+                         const el = document.getElementById(id);
+                         if(el) el.innerHTML = `
+                            <div class="alert alert-danger" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                載入失敗：${error.message}
+                            </div>`;
+                    };
+                    showError('itemQuantityTableContainerSource');
+                    showError('itemQuantityTableContainerTarget');
                 });
         }
 
-        // 渲染項目數量表
-        function renderItemQuantityTable() {
-            const container = document.getElementById('itemQuantityTableContainer');
+        // 根據類型渲染表格
+        function renderTableByType(type) {
+            const containerId = type === TYPE_SOURCE ? 'itemQuantityTableContainerSource' : 'itemQuantityTableContainerTarget';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
             if (!itemQuantityData || !itemQuantityData.projectItems || itemQuantityData.projectItems.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info" role="alert">
@@ -376,23 +436,19 @@
                 return;
             }
 
-            const {
-                projectItems,
-                orderDetails
-            } = itemQuantityData;
+            const { projectItems, orderDetails } = itemQuantityData;
 
-            // 建立單一表格 HTML（使用 CSS sticky 實現凍結）
             let html = `
                 <div class="iqt-container">
                     <table class="iqt-table">
                         <thead>
                             <tr>
                                 <th class="sticky-col sticky-col-1">產品</th>
-                                <th class="sticky-col sticky-col-2">數量</th>
-                                <th class="sticky-col sticky-col-3">長度</th>
+                                <th class="sticky-col sticky-col-2">廠商</th>
+                                <th class="sticky-col sticky-col-3">數量</th>
+                                <th class="sticky-col sticky-col-4">長度</th>
             `;
 
-            // 渲染施工項目表頭
             projectItems.forEach(projectItem => {
                 html += `<th class="category-col">${projectItem.pi_name}</th>`;
             });
@@ -403,9 +459,8 @@
                         <tbody>
             `;
 
-            // 渲染資料列
             if (!orderDetails || orderDetails.length === 0) {
-                const colSpan = 3 + projectItems.length;
+                const colSpan = 4 + projectItems.length;
                 html += `
                     <tr>
                         <td colspan="${colSpan}" class="text-center text-muted py-4">
@@ -419,19 +474,20 @@
                     const displayName = orderDetail.mic_name && orderDetail.mic_name !== orderDetail.pr_name ?
                         `${orderDetail.mic_name} ${orderDetail.pr_name}` :
                         (orderDetail.od_pr_name || orderDetail.pr_name);
+                    const manufacturerName = orderDetail.ma_name || '';
                     const totalQty = toNumber(orderDetail['<?= $qtyField ?>']);
                     const totalLength = toNumber(orderDetail['<?= $lengthField ?>']);
 
                     html += `
                         <tr>
                             <td class="sticky-col sticky-col-1">${displayName}</td>
-                            <td class="sticky-col sticky-col-2">${formatDisplayNumber(totalQty)}</td>
-                            <td class="sticky-col sticky-col-3">${formatDisplayNumber(totalLength)}</td>
+                            <td class="sticky-col sticky-col-2">${manufacturerName}</td>
+                            <td class="sticky-col sticky-col-3">${formatDisplayNumber(totalQty)}</td>
+                            <td class="sticky-col sticky-col-4">${formatDisplayNumber(totalLength)}</td>
                     `;
 
-                    // 渲染每個施工項目的數量輸入欄位
                     projectItems.forEach(projectItem => {
-                        const key = `${detailId}_${projectItem.pi_id}`;
+                        const key = `${detailId}_${projectItem.pi_id}_${type}`;
                         const existingQty = toNumber(originalQuantities[key]);
                         const maxQty = totalQty;
 
@@ -441,6 +497,7 @@
                                        class="form-control category-input" 
                                        data-detail-id="${detailId}" 
                                        data-pi-id="${projectItem.pi_id}"
+                                       data-type="${type}"
                                        data-max-qty="${formatDisplayNumber(maxQty)}"
                                        value="${formatDisplayNumber(existingQty)}" 
                                        max="${formatDisplayNumber(maxQty)}"
@@ -460,15 +517,12 @@
             `;
 
             container.innerHTML = html;
-
-            // 綁定數量驗證事件
-            bindQuantityValidation();
+            bindQuantityValidation(container);
         }
 
-        // 數量驗證函數
-        function bindQuantityValidation() {
-            const categoryInputs = document.querySelectorAll('#itemQuantityModal .category-input');
-
+        // 綁定驗證事件 (Scoped by container)
+        function bindQuantityValidation(container) {
+            const categoryInputs = container.querySelectorAll('.category-input');
             categoryInputs.forEach(input => {
                 input.addEventListener('input', function() {
                     validateRowQuantity(this);
@@ -476,54 +530,48 @@
             });
         }
 
-        // 驗證單行數量總和
+        // 驗證單行數量 (區分 type)
         function validateRowQuantity(changedInput) {
             const detailId = changedInput.dataset.detailId;
+            const type = changedInput.dataset.type;
             const maxQty = toNumber(changedInput.dataset.maxQty);
 
-            // 找到同一行的所有input
-            const rowInputs = document.querySelectorAll(`#itemQuantityModal .category-input[data-detail-id="${detailId}"]`);
+            // 找到該 type 下同一行的所有 input
+            const containerId = type == TYPE_SOURCE ? 'itemQuantityTableContainerSource' : 'itemQuantityTableContainerTarget';
+            const container = document.getElementById(containerId);
+            const rowInputs = container.querySelectorAll(`.category-input[data-detail-id="${detailId}"][data-type="${type}"]`);
+            
             let totalAssigned = 0;
 
             rowInputs.forEach(input => {
-                const value = toNumber(input.value);
-                totalAssigned += value;
-
-                // 移除之前的錯誤樣式
+                totalAssigned += toNumber(input.value);
                 input.classList.remove('is-invalid');
                 input.title = '';
             });
 
-            // 檢查是否超過限制
             if (totalAssigned - maxQty > FLOAT_TOLERANCE) {
-                // 標記所有相關input為錯誤
                 rowInputs.forEach(input => {
                     input.classList.add('is-invalid');
                     input.title = `總分配數量 ${formatDisplayNumber(totalAssigned)} 超過訂單數量 ${formatDisplayNumber(maxQty)}`;
                 });
-
-                // 顯示錯誤訊息
-                showValidationError(`產品分配數量總和 (${formatDisplayNumber(totalAssigned)}) 不能超過訂單數量 (${formatDisplayNumber(maxQty)})`);
+                showValidationError(`[${type == TYPE_SOURCE ? '出發地' : '目的地'}] 產品分配數量總和 (${formatDisplayNumber(totalAssigned)}) 不能超過訂單數量 (${formatDisplayNumber(maxQty)})`);
                 return false;
             } else {
-                // 清除錯誤訊息
                 hideValidationError();
                 return true;
             }
         }
 
-        // 顯示驗證錯誤
         function showValidationError(message) {
             let errorDiv = document.getElementById('quantityValidationError');
             if (!errorDiv) {
                 errorDiv = document.createElement('div');
                 errorDiv.id = 'quantityValidationError';
                 errorDiv.className = 'alert alert-warning alert-dismissible fade show mt-2';
-
+                // 顯示在目前活動的 tab pane 上方
                 const modalBody = document.querySelector('#itemQuantityModal .modal-body');
                 modalBody.insertBefore(errorDiv, modalBody.firstChild);
             }
-
             errorDiv.innerHTML = `
                 <i class="bi bi-exclamation-triangle me-2"></i>
                 ${message}
@@ -531,76 +579,75 @@
             `;
         }
 
-        // 隱藏驗證錯誤
         function hideValidationError() {
             const errorDiv = document.getElementById('quantityValidationError');
-            if (errorDiv) {
-                errorDiv.remove();
-            }
+            if (errorDiv) errorDiv.remove();
         }
 
-        // 處理確認更新按鈕
+        // 儲存邏輯
         if (document.getElementById('saveItemQuantityBtn')) {
             document.getElementById('saveItemQuantityBtn').addEventListener('click', function() {
-                // 先進行最終驗證
-                const categoryInputs = document.querySelectorAll('#itemQuantityModal .category-input');
-                let hasValidationError = false;
+                // 1. 全域驗證
+                const allInputs = document.querySelectorAll('#itemQuantityModal .category-input');
+                let hasError = false;
+                
+                // 為了避免重複計算，我們用 Set 來記錄已檢查過的 (detailId + type) 組合
+                const checkedRows = new Set();
 
-                // 檢查每一行是否有驗證錯誤
-                const processedRows = new Set();
-                categoryInputs.forEach(input => {
+                allInputs.forEach(input => {
                     const detailId = input.dataset.detailId;
-                    if (!processedRows.has(detailId)) {
-                        processedRows.add(detailId);
+                    const type = input.dataset.type;
+                    const key = `${detailId}_${type}`;
+                    
+                    if (!checkedRows.has(key)) {
+                        checkedRows.add(key);
                         if (!validateRowQuantity(input)) {
-                            hasValidationError = true;
+                            hasError = true;
                         }
                     }
                 });
 
-                if (hasValidationError) {
+                if (hasError) {
                     showValidationError('請修正數量超過限制的項目後再提交');
                     return;
                 }
 
-                // 比較原始值和當前值，分類操作
-                const operations = {
-                    create: [],
-                    update: [],
-                    delete: []
-                };
+                // 2. 收集變更
+                const operations = { create: [], update: [], delete: [] };
 
-                categoryInputs.forEach(input => {
+                const TYPE_KEY = '<?= $payloadFieldMap['type'] ?? 'odpi_type' ?>';
+
+                allInputs.forEach(input => {
                     const detailId = input.dataset.detailId;
                     const piId = input.dataset.piId;
-                    const key = `${detailId}_${piId}`;
+                    const type = input.dataset.type; // 0 or 1
+                    
+                    const key = `${detailId}_${piId}_${type}`;
                     const originalQty = toNumber(originalQuantities[key]);
                     const newQty = toNumber(input.value);
 
+                    const payload = {
+                        '<?= $payloadFieldMap['detail'] ?>': detailId,
+                        '<?= $payloadFieldMap['pi'] ?>': piId,
+                        '<?= $payloadFieldMap['qty'] ?>': newQty,
+                    };
+                    payload[TYPE_KEY] = type;
+
                     if (isEffectivelyZero(originalQty) && !isEffectivelyZero(newQty)) {
-                        // 新增：原本沒有，現在有值
-                        operations.create.push({
-                            '<?= $payloadFieldMap['detail'] ?>': detailId,
-                            '<?= $payloadFieldMap['pi'] ?>': piId,
-                            '<?= $payloadFieldMap['qty'] ?>': newQty
-                        });
+                        operations.create.push(payload);
                     } else if (!isEffectivelyZero(originalQty) && !isEffectivelyZero(newQty) && isDifferentNumber(originalQty, newQty)) {
-                        // 更新：原本有值，現在也有值，但數量不同
-                        operations.update.push({
+                        operations.update.push(payload);
+                    } else if (!isEffectivelyZero(originalQty) && isEffectivelyZero(newQty)) {
+                        // 刪除時也需要 type 才能精確刪除
+                        const deletePayload = {
                             '<?= $payloadFieldMap['detail'] ?>': detailId,
                             '<?= $payloadFieldMap['pi'] ?>': piId,
-                            '<?= $payloadFieldMap['qty'] ?>': newQty
-                        });
-                    } else if (!isEffectivelyZero(originalQty) && isEffectivelyZero(newQty)) {
-                        // 刪除：原本有值，現在變成0
-                        operations.delete.push({
-                            '<?= $payloadFieldMap['detail'] ?>': detailId,
-                            '<?= $payloadFieldMap['pi'] ?>': piId
-                        });
+                        };
+                        deletePayload[TYPE_KEY] = type;
+                        operations.delete.push(deletePayload);
                     }
                 });
 
-                // 檢查是否有任何變更
                 const totalChanges = operations.create.length + operations.update.length + operations.delete.length;
                 if (totalChanges === 0) {
                     alert('沒有數據變更，無需更新。');
@@ -608,13 +655,12 @@
                     return;
                 }
 
-                // 設置按鈕載入狀態
+                // 3. 送出
                 const saveButton = document.getElementById('saveItemQuantityBtn');
                 const originalText = saveButton.innerHTML;
                 saveButton.disabled = true;
                 saveButton.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>儲存中...';
 
-                // 發送數據到後端
                 fetch('<?= $assignmentSaveUrl ?>', {
                         method: 'POST',
                         headers: {
@@ -624,21 +670,19 @@
                         body: JSON.stringify(operations)
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('儲存失敗');
-                        }
+                        if (!response.ok) throw new Error('儲存失敗');
                         return response.json();
                     })
                     .then(result => {
-                        // 恢復按鈕狀態
                         saveButton.disabled = false;
                         saveButton.innerHTML = originalText;
 
-                        // 更新原始數量記錄
-                        categoryInputs.forEach(input => {
+                        // 更新原始數量
+                        allInputs.forEach(input => {
                             const detailId = input.dataset.detailId;
                             const piId = input.dataset.piId;
-                            const key = `${detailId}_${piId}`;
+                            const type = input.dataset.type;
+                            const key = `${detailId}_${piId}_${type}`;
                             const newQty = toNumber(input.value);
 
                             if (!isEffectivelyZero(newQty)) {
@@ -651,14 +695,10 @@
                         bootstrap.Modal.getInstance(document.getElementById('itemQuantityModal')).hide();
                     })
                     .catch(error => {
-                        console.error('儲存項目數量表失敗:', error);
-
-                        // 恢復按鈕狀態
+                        console.error('儲存失敗:', error);
                         saveButton.disabled = false;
                         saveButton.innerHTML = originalText;
-
-                        // 顯示錯誤訊息
-                        alert('儲存項目數量表失敗：' + error.message);
+                        alert('儲存失敗：' + error.message);
                     });
             });
         }

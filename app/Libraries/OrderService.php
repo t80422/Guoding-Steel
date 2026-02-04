@@ -65,6 +65,10 @@ class OrderService
             // 新增明細表
             foreach ($detailsData as &$detail) {
                 $detail['od_o_id'] = $orderId;
+                // 處理外鍵欄位：空字串轉為 NULL
+                if (isset($detail['od_ma_id']) && $detail['od_ma_id'] === '') {
+                    $detail['od_ma_id'] = null;
+                }
             }
             unset($detail);
 
@@ -347,6 +351,11 @@ class OrderService
             foreach ($newDetails as $detail) {
                 // 確保每個明細都有 od_o_id
                 $detail['od_o_id'] = $orderId;
+
+                // 處理外鍵欄位：空字串轉為 NULL
+                if (isset($detail['od_ma_id']) && $detail['od_ma_id'] === '') {
+                    $detail['od_ma_id'] = null;
+                }
 
                 if (empty($detail['od_id'])) {
                     // 新增的明細，沒有 od_id

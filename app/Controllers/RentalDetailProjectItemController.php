@@ -65,6 +65,7 @@ class RentalDetailProjectItemController extends BaseController
                     $rodId = (int)($item['rodpi_rod_id'] ?? 0);
                     $piId  = (int)($item['rodpi_pi_id'] ?? 0);
                     $qty   = (int)($item['rodpi_qty'] ?? 0);
+                    $type  = (int)($item['odpi_type'] ?? 1); // 預設為 Target (1)
                     if ($rodId <= 0 || $piId <= 0 || $qty < 0) {
                         continue;
                     }
@@ -72,6 +73,7 @@ class RentalDetailProjectItemController extends BaseController
                         'rodpi_rod_id' => $rodId,
                         'rodpi_pi_id' => $piId,
                         'rodpi_qty' => $qty,
+                        'rodpi_type' => $type,
                     ]);
                     $processedCount++;
                 }
@@ -83,10 +85,11 @@ class RentalDetailProjectItemController extends BaseController
                     $rodId = (int)($item['rodpi_rod_id'] ?? 0);
                     $piId  = (int)($item['rodpi_pi_id'] ?? 0);
                     $qty   = (int)($item['rodpi_qty'] ?? 0);
+                    $type  = (int)($item['odpi_type'] ?? 1);
                     if ($rodId <= 0 || $piId <= 0 || $qty < 0) {
                         continue;
                     }
-                    $existing = $this->model->getByRODIdAndPIId($rodId, $piId);
+                    $existing = $this->model->getByUniqueKey($rodId, $piId, $type);
                     if ($existing) {
                         $this->model->update($existing['rodpi_id'], [
                             'rodpi_qty' => $qty,
@@ -101,10 +104,11 @@ class RentalDetailProjectItemController extends BaseController
                 foreach ($json['delete'] as $item) {
                     $rodId = (int)($item['rodpi_rod_id'] ?? 0);
                     $piId  = (int)($item['rodpi_pi_id'] ?? 0);
+                    $type  = (int)($item['odpi_type'] ?? 1);
                     if ($rodId <= 0 || $piId <= 0) {
                         continue;
                     }
-                    $existing = $this->model->getByRODIdAndPIId($rodId, $piId);
+                    $existing = $this->model->getByUniqueKey($rodId, $piId, $type);
                     if ($existing) {
                         $this->model->delete($existing['rodpi_id']);
                         $processedCount++;

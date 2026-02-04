@@ -306,6 +306,7 @@
             'detail' => 'rodpi_rod_id',
             'pi' => 'rodpi_pi_id',
             'qty' => 'rodpi_qty',
+            'type' => 'rodpi_type',
         ],
     ]) ?>
 <?php endif; ?>

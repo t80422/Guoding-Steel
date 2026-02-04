@@ -23,7 +23,8 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            position: relative; /* 為了浮水印定位 */
+            position: relative;
+            /* 為了浮水印定位 */
         }
 
         .watermark {
@@ -32,7 +33,7 @@
             left: 50%;
             transform: translate(-50%, -50%) rotate(-30deg);
             font-size: 150px;
-            color: rgba(0, 0, 0, 0.2);
+            color: rgba(0, 0, 0, 0);
             font-weight: bold;
             white-space: nowrap;
             z-index: 0;
@@ -118,13 +119,19 @@
 
 <body>
     <div class="a4">
-        <?php 
-            $watermarkText = '';
-            switch((int)($order['o_type'] ?? -1)) {
-                case 0: $watermarkText = '進倉庫'; break;
-                case 1: $watermarkText = '出倉庫'; break;
-                case 2: $watermarkText = '轉倉庫'; break;
-            }
+        <?php
+        $watermarkText = '';
+        switch ((int)($order['o_type'] ?? -1)) {
+            case 0:
+                $watermarkText = '進倉庫';
+                break;
+            case 1:
+                $watermarkText = '出倉庫';
+                break;
+            case 2:
+                $watermarkText = '轉倉庫';
+                break;
+        }
         ?>
         <?php if ($watermarkText): ?>
             <div class="watermark"><?= $watermarkText ?></div>
@@ -135,8 +142,8 @@
                 <tr>
                     <td class="align-top" style="width:84%;">
                         <div style="text-align: left; font-weight: bold; font-size: 2.5rem; line-height: 1.2;">
-                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵" 
-                                 style="height: 60px; width: auto; margin-right: 12px; vertical-align: middle;">
+                            <img src="<?= base_url('images/國鼎LOGO.png') ?>" alt="國鼎鋼鐵"
+                                style="height: 60px; width: auto; margin-right: 12px; vertical-align: middle;">
                             <span style="letter-spacing: 0.35em; vertical-align: middle;">國鼎鋼鐵股份有限公司</span>
                         </div>
                     </td>
@@ -217,8 +224,8 @@
                             <td style="width:5%; text-align:left;color:red;"><?= $label ?></td>
                             <td class="dashed text-break" style="width:95%; text-align:left;color:red;">
                                 <?= esc($d['spec'] ?? '') ?><br>
-                            <?= esc($d['detail'] ?? '') ?>
-                        </td>
+                                <?= esc($d['detail'] ?? '') ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </table>

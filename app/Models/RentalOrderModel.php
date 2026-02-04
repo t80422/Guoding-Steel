@@ -183,9 +183,20 @@ class RentalOrderModel extends Model
                     ELSE CONCAT(mic.mic_name, p.pr_name)
                 END as product_name,
                 rod.rod_length,
-                rodpi.rodpi_qty
+                rodpi.rodpi_qty,
+                rodpi.rodpi_type
             ')
-            ->where('ro.ro_l_id', $locationId);
+            ->where('ro.ro_l_id', $locationId)
+            ->groupStart()
+                ->groupStart()
+                    ->where('ro.ro_type', 0)
+                    ->where('rodpi.rodpi_type', 1)
+                ->groupEnd()
+                ->orGroupStart()
+                    ->where('ro.ro_type', 1)
+                    ->where('rodpi.rodpi_type', 0)
+                ->groupEnd()
+            ->groupEnd();
 
         // 加入搜尋條件
         if (!empty($searchParams['start_date'])) {

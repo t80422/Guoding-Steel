@@ -11,7 +11,8 @@ class RentalDetailProjectItemModel extends Model
     protected $allowedFields    = [
         'rodpi_rod_id',
         'rodpi_pi_id',
-        'rodpi_qty'
+        'rodpi_qty',
+        'rodpi_type', // 0: Source, 1: Target
     ];
 
     /**
@@ -26,12 +27,13 @@ class RentalDetailProjectItemModel extends Model
     }
 
     /**
-     * 取得特定租賃明細與項目的配置紀錄
+     * 取得特定租賃明細、項目與類型的配置紀錄
      */
-    public function getByRODIdAndPIId(int $rodId, int $piId): ?array
+    public function getByUniqueKey(int $rodId, int $piId, int $type): ?array
     {
         return $this->where('rodpi_rod_id', $rodId)
             ->where('rodpi_pi_id', $piId)
+            ->where('rodpi_type', $type)
             ->first();
     }
 }
