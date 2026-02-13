@@ -162,6 +162,7 @@ class RentalOrderModel extends Model
     public function getMaterialDetailsByLocation($locationId, $searchParams = [])
     {
         $builder = $this->db->table('rental_orders ro')
+            ->join('locations l', 'l.l_id = ro.ro_l_id', 'left')
             ->join('manufacturers m', 'm.ma_id = ro.ro_ma_id', 'left')
             ->join('rental_order_details rod', 'ro.ro_id = rod.rod_ro_id', 'left')
             ->join('products p', 'rod.rod_pr_id = p.pr_id', 'left')
@@ -174,6 +175,7 @@ class RentalOrderModel extends Model
                 ro.ro_date,
                 ro.ro_type,
                 ro.ro_l_id,
+                l.l_name as location_name,
                 m.ma_name as manufacturer_name,
                 pi.pi_id as project_id,
                 pi.pi_sort as project_sort,
@@ -218,6 +220,10 @@ class RentalOrderModel extends Model
                 ->groupEnd();
         }
 
+        if (!empty($searchParams['manufacturer'])) {
+            $builder->where('m.ma_name', $searchParams['manufacturer']);
+        }
+
         $builder->orderBy('ro.ro_date', 'DESC')
             ->orderBy('ro.ro_id', 'ASC');
 
@@ -255,7 +261,10 @@ class RentalOrderModel extends Model
                     'vehicle_no' => $row['ro_car_number'],
                     'date' => $row['ro_date'],
                     'type' => self::getTypeName($row['ro_type']),
-                    'warehouse' => $row['manufacturer_name'] ?? '',
+                    'firm_name' => $row['manufacturer_name'] ?? '',
+                    'route' => $row['ro_type'] == self::TYPE_IN 
+                        ? ($row['manufacturer_name'] ?? '') . '-' . ($row['location_name'] ?? '')
+                        : ($row['location_name'] ?? '') . '-' . ($row['manufacturer_name'] ?? ''),
                     'is_increase' => $isIncrease,
                     'projects' => []
                 ];
@@ -292,13 +301,26 @@ class RentalOrderModel extends Model
                     $orders[$rentalId]['projects'][$projectName][$productKey] = [
                         'quantity' => 0,
                         'length' => 0,
-                        'display_name' => $productName
+                        'display_name' => $productName,
+                        'breakdown' => []
+                    ];
+                }
+
+                // 處理廠商細項 (租賃單通常整張單一個廠商)
+                $firmName = $row['manufacturer_name'] ?: '未知廠商';
+                if (!isset($orders[$rentalId]['projects'][$projectName][$productKey]['breakdown'][$firmName])) {
+                    $orders[$rentalId]['projects'][$projectName][$productKey]['breakdown'][$firmName] = [
+                        'quantity' => 0.0,
+                        'length' => 0.0
                     ];
                 }
 
                 // 累加數量並將米數乘以數量
                 $orders[$rentalId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
                 $orders[$rentalId]['projects'][$projectName][$productKey]['length'] += $length * $quantity;
+
+                $orders[$rentalId]['projects'][$projectName][$productKey]['breakdown'][$firmName]['quantity'] += $quantity;
+                $orders[$rentalId]['projects'][$projectName][$productKey]['breakdown'][$firmName]['length'] += $length * $quantity;
             }
         }
 

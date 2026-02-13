@@ -54,10 +54,10 @@ class ExcelController extends BaseController
             if (!$result['success']) {
                 $errors = $result['errors'] ?? [];
                 log_message('error', 'Excel import errors: ' . print_r($errors, true));
-                
+
                 // 將錯誤陣列轉換為可讀的訊息
                 $errorMessage = $this->formatErrorMessage($errors);
-                
+
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => $errorMessage,
@@ -106,7 +106,7 @@ class ExcelController extends BaseController
                     'message' => '沒有可儲存的資料,或資料已過期,請重新匯入Excel檔案'
                 ]);
             }
-            
+
             $userId = session()->get('userId');
             if (!$userId) {
                 return $this->response->setJSON([
@@ -126,7 +126,8 @@ class ExcelController extends BaseController
             $rodpiModel = new RentalDetailProjectItemModel();
             $inventoryService = new InventoryService();
 
-            $created = 0; $updated = 0;
+            $created = 0;
+            $updated = 0;
 
             $data = $memoryData['data'] ?? [];
             $orders = $data['orders'] ?? [];
@@ -139,7 +140,8 @@ class ExcelController extends BaseController
 
                 // 以 o_number 決定新增或更新
                 $exist = $orderModel->where('o_number', $header['o_number'])->first();
-                $oldOrder = null; $oldDetails = null;
+                $oldOrder = null;
+                $oldDetails = null;
                 if ($exist) {
                     $header['o_id'] = $exist['o_id'];
                     $oldOrder = $exist;
@@ -157,14 +159,15 @@ class ExcelController extends BaseController
                 } else {
                     $orderModel->insert($header);
                     $header['o_id'] = $orderModel->getInsertID();
-                    $oldOrder = null; $oldDetails = [];
+                    $oldOrder = null;
+                    $oldDetails = [];
                     $created++;
                 }
 
                 // 聚合 (pr_id,length) → 建立 order_details
                 $detailIdByKey = [];
                 foreach ($details as $d) {
-                    $key = $d['pr_id'].'|'.$d['length'];
+                    $key = $d['pr_id'] . '|' . $d['length'];
                     if (!isset($detailIdByKey[$key])) {
                         $orderDetailModel->insert([
                             'od_o_id' => $header['o_id'],
@@ -182,11 +185,13 @@ class ExcelController extends BaseController
 
                     // 建立項目配置
                     $odId = $detailIdByKey[$key];
+                    $odpiType = (int) $header['o_type'] === 1 ? 1 : 0;
                     foreach ($d['allocations'] as $piId => $qty) {
                         $odpiModel->insert([
                             'odpi_od_id' => $odId,
                             'odpi_pi_id' => $piId,
                             'odpi_qty' => $qty,
+                            'odpi_type' => $odpiType,
                         ]);
                     }
                 }
@@ -201,7 +206,8 @@ class ExcelController extends BaseController
                 $details = $r['details'];
 
                 $exist = $rentalModel->where('ro_number', $header['ro_number'])->first();
-                $oldRental = null; $oldDetails = null;
+                $oldRental = null;
+                $oldDetails = null;
                 if ($exist) {
                     $header['ro_id'] = $exist['ro_id'];
                     $header['ro_update_by'] = $userId;
@@ -222,14 +228,15 @@ class ExcelController extends BaseController
                     $rentalModel->insert($header);
                     $header['ro_id'] = $rentalModel->getInsertID();
                     $header['ro_create_by'] = $userId;
-                    $oldRental = null; $oldDetails = [];
+                    $oldRental = null;
+                    $oldDetails = [];
                     $created++;
                 }
 
                 // 聚合 (pr_id,length) → 建立 rental_order_details
                 $detailIdByKey = [];
                 foreach ($details as $d) {
-                    $key = $d['pr_id'].'|'.$d['length'];
+                    $key = $d['pr_id'] . '|' . $d['length'];
                     if (!isset($detailIdByKey[$key])) {
                         $rentalDetailModel->insert([
                             'rod_ro_id' => $header['ro_id'],
@@ -246,11 +253,13 @@ class ExcelController extends BaseController
 
                     // 建立項目配置
                     $rodId = $detailIdByKey[$key];
+                    $rodpiType = (int) $header['ro_type'] === 0 ? 1 : 0;
                     foreach ($d['allocations'] as $piId => $qty) {
                         $rodpiModel->insert([
                             'rodpi_rod_id' => $rodId,
                             'rodpi_pi_id' => $piId,
                             'rodpi_qty' => $qty,
+                            'rodpi_type' => $rodpiType,
                         ]);
                     }
                 }
@@ -260,20 +269,20 @@ class ExcelController extends BaseController
             }
 
             $db->transComplete();
-            
+
             if ($db->transStatus() === FALSE) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => '資料庫交易失敗'
                 ]);
             }
-            
+
             $this->clearMemoryData();
 
             return $this->response->setJSON([
                 'success' => true,
                 'message' => "匯入完成！新增 {$created} 筆、更新 {$updated} 筆",
-                'data' => [ 'created' => $created, 'updated' => $updated ]
+                'data' => ['created' => $created, 'updated' => $updated]
             ]);
         } catch (\Exception $e) {
             log_message('error', 'Save operation failed: ' . $e->getMessage());
@@ -325,12 +334,12 @@ class ExcelController extends BaseController
         $messages = [];
         foreach ($errors as $error) {
             $message = $error['message'] ?? '未知錯誤';
-            
+
             // 如果有行號資訊，加入行號
             if (isset($error['row'])) {
                 $message = "第{$error['row']}列：{$message}";
             }
-            
+
             $messages[] = $message;
         }
 

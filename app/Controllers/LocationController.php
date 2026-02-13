@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\LocationModel;
+use App\Models\ManufacturerModel;
 use App\Services\PermissionService;
 use App\Services\LocationMaterialService;
 use Throwable;
@@ -109,13 +110,16 @@ class LocationController extends BaseController
     public function materialUsage($id)
     {
         $location = $this->locationModel->find($id);
+        $manufacturerModel = new ManufacturerModel();
+        $manufacturers = $manufacturerModel->getDropdown();
         
         // 取得搜尋參數
         $searchParams = [
             'start_date' => $this->request->getGet('start_date'),
             'end_date' => $this->request->getGet('end_date'),
             'type' => $this->request->getGet('type'),
-            'keyword' => $this->request->getGet('keyword')
+            'keyword' => $this->request->getGet('keyword'),
+            'manufacturer' => $this->request->getGet('manufacturer')
         ];
 
         // 取得詳細用料情況（整合訂單和租賃單資料）
@@ -126,6 +130,7 @@ class LocationController extends BaseController
             'orders' => $materialData['orders'],
             'all_projects' => $materialData['all_projects'],
             'all_products' => $materialData['all_products'],
+            'manufacturers' => $manufacturers,
             'searchParams' => $this->request->getGet() // 傳遞所有 GET 參數給 view
         ]);
     }

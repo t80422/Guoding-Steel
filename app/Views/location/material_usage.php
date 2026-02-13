@@ -30,14 +30,14 @@
     /* 3. 左側固定欄位 (橫向) */
     .col-sticky-1 { position: sticky; left: 0; min-width: 120px; z-index: 10; }
     .col-sticky-2 { position: sticky; left: 120px; min-width: 110px; z-index: 10; }
-    .col-sticky-3 { position: sticky; left: 230px; min-width: 150px; z-index: 10; }
-    .col-sticky-4 { position: sticky; left: 380px; min-width: 80px; z-index: 10; }
+    .col-sticky-3 { position: sticky; left: 230px; min-width: 80px; z-index: 10; }
+    .col-sticky-4 { position: sticky; left: 310px; min-width: 150px; z-index: 10; }
 
     /* 4. 上方固定表頭 (縱向) */
     /* 這裡的高度偏移需要精確計算或使用 JS 動態計算，先給定預估值 */
-    .sticky-table thead tr:nth-child(1) th { position: sticky; top: 0; z-index: 20; }
-    .sticky-table thead tr:nth-child(2) th { position: sticky; top: 41px; z-index: 20; }
-    .sticky-table thead tr:nth-child(3) th { position: sticky; top: 82px; z-index: 20; }
+    .sticky-table thead tr:nth-child(1) th { position: sticky; z-index: 20; }
+    .sticky-table thead tr:nth-child(2) th { position: sticky; z-index: 20; }
+    .sticky-table thead tr:nth-child(3) th { position: sticky; z-index: 20; }
 
     /* 5. 下方固定表尾 (縱向) */
     .sticky-table tfoot tr td {
@@ -111,17 +111,17 @@
             <div class="card-body">
             <form method="GET" action="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>">
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="start_date" class="form-label small">開始日期</label>
                         <input type="date" class="form-control" id="start_date" name="start_date"
                             value="<?= esc($searchParams['start_date'] ?? '') ?>">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="end_date" class="form-label small">結束日期</label>
                         <input type="date" class="form-control" id="end_date" name="end_date"
                             value="<?= esc($searchParams['end_date'] ?? '') ?>">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="type" class="form-label small">類型</label>
                         <select class="form-select" id="type" name="type">
                             <option value="">全部</option>
@@ -133,6 +133,19 @@
                                 <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ? 'selected' : '' ?>>
                                 出倉庫
                             </option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="manufacturer" class="form-label small">廠商</label>
+                        <select class="form-select" id="manufacturer" name="manufacturer">
+                            <option value="">全部</option>
+                            <option value="國鼎" <?= ($searchParams['manufacturer'] ?? '') == '國鼎' ? 'selected' : '' ?>>國鼎</option>
+                            <?php foreach ($manufacturers as $ma): ?>
+                                <option value="<?= esc($ma['ma_name']) ?>" 
+                                    <?= ($searchParams['manufacturer'] ?? '') == $ma['ma_name'] ? 'selected' : '' ?>>
+                                    <?= esc($ma['ma_name']) ?>
+                                </option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -187,8 +200,8 @@
                 <tr>
                     <th rowspan="3" class="text-center align-middle col-sticky-1">車號</th>
                     <th rowspan="3" class="text-center align-middle col-sticky-2">日期</th>
-                    <th rowspan="3" class="text-center align-middle col-sticky-3">倉庫</th>
-                    <th rowspan="3" class="text-center align-middle col-sticky-4">類型</th>
+                    <th rowspan="3" class="text-center align-middle col-sticky-3">廠商</th>
+                    <th rowspan="3" class="text-center align-middle col-sticky-4">運輸</th>
                     <?php if (!empty($all_projects)): ?>
                         <?php foreach ($all_projects as $projectName): ?>
                             <?php $productCount = count($all_products[$projectName] ?? []); ?>
@@ -239,8 +252,8 @@
                         <tr>
                             <td class="text-center col-sticky-1"><?= esc($order['vehicle_no']) ?></td>
                             <td class="text-center col-sticky-2"><?= esc($order['date']) ?></td>
-                            <td class="col-sticky-3"><?= esc($order['warehouse']) ?></td>
-                            <td class="text-center col-sticky-4"><?= esc($order['type']) ?></td>
+                            <td class="text-center col-sticky-3"><?= esc($order['firm_name']) ?></td>
+                            <td class="col-sticky-4"><?= esc($order['route']) ?></td>
 
                             <!-- 動態產品欄位 -->
                             <?php foreach ($all_projects as $projectName): ?>
@@ -253,19 +266,29 @@
                                         $prefix = $isIncrease ? '+' : '-';
                                         ?>
                                         <td class="text-center border-end">
-                                            <?php if ($productData && (float)($productData['quantity'] ?? 0) > 0): ?>
-                                                <span class="fw-bold <?= $colorClass ?>">
-                                                    <?= $prefix ?><?= (float)($productData['quantity'] ?? 0) ?>
-                                                </span>
+                                            <?php if ($productData && !empty($productData['breakdown'])): ?>
+                                                <?php foreach ($productData['breakdown'] as $firm => $vals): ?>
+                                                    <?php if ((float)$vals['quantity'] > 0): ?>
+                                                        <div class="small text-muted" style="font-size: 0.7rem;"><?= esc($firm) ?></div>
+                                                        <div class="fw-bold <?= $colorClass ?> mb-1">
+                                                            <?= $prefix ?><?= (float)$vals['quantity'] ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
                                             <?php else: ?>
                                                 <span class="text-muted opacity-50">-</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
-                                            <?php if ($productData && (float)($productData['quantity'] ?? 0) > 0): ?>
-                                                <span class="<?= $colorClass ?>">
-                                                    <?= $prefix ?><?= number_format((float)($productData['length'] ?? 0), 2) ?>m
-                                                </span>
+                                            <?php if ($productData && !empty($productData['breakdown'])): ?>
+                                                <?php foreach ($productData['breakdown'] as $firm => $vals): ?>
+                                                    <?php if ((float)$vals['quantity'] > 0): ?>
+                                                        <div class="small text-muted" style="font-size: 0.7rem;"><?= esc($firm) ?></div>
+                                                        <div class="<?= $colorClass ?> mb-1">
+                                                            <?= $prefix ?><?= number_format((float)$vals['length'], 2) ?>m
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
                                             <?php else: ?>
                                                 <span class="text-muted opacity-50">-</span>
                                             <?php endif; ?>

@@ -34,12 +34,55 @@ class OrderModel extends Model
         'o_ct_id'
     ];
 
+    // Callbacks
+    protected $allowCallbacks = true;
+    protected $beforeInsert   = [];
+    protected $afterInsert    = [];
+    protected $beforeUpdate   = ['logBeforeUpdate'];
+    protected $afterUpdate    = ['logAfterUpdate'];
+    protected $beforeFind     = [];
+    protected $afterFind      = [];
+    protected $beforeDelete   = [];
+    protected $afterDelete    = [];
+
     public const TYPE_IN_WAREHOUSE = 0; // 進倉庫
     public const TYPE_OUT_WAREHOUSE = 1; // 出倉庫
     public const TYPE_TRANSFER_WAREHOUSE = 2; // 轉倉庫
 
     public const STATUS_IN_PROGRESS = 0; // 進行中
     public const STATUS_COMPLETED = 1; // 完成
+
+    protected $tempOldData = null;
+
+    protected function logBeforeUpdate(array $data)
+    {
+        $id = $data['id'][0];
+
+        $this->tempOldData = $this->find($id);
+
+        return $data;
+    }
+
+    protected function logAfterUpdate(array $data)
+    {
+        $audit = new \App\Models\AuditLogModel();
+
+        $id = $data['id'][0];
+        $newData = $this->find($id);
+
+        $audit->insert([
+            'user_id'    => session()->get('userId'),
+            'action'     => 'UPDATE',
+            'table_name' => $this->table,
+            'record_id'  => $id,
+            'old_data'   => json_encode($this->tempOldData),
+            'new_data'   => json_encode($newData),
+            'ip_address' => service('request')->getIPAddress(),
+            'user_agent' => service('request')->getUserAgent()->getAgentString(),
+        ]);
+
+        return $data;
+    }
 
     /**
      * 根據 o_type 值取得中文名稱
@@ -246,6 +289,7 @@ class OrderModel extends Model
             ->join('minor_categories mic', 'p.pr_mic_id = mic.mic_id', 'left')
             ->join('order_detail_project_items odpi', 'od.od_id = odpi.odpi_od_id', 'left')
             ->join('project_items pi', 'odpi.odpi_pi_id = pi.pi_id', 'left')
+            ->join('manufacturers ma', 'od.od_ma_id = ma.ma_id', 'left')
             ->select('
                 o.o_id,
                 o.o_car_number,
@@ -264,17 +308,18 @@ class OrderModel extends Model
                 END as product_name,
                 od.od_length,
                 odpi.odpi_qty,
-                odpi.odpi_type
+                odpi.odpi_type,
+                ma.ma_name as item_firm_name
             ')
             ->groupStart()
-                ->groupStart()
-                    ->where('o.o_from_location', $locationId)
-                    ->where('odpi.odpi_type', 0)
-                ->groupEnd()
-                ->orGroupStart()
-                    ->where('o.o_to_location', $locationId)
-                    ->where('odpi.odpi_type', 1)
-                ->groupEnd()
+            ->groupStart()
+            ->where('o.o_from_location', $locationId)
+            ->where('odpi.odpi_type', 0)
+            ->groupEnd()
+            ->orGroupStart()
+            ->where('o.o_to_location', $locationId)
+            ->where('odpi.odpi_type', 1)
+            ->groupEnd()
             ->groupEnd();
 
         // 加入搜尋條件
@@ -297,6 +342,13 @@ class OrderModel extends Model
                 ->orLike('l1.l_name', $keyword)
                 ->orLike('l2.l_name', $keyword)
                 ->groupEnd();
+        }
+
+        if (!empty($searchParams['manufacturer'])) {
+            // 一般訂單固定為國鼎，如果選擇其他廠商，則不顯示一般訂單
+            if ($searchParams['manufacturer'] != '國鼎') {
+                $builder->where('1 = 0'); // 強制不回傳結果
+            }
         }
 
         $builder->orderBy('o.o_date', 'DESC')
@@ -336,7 +388,8 @@ class OrderModel extends Model
                     'vehicle_no' => $row['o_car_number'],
                     'date' => $row['o_date'],
                     'type' => self::getTypeName($row['o_type']),
-                    'warehouse' => $this->getWarehouseName($row, $locationId),
+                    'firm_name' => '國鼎',
+                    'route' => ($row['from_location_name'] ?? '') . '-' . ($row['to_location_name'] ?? ''),
                     'is_increase' => $isIncrease,
                     'projects' => []
                 ];
@@ -373,13 +426,26 @@ class OrderModel extends Model
                     $orders[$orderId]['projects'][$projectName][$productKey] = [
                         'quantity' => 0.0,
                         'length' => 0,
-                        'display_name' => $productName
+                        'display_name' => $productName,
+                        'breakdown' => []
+                    ];
+                }
+
+                // 處理廠商細項
+                $firmName = $row['item_firm_name'] ?: '';
+                if (!isset($orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName])) {
+                    $orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName] = [
+                        'quantity' => 0.0,
+                        'length' => 0.0
                     ];
                 }
 
                 // 累加數量並將米數乘以數量
                 $orders[$orderId]['projects'][$projectName][$productKey]['quantity'] += $quantity;
                 $orders[$orderId]['projects'][$projectName][$productKey]['length'] += $length * $quantity;
+
+                $orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName]['quantity'] += $quantity;
+                $orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName]['length'] += $length * $quantity;
             }
         }
 
@@ -458,22 +524,6 @@ class OrderModel extends Model
             $row['total_length'] = (float) $row['total_length'];
         }
         return $rows;
-    }
-
-    /**
-     * 取得倉庫名稱
-     *
-     * @param array $row
-     * @param int $locationId
-     * @return string
-     */
-    private function getWarehouseName($row, $locationId)
-    {
-        if ($row['o_from_location'] == $locationId) {
-            return $row['to_location_name'] ?? '未知地點';
-        } else {
-            return $row['from_location_name'] ?? '未知地點';
-        }
     }
 
     /**
