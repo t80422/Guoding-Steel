@@ -345,10 +345,7 @@ class OrderModel extends Model
         }
 
         if (!empty($searchParams['manufacturer'])) {
-            // 一般訂單固定為國鼎，如果選擇其他廠商，則不顯示一般訂單
-            if ($searchParams['manufacturer'] != '國鼎') {
-                $builder->where('1 = 0'); // 強制不回傳結果
-            }
+            $builder->where('ma.ma_name', $searchParams['manufacturer']);
         }
 
         $builder->orderBy('o.o_date', 'DESC')

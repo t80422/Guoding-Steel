@@ -475,7 +475,7 @@ class ExcelImportService
             $qtyRaw = $this->getCellCalculatedValue($sheet, $col, $row);
             $lenRaw = $this->getCellCalculatedValue($sheet, $col + 1, $row);
             $qty = is_numeric($qtyRaw) ? (float) abs($qtyRaw) : 0.0;
-            $length = is_numeric($lenRaw) ? (float) abs($lenRaw) / $qty : 0.0;
+            $length = ($qty > 0 && is_numeric($lenRaw)) ? round((float) abs($lenRaw) / $qty, 2) : 0.0;
             if ($qty <= 0) {
                 continue; // 僅米數或無效數量 → 不保留
             }
