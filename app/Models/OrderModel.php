@@ -71,7 +71,7 @@ class OrderModel extends Model
         $newData = $this->find($id);
 
         $audit->insert([
-            'user_id'    => session()->get('userId'),
+            'user_id'    => $newData['o_update_by'] ?? null,
             'action'     => 'UPDATE',
             'table_name' => $this->table,
             'record_id'  => $id,

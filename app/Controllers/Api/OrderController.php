@@ -28,6 +28,11 @@ class OrderController extends Controller
     public function create()
     {
         try {
+            $userId = $this->request->getHeaderLine('X-User-ID');
+            if (empty($userId)) {
+                return $this->fail('缺少使用者識別資訊，請重新登入後再試。');
+            }
+
             $data = $this->request->getPost();
             $files = $this->request->getFiles();
 
@@ -35,7 +40,7 @@ class OrderController extends Controller
             $jsonDetails = json_decode($data['details'], true);
 
             // 使用 OrderService 統一處理
-            $orderId = $this->orderService->createOrder($jsonOrder, $jsonDetails, $files);
+            $orderId = $this->orderService->createOrder($jsonOrder, $jsonDetails, $files, (int)$userId);
 
             return $this->respondCreated(['order_id' => $orderId]);
         } catch (Exception $e) {
