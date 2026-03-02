@@ -16,11 +16,12 @@
     /* 2. 基本 Sticky 設定 */
     .sticky-table {
         border-spacing: 0;
-        border-collapse: separate; /* 重要：確保 sticky 邊框正確顯示 */
+        border-collapse: separate;
+        /* 重要：確保 sticky 邊框正確顯示 */
         margin-bottom: 0;
     }
 
-    .sticky-table th, 
+    .sticky-table th,
     .sticky-table td {
         background-color: #fff;
         z-index: 1;
@@ -28,23 +29,58 @@
     }
 
     /* 3. 左側固定欄位 (橫向) */
-    .col-sticky-1 { position: sticky; left: 0; min-width: 120px; z-index: 10; }
-    .col-sticky-2 { position: sticky; left: 120px; min-width: 110px; z-index: 10; }
-    .col-sticky-3 { position: sticky; left: 230px; min-width: 80px; z-index: 10; }
-    .col-sticky-4 { position: sticky; left: 310px; min-width: 150px; z-index: 10; }
+    .col-sticky-1 {
+        position: sticky;
+        left: 0;
+        min-width: 120px;
+        z-index: 10;
+    }
+
+    .col-sticky-2 {
+        position: sticky;
+        left: 120px;
+        min-width: 110px;
+        z-index: 10;
+    }
+
+    .col-sticky-3 {
+        position: sticky;
+        left: 230px;
+        min-width: 80px;
+        z-index: 10;
+    }
+
+    .col-sticky-4 {
+        position: sticky;
+        left: 310px;
+        min-width: 150px;
+        z-index: 10;
+    }
 
     /* 4. 上方固定表頭 (縱向) */
     /* 這裡的高度偏移需要精確計算或使用 JS 動態計算，先給定預估值 */
-    .sticky-table thead tr:nth-child(1) th { position: sticky; z-index: 20; }
-    .sticky-table thead tr:nth-child(2) th { position: sticky; z-index: 20; }
-    .sticky-table thead tr:nth-child(3) th { position: sticky; z-index: 20; }
+    .sticky-table thead tr:nth-child(1) th {
+        position: sticky;
+        z-index: 20;
+    }
+
+    .sticky-table thead tr:nth-child(2) th {
+        position: sticky;
+        z-index: 20;
+    }
+
+    .sticky-table thead tr:nth-child(3) th {
+        position: sticky;
+        z-index: 20;
+    }
 
     /* 5. 下方固定表尾 (縱向) */
     .sticky-table tfoot tr td {
         position: sticky;
         bottom: 0;
         z-index: 20;
-        background-color: #fff3cd !important; /* table-warning 顏色 */
+        background-color: #fff3cd !important;
+        /* table-warning 顏色 */
         border-top: 2px solid #ffecb5 !important;
     }
 
@@ -57,6 +93,7 @@
         z-index: 100 !important;
         background-color: #EBF1EC !important;
     }
+
     /* 左下角表尾：確保總計列在水平捲動時也不會被穿透 */
     .sticky-table tfoot td.col-sticky-1,
     .sticky-table tfoot td.col-sticky-2,
@@ -68,21 +105,27 @@
 
     /* 7. 視覺優化 */
     .col-sticky-4 {
-        box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
         border-right: 2px solid #dee2e6 !important;
     }
-    
-    .table-light th { 
-        background-color: #EBF1EC !important; 
+
+    .table-light th {
+        background-color: #EBF1EC !important;
     }
 
-    .sticky-table tbody tr:hover td { 
-        background-color: #f8f9fa !important; 
+    .sticky-table tbody tr:hover td {
+        background-color: #f8f9fa !important;
     }
 
     /* 調整對齊與字體 */
-    .table th { font-weight: 600; font-size: 0.9rem; }
-    .table td { font-size: 0.9rem; }
+    .table th {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .table td {
+        font-size: 0.9rem;
+    }
 </style>
 
 <div class="container py-4">
@@ -99,72 +142,72 @@
         <div class="card-header bg-white py-3">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0 fs-6 fw-bold text-muted">搜尋條件</h5>
-                <button class="btn btn-sm btn-link text-decoration-none p-0" type="button" 
-                        data-bs-toggle="collapse" data-bs-target="#searchFormCollapse" 
-                        aria-expanded="false" aria-controls="searchFormCollapse"
-                        id="toggleSearchBtn">
+                <button class="btn btn-sm btn-link text-decoration-none p-0" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#searchFormCollapse"
+                    aria-expanded="false" aria-controls="searchFormCollapse"
+                    id="toggleSearchBtn">
                     <i class="bi bi-chevron-down fs-5" id="toggleIcon"></i>
                 </button>
             </div>
         </div>
         <div class="collapse" id="searchFormCollapse">
             <div class="card-body">
-            <form method="GET" action="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>">
-                <div class="row g-3">
-                    <div class="col-md-2">
-                        <label for="start_date" class="form-label small">開始日期</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date"
-                            value="<?= esc($searchParams['start_date'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-2">
-                        <label for="end_date" class="form-label small">結束日期</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date"
-                            value="<?= esc($searchParams['end_date'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-2">
-                        <label for="type" class="form-label small">類型</label>
-                        <select class="form-select" id="type" name="type">
-                            <option value="">全部</option>
-                            <option value="<?= \App\Models\OrderModel::TYPE_IN_WAREHOUSE ?>"
-                                <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_IN_WAREHOUSE ? 'selected' : '' ?>>
-                                進倉庫
-                            </option>
-                            <option value="<?= \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ?>"
-                                <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ? 'selected' : '' ?>>
-                                出倉庫
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label for="manufacturer" class="form-label small">廠商</label>
-                        <select class="form-select" id="manufacturer" name="manufacturer">
-                            <option value="">全部</option>
-                            <option value="國鼎" <?= ($searchParams['manufacturer'] ?? '') == '國鼎' ? 'selected' : '' ?>>國鼎</option>
-                            <?php foreach ($manufacturers as $ma): ?>
-                                <option value="<?= esc($ma['ma_name']) ?>" 
-                                    <?= ($searchParams['manufacturer'] ?? '') == $ma['ma_name'] ? 'selected' : '' ?>>
-                                    <?= esc($ma['ma_name']) ?>
+                <form method="GET" action="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>">
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label for="start_date" class="form-label small">開始日期</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date"
+                                value="<?= esc($searchParams['start_date'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="end_date" class="form-label small">結束日期</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date"
+                                value="<?= esc($searchParams['end_date'] ?? '') ?>">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="type" class="form-label small">類型</label>
+                            <select class="form-select" id="type" name="type">
+                                <option value="">全部</option>
+                                <option value="<?= \App\Models\OrderModel::TYPE_IN_WAREHOUSE ?>"
+                                    <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_IN_WAREHOUSE ? 'selected' : '' ?>>
+                                    進倉庫
                                 </option>
-                            <?php endforeach; ?>
-                        </select>
+                                <option value="<?= \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ?>"
+                                    <?= ($searchParams['type'] ?? '') == \App\Models\OrderModel::TYPE_OUT_WAREHOUSE ? 'selected' : '' ?>>
+                                    出倉庫
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="manufacturer" class="form-label small">廠商</label>
+                            <select class="form-select" id="manufacturer" name="manufacturer">
+                                <option value="">全部</option>
+                                <option value="國鼎" <?= ($searchParams['manufacturer'] ?? '') == '國鼎' ? 'selected' : '' ?>>國鼎</option>
+                                <?php foreach ($manufacturers as $ma): ?>
+                                    <option value="<?= esc($ma['ma_name']) ?>"
+                                        <?= ($searchParams['manufacturer'] ?? '') == $ma['ma_name'] ? 'selected' : '' ?>>
+                                        <?= esc($ma['ma_name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="keyword" class="form-label small">關鍵字</label>
+                            <input type="text" class="form-control" id="keyword" name="keyword"
+                                placeholder="車號或倉庫名稱" value="<?= esc($searchParams['keyword'] ?? '') ?>">
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <label for="keyword" class="form-label small">關鍵字</label>
-                        <input type="text" class="form-control" id="keyword" name="keyword"
-                            placeholder="車號或倉庫名稱" value="<?= esc($searchParams['keyword'] ?? '') ?>">
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-search me-1"></i> 搜尋
+                            </button>
+                            <a href="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-clockwise me-1"></i> 清除
+                            </a>
+                        </div>
                     </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-search me-1"></i> 搜尋
-                        </button>
-                        <a href="<?= url_to('LocationController::materialUsage', $location['l_id']) ?>" class="btn btn-outline-secondary px-4">
-                            <i class="bi bi-arrow-clockwise me-1"></i> 清除
-                        </a>
-                    </div>
-                </div>
-            </form>
+                </form>
             </div>
         </div>
     </div>
@@ -300,7 +343,7 @@
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
-
+            <!-- 總計 -->
             <?php if (!empty($orders)): ?>
                 <tfoot class="table-warning fw-bold">
                     <tr>
@@ -335,11 +378,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         const searchFormCollapse = document.getElementById('searchFormCollapse');
         const toggleIcon = document.getElementById('toggleIcon');
-        
+
         searchFormCollapse.addEventListener('show.bs.collapse', function() {
             toggleIcon.classList.replace('bi-chevron-down', 'bi-chevron-up');
         });
-        
+
         searchFormCollapse.addEventListener('hide.bs.collapse', function() {
             toggleIcon.classList.replace('bi-chevron-up', 'bi-chevron-down');
         });

@@ -204,8 +204,10 @@
                             </h5>
                             <div class="d-flex gap-2">
                                 <?php if ($isEdit): ?>
-                                    <button type="button" class="btn btn-outline-info btn-sm" id="itemQuantityTableBtn"
-                                        data-bs-toggle="modal" data-bs-target="#itemQuantityModal">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="saveOnlyBtn">
+                                        <i class="bi bi-save me-1"></i>儲存
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" id="itemQuantityTableBtn">
                                         <i class="bi bi-table me-1"></i>項目數量表
                                     </button>
                                 <?php endif; ?>
@@ -798,6 +800,17 @@
         const manufacturerData = Array.isArray(window.manufacturerOptions) ? window.manufacturerOptions : [];
         let currentTargetField = 'from';
         let detailIndex = 0;
+        let isDirty = false;
+
+        // 監聽所有輸入變更
+        document.getElementById('orderForm').addEventListener('input', function(e) {
+            isDirty = true;
+        });
+
+        // 監聽修改（例如下拉選單、日期）
+        document.getElementById('orderForm').addEventListener('change', function(e) {
+            isDirty = true;
+        });
 
         // 圖片放大功能
         window.openImageModal = function(imageSrc, title) {
@@ -901,6 +914,7 @@
             tbody.appendChild(newRow);
             calculateRowWeight(newRow, false);
             detailIndex++;
+            isDirty = true;
         });
 
         function createEmptyDetail() {
@@ -936,9 +950,9 @@
         function buildDetailRow(detail, index) {
             const row = document.createElement('tr');
             const isOriginal = detail.od_id ? 'true' : 'false';
-            const productName = detail.pr_name
-                ? ((detail.mic_name && detail.mic_name !== detail.pr_name) ? `${detail.mic_name} ${detail.pr_name}` : detail.pr_name)
-                : '請選擇產品';
+            const productName = detail.pr_name ?
+                ((detail.mic_name && detail.mic_name !== detail.pr_name) ? `${detail.mic_name} ${detail.pr_name}` : detail.pr_name) :
+                '請選擇產品';
             const productTextClass = detail.pr_name ? '' : 'text-muted';
 
             row.dataset.index = index;
@@ -1011,6 +1025,7 @@
             row.querySelector('.remove-detail').addEventListener('click', function() {
                 if (document.querySelectorAll('#detailTableBody tr').length > 1) {
                     row.remove();
+                    isDirty = true;
                 } else {
                     alert('至少需要保留一個明細項目');
                 }
@@ -1104,6 +1119,53 @@
         }
 
         renderDetailRows();
+
+        // 儲存按鍵邏輯（不返回列表）
+        const saveOnlyBtn = document.getElementById('saveOnlyBtn');
+        if (saveOnlyBtn) {
+            saveOnlyBtn.addEventListener('click', function() {
+                // 修改 return_url 為當前網址
+                const returnUrlInput = document.querySelector('input[name="return_url"]');
+                if (returnUrlInput) {
+                    returnUrlInput.value = window.location.href;
+                }
+                isDirty = false; // 準備提交，視為已存檔
+                document.getElementById('orderForm').submit();
+            });
+        }
+
+        // 項目數量表按鍵邏輯
+        const itemQuantityTableBtn = document.getElementById('itemQuantityTableBtn');
+        if (itemQuantityTableBtn) {
+            itemQuantityTableBtn.addEventListener('click', function() {
+                // 1. 檢查廠商是否有設定
+                const manufacturerSelects = document.querySelectorAll('.manufacturer-select');
+                let allManufacturerSelected = true;
+                manufacturerSelects.forEach(select => {
+                    if (!select.value) {
+                        allManufacturerSelected = false;
+                        select.classList.add('is-invalid');
+                    } else {
+                        select.classList.remove('is-invalid');
+                    }
+                });
+
+                if (!allManufacturerSelected) {
+                    alert('請先為所有明細設定廠商！');
+                    return;
+                }
+
+                // 2. 檢查是否已存檔
+                if (isDirty) {
+                    alert('表單有未存檔的變更，請先點擊「儲存」按鍵存檔後再開啟項目數量表。');
+                    return;
+                }
+
+                // 3. 通過檢查，開啟 Modal
+                const modal = new bootstrap.Modal(document.getElementById('itemQuantityModal'));
+                modal.show();
+            });
+        }
 
         // 初始化產品選擇器
         const productSelector = window.createProductSelector({

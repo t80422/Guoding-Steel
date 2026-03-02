@@ -345,7 +345,11 @@ class OrderModel extends Model
         }
 
         if (!empty($searchParams['manufacturer'])) {
-            $builder->where('ma.ma_name', $searchParams['manufacturer']);
+            if ($searchParams['manufacturer'] === '國鼎') {
+                $builder->where('od.od_ma_id', null);
+            } else {
+                $builder->where('ma.ma_name', $searchParams['manufacturer']);
+            }
         }
 
         $builder->orderBy('o.o_date', 'DESC')
@@ -429,7 +433,7 @@ class OrderModel extends Model
                 }
 
                 // 處理廠商細項
-                $firmName = $row['item_firm_name'] ?: '';
+                $firmName = $row['item_firm_name'] ?: '國鼎';
                 if (!isset($orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName])) {
                     $orders[$orderId]['projects'][$projectName][$productKey]['breakdown'][$firmName] = [
                         'quantity' => 0.0,
