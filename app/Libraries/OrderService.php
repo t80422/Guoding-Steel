@@ -349,20 +349,23 @@ class OrderService
 
             // 識別要新增或更新的明細
             foreach ($newDetails as $detail) {
-                // 確保每個明細都有 od_o_id
-                $detail['od_o_id'] = $orderId;
-
-                // 處理外鍵欄位：空字串轉為 NULL
-                if (isset($detail['od_ma_id']) && $detail['od_ma_id'] === '') {
-                    $detail['od_ma_id'] = null;
-                }
+                // 正規化資料結構，確保批次操作時欄位一致
+                $normalizedDetail = [
+                    'od_o_id'   => $orderId,
+                    'od_pr_id'  => $detail['od_pr_id'] ?? null,
+                    'od_qty'    => $detail['od_qty'] ?? 0,
+                    'od_length' => $detail['od_length'] ?? 0,
+                    'od_weight' => $detail['od_weight'] ?? 0,
+                    'od_ma_id'  => (isset($detail['od_ma_id']) && $detail['od_ma_id'] !== '') ? $detail['od_ma_id'] : null,
+                ];
 
                 if (empty($detail['od_id'])) {
                     // 新增的明細，沒有 od_id
-                    $toInsert[] = $detail;
+                    $toInsert[] = $normalizedDetail;
                 } else if (in_array($detail['od_id'], $existingDetailIds)) {
-                    // 存在的明細，需要更新
-                    $toUpdate[] = $detail;
+                    // 存在的明細，加入主鍵進行更新
+                    $normalizedDetail['od_id'] = $detail['od_id'];
+                    $toUpdate[] = $normalizedDetail;
                 }
             }
 

@@ -958,7 +958,8 @@
             row.dataset.index = index;
             row.dataset.isOriginal = isOriginal;
             row.dataset.originalWeight = detail.od_weight ?? 0;
-            row.dataset.productIsLength = detail.pr_is_length ? '1' : '0';
+            // 修正：使用更嚴謹的判斷，確保 0 或 "0" 不會被誤判為 true
+            row.dataset.productIsLength = (detail.pr_is_length == 1) ? '1' : '0';
 
             row.innerHTML = `
             <td class="text-center align-middle">
@@ -1071,6 +1072,9 @@
             const lengthInput = row.querySelector('.length-input');
 
             if (isLength) {
+                // 如果是長度產品，確保欄位是啟用的
+                if (lengthInput) lengthInput.disabled = false;
+
                 // 按長度計算：總重量 = pr_weight × od_length × od_qty
                 if (length <= 0 && weightPerUnit > 0) {
                     // 顯示驗證錯誤反饋
@@ -1082,14 +1086,25 @@
                         lengthInput.parentNode.appendChild(feedback);
                     }
                     return;
-                } else {
+                } else if (lengthInput) {
                     lengthInput.classList.remove('is-invalid');
+                    if (lengthInput.nextElementSibling && lengthInput.nextElementSibling.classList.contains('invalid-feedback')) {
+                        lengthInput.nextElementSibling.remove();
+                    }
                 }
                 totalWeightKg = weightPerUnit * length * quantity;
             } else {
+                // 如果不是長度產品，禁用長度欄位並清空
+                if (lengthInput) {
+                    lengthInput.disabled = true;
+                    lengthInput.value = '';
+                    lengthInput.classList.remove('is-invalid');
+                    if (lengthInput.nextElementSibling && lengthInput.nextElementSibling.classList.contains('invalid-feedback')) {
+                        lengthInput.nextElementSibling.remove();
+                    }
+                }
                 // 按數量計算：總重量 = pr_weight × od_qty  
                 totalWeightKg = weightPerUnit * quantity;
-                if (lengthInput) lengthInput.classList.remove('is-invalid');
             }
 
             // 儲存公斤值至隱藏欄位，給後端使用
