@@ -97,7 +97,8 @@ class AuthService
                         'userName' => $user['u_name'],
                         'userId' => $user['u_id'],
                         'isAdmin' => (bool) ($user['u_is_admin'] ?? false),
-                        'isReadonly' => (bool) ($user['u_is_readonly'] ?? false)
+                        'isReadonly' => (bool) ($user['u_is_readonly'] ?? false),
+                        'isEditOnly' => (bool) ($user['u_is_edit_only'] ?? false)
                     ]
                 ];
             } else {
@@ -156,6 +157,7 @@ class AuthService
             session()->set('userId', $userData['userId']);
             session()->set('isAdmin', $userData['isAdmin'] ?? false);
             session()->set('isReadonly', $userData['isReadonly'] ?? false);
+            session()->set('isEditOnly', $userData['isEditOnly'] ?? false);
             return true;
         } catch (\Exception $e) {
             log_message('error', 'AuthService Session 設定錯誤: ' . $e->getMessage());

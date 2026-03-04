@@ -13,7 +13,8 @@ class UserModel extends Model
         'u_password',
         'u_p_id',
         'u_is_admin',
-        'u_is_readonly'
+        'u_is_readonly',
+        'u_is_edit_only'
     ];
 
     /**
@@ -23,7 +24,7 @@ class UserModel extends Model
     public function getUsersWithPosition()
     {
         return $this->builder('users u')
-            ->join('positions p', 'p.p_id=u.u_p_id','left')
+            ->join('positions p', 'p.p_id=u.u_p_id', 'left')
             ->select('u.u_id, u.u_name, p.p_name')
             ->get()->getResultArray();
     }
@@ -31,23 +32,23 @@ class UserModel extends Model
     public function getList($keyword, $page)
     {
         $builder = $this->builder('users u')
-            ->join('positions p', 'p.p_id=u.u_p_id','left')
-            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at, u.u_is_admin, u.u_is_readonly');
+            ->join('positions p', 'p.p_id=u.u_p_id', 'left')
+            ->select('u.u_id, u.u_name, p.p_name, u.u_create_at, u.u_is_admin, u.u_is_readonly, u.u_is_edit_only');
 
-        if(!empty($keyword)){
+        if (!empty($keyword)) {
             $builder->groupStart()
-                ->like('u.u_name',$keyword)
-                ->orLike('p.p_name',$keyword)
+                ->like('u.u_name', $keyword)
+                ->orLike('p.p_name', $keyword)
                 ->groupEnd();
         }
 
         $builder->orderBy('u.u_create_at', 'DESC');
-        
+
         $total = $builder->countAllResults(false);
         $perPage = 10;
         $totalPages = ceil($total / $perPage);
         $data = $builder->limit($perPage, ($page - 1) * $perPage)->get()->getResultArray();
-        
+
         return [
             'data' => $data,
             'currentPage' => $page,
@@ -55,7 +56,8 @@ class UserModel extends Model
         ];
     }
 
-    public function getDropdownByIsAdmin(){
+    public function getDropdownByIsAdmin()
+    {
         return $this->builder()
             ->where('u_is_admin', 1)
             ->select('u_id, u_name')

@@ -6,9 +6,11 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">產品管理</h3>
-        <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('ProductController::create') ?>')">
-            <i class="bi bi-plus-lg me-1"></i> 新增
-        </button>
+        <?php if (service('PermissionService')->canCreateData()): ?>
+            <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('ProductController::create') ?>')">
+                <i class="bi bi-plus-lg me-1"></i> 新增
+            </button>
+        <?php endif; ?>
     </div>
     <!-- 搜尋列 -->
     <form class="mb-4" onsubmit="search('<?= url_to('ProductController::index') ?>'); return false;">
@@ -55,9 +57,11 @@
                                 <button class="btn btn-sm btn-outline-info me-1" onclick="checkEditPermission('<?= url_to('ProductController::edit', $item['pr_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('ProductController::delete', $item['pr_id']) ?>')" title="刪除">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <?php if (service('PermissionService')->canDeleteData()): ?>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('ProductController::delete', $item['pr_id']) ?>')" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

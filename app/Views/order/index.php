@@ -137,9 +137,11 @@
                                 <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('OrderController::edit', $item['o_id']) ?><?= $encodedReturnUrl ? '?return_url=' . $encodedReturnUrl : '' ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('OrderController::delete', $item['o_id']) ?>')" title="刪除">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <?php if (service('PermissionService')->canDeleteData()): ?>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('OrderController::delete', $item['o_id']) ?>')" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

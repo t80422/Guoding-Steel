@@ -41,7 +41,7 @@ class GpsController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
@@ -52,12 +52,6 @@ class GpsController extends BaseController
 
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -65,10 +59,20 @@ class GpsController extends BaseController
             return redirect()->to(url_to('AuthController::index'))->with('error', '請先登入');
         }
 
-        if (isset($data['g_id'])) {
+        if (isset($data['g_id']) && !empty($data['g_id'])) {
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['g_update_by'] = $userId;
             $data['g_update_at'] = date('Y-m-d H:i:s');
         } else {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['g_create_by'] = $userId;
         }
 

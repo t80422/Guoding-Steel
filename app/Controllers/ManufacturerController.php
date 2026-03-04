@@ -59,7 +59,7 @@ class ManufacturerController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
@@ -71,12 +71,6 @@ class ManufacturerController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
@@ -86,9 +80,19 @@ class ManufacturerController extends BaseController
             }
 
             if (!empty($data['ma_id'])) {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['ma_update_by'] = $userId;
                 $data['ma_update_at'] = date('Y-m-d H:i:s');
             } else {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['ma_create_by'] = $userId;
             }
 

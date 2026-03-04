@@ -48,12 +48,6 @@ class MajorCategoryController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         $data = sanitize_form_data($data, ['mc_id']);
         $userId = session()->get('userId');
@@ -63,9 +57,19 @@ class MajorCategoryController extends BaseController
                 ->with('error', '請先登入！');
         }
 
-        if(empty($data['mc_id'])){
+        if (empty($data['mc_id'])) {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['mc_create_by'] = $userId;
-        }else{
+        } else {
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['mc_update_by'] = $userId;
             $data['mc_update_at'] = date('Y-m-d H:i:s');
         }
@@ -78,7 +82,7 @@ class MajorCategoryController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

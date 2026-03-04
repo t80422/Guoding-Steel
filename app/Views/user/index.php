@@ -6,9 +6,11 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">使用者管理</h3>
-        <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('UserController::create') ?>')">
-            <i class="bi bi-plus-lg me-1"></i> 新增
-        </button>
+        <?php if (service('PermissionService')->canCreateData()): ?>
+            <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('UserController::create') ?>')">
+                <i class="bi bi-plus-lg me-1"></i> 新增
+            </button>
+        <?php endif; ?>
     </div>
     <!-- 搜尋列 -->
     <form class="mb-4" onsubmit="search('<?= url_to('UserController::index') ?>'); return false;">
@@ -46,6 +48,8 @@
                                     <span class="badge bg-danger">管理員</span>
                                 <?php elseif ($item['u_is_readonly'] == 1): ?>
                                     <span class="badge bg-warning">唯讀</span>
+                                <?php elseif ($item['u_is_edit_only'] == 1): ?>
+                                    <span class="badge bg-info">只能編輯</span>
                                 <?php else: ?>
                                     <span class="badge bg-success">一般</span>
                                 <?php endif; ?>
@@ -60,9 +64,11 @@
                                 <button class="btn btn-sm btn-outline-info me-1" onclick="checkEditPermission('<?= url_to('UserController::edit', $item['u_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('UserController::delete', $item['u_id']) ?>')" title="刪除">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <?php if (service('PermissionService')->canDeleteData()): ?>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('UserController::delete', $item['u_id']) ?>')" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

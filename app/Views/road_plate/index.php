@@ -37,19 +37,30 @@
             <thead class="table-light">
                 <tr>
                     <th>地點</th>
-                    <th>數量</th>
+                    <?php if (!empty($products)): ?>
+                        <?php foreach ($products as $product): ?>
+                            <th class="text-center"><?= esc($product) ?></th>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($data)): ?>
+                <?php if (empty($locationData)): ?>
                     <tr>
-                        <td colspan="2" class="text-center">查無資料</td>
+                        <td colspan="<?= count($products) + 1 ?>" class="text-center">查無資料</td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($data as $item): ?>
+                    <?php foreach ($locationData as $location => $qtyMap): ?>
                         <tr>
-                            <td><?= esc($item['l_name']) ?></td>
-                            <td><?= esc($item['i_qty']) ?></td>
+                            <td class="fw-bold"><?= esc($location) ?></td>
+                            <?php foreach ($products as $product): ?>
+                                <td class="text-center">
+                                    <?php
+                                    $qty = $qtyMap[$product] ?? null;
+                                    echo ($qty !== null && $qty > 0) ? esc($qty) : '<span class="text-muted">-</span>';
+                                    ?>
+                                </td>
+                            <?php endforeach; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

@@ -68,12 +68,6 @@ class ManufacturerInventoryController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
@@ -81,6 +75,20 @@ class ManufacturerInventoryController extends BaseController
             if (empty($userId)) {
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
+            }
+
+            if (isset($data['mi_id']) && !empty($data['mi_id'])) {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
+            } else {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
             }
 
             $this->manufacturerInventoryService->saveManufacturerInventory($data);

@@ -50,7 +50,7 @@ class ProductModel extends Model
     public function getByMinorCategoryId($minorCategoryId)
     {
         return $this->where('pr_mic_id', $minorCategoryId)
-        ->findAll();
+            ->findAll();
     }
 
     /**
@@ -82,6 +82,21 @@ class ProductModel extends Model
             ->select('pr.pr_id, pr.pr_name, mic.mic_name, mic.mic_unit, mc.mc_name')
             ->whereIn('mc.mc_name', ['型鋼', '配件'])
             ->orderBy('pr.pr_id', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * 取得中心小分類為「鋪路鋼板」的所有產品清單
+     *
+     * @return array
+     */
+    public function getRoadPlateProducts()
+    {
+        return $this->builder('products pr')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id')
+            ->where('mic.mic_name', '鋪路鋼板')
+            ->select('pr.pr_name')
             ->get()
             ->getResultArray();
     }

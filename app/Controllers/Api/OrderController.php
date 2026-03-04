@@ -16,12 +16,14 @@ class OrderController extends Controller
     protected $orderModel;
     protected $orderDetailModel;
     protected $orderService;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->orderModel = new OrderModel();
         $this->orderDetailModel = new OrderDetailModel();
         $this->orderService = new OrderService();
+        $this->permissionService = new \App\Services\PermissionService();
     }
 
     // 新增
@@ -30,6 +32,12 @@ class OrderController extends Controller
         try {
             $headerId = $this->request->getHeaderLine('X-User-ID');
             $userId = empty($headerId) ? null : (int)$headerId;
+
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission(false, $userId);
+            if ($permissionCheck['status'] === 'error') {
+                return $this->failForbidden($permissionCheck['message']);
+            }
 
 
             $data = $this->request->getPost();
@@ -112,6 +120,12 @@ class OrderController extends Controller
             $userId = $this->request->getHeaderLine('X-User-ID');
             if (empty($userId)) {
                 return $this->fail('缺少使用者識別資訊，請重新登入後再試。');
+            }
+
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission(false, (int)$userId);
+            if ($permissionCheck['status'] === 'error') {
+                return $this->failForbidden($permissionCheck['message']);
             }
 
             $data = $this->request->getPost();

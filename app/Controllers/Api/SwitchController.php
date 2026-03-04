@@ -11,10 +11,12 @@ class SwitchController extends BaseController
     use ResponseTrait;
 
     protected $switchModel;
+    protected $permissionService;
 
     public function __construct()
     {
         $this->switchModel = new SwitchModel();
+        $this->permissionService = new \App\Services\PermissionService();
     }
 
     public function getSwitch()
@@ -27,6 +29,14 @@ class SwitchController extends BaseController
     {
         try {
             $data = $this->request->getJSON(true);
+            $userId = $this->request->getHeaderLine('X-User-ID') ?: ($data['userId'] ?? null);
+
+            // 檢查權限 (API)
+            $permissionCheck = $this->permissionService->getPermissionStatus('edit', $userId);
+            if ($permissionCheck['status'] === 'error') {
+                return $this->failForbidden($permissionCheck['message']);
+            }
+
             $this->switchModel->update(1, $data);
             return $this->respondNoContent();
         } catch (\Exception $e) {

@@ -60,7 +60,7 @@ class InventoryController extends BaseController
     {
         $data = $this->inventoryService->getInventoryInfo($id);
         return view('inventory/form', [
-            'isEdit' => true, 
+            'isEdit' => true,
             'data' => $data
         ]);
     }
@@ -69,7 +69,7 @@ class InventoryController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
@@ -81,25 +81,32 @@ class InventoryController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
-        
-            if(empty($userId)){
+
+            if (empty($userId)) {
                 return redirect()->to(url_to('AuthController::index'))
                     ->with('error', '請先登入！');
+            }
+
+            if (isset($data['i_id']) && !empty($data['i_id'])) {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
+            } else {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
             }
 
             $this->inventoryService->saveInventory($data);
             return redirect()->to(url_to('InventoryController::index'))
                 ->with('success', '儲存成功！');
-                
         } catch (\Exception $e) {
             $redirectUrl = isset($data['i_id']) && !empty($data['i_id'])
                 ? url_to('InventoryController::edit', $data['i_id'])

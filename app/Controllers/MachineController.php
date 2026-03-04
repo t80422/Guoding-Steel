@@ -43,15 +43,8 @@ class MachineController extends BaseController
         return view('machine/form', ['isEdit' => true, 'data' => $data]);
     }
 
-    // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         try {
             $userId = session()->get('userId');
@@ -61,8 +54,18 @@ class MachineController extends BaseController
             }
 
             if (empty($data['m_id'])) {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['m_create_by'] = $userId;
             } else {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['m_update_by'] = $userId;
                 $data['m_update_at'] = date('Y-m-d H:i:s');
             }
@@ -76,16 +79,15 @@ class MachineController extends BaseController
                 : url_to('MachineController::create');
 
             return redirect()->to($redirectUrl)
-                             ->withInput()
-                             ->with('error', $th->getMessage());
+                ->withInput()
+                ->with('error', $th->getMessage());
         }
     }
 
-    // 刪除
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

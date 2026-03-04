@@ -87,7 +87,7 @@ class InventoryModel extends Model
     }
 
     /**
-     * 取得鋪路鋼板庫存列表
+     * 取得鋪路鋼板庫存列表 (按地點分頁)
      *
      * @param array $filter
      * @param int $page
@@ -95,23 +95,46 @@ class InventoryModel extends Model
      */
     public function getRoadPlateList($filter = [], $page = 1)
     {
-        $builder = $this->builder('inventories i')
+        $perPage = 10;
+
+        // 1. 先取得符合條件的地點分頁清單
+        $locBuilder = $this->builder('inventories i')
             ->join('locations l', 'l.l_id = i.i_l_id')
             ->join('products pr', 'pr.pr_id = i.i_pr_id')
-            ->select('i.i_qty, l.l_name')
-            ->where('pr.pr_name', '鋪路鋼板')
-            ->orderBy('i.i_id', 'DESC');
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id')
+            ->where('mic.mic_name', '鋪路鋼板')
+            ->select('l.l_id, l.l_name')
+            ->groupBy('l.l_id');
 
         if (!empty($filter['keyword'])) {
-            $builder->groupStart()
-                ->orLike('l.l_name', $filter['keyword'])
-                ->groupEnd();
+            $locBuilder->like('l.l_name', $filter['keyword']);
         }
 
-        $total = $builder->countAllResults(false);
-        $perPage = 10;
-        $totalPages = ceil($total / $perPage);
-        $data = $builder->limit($perPage, ($page - 1) * $perPage)
+        $totalCount = $locBuilder->countAllResults(false);
+        $totalPages = ceil($totalCount / $perPage);
+
+        $locationRows = $locBuilder->limit($perPage, ($page - 1) * $perPage)
+            ->get()
+            ->getResultArray();
+
+        if (empty($locationRows)) {
+            return [
+                'data' => [],
+                'currentPage' => $page,
+                'totalPages' => $totalPages
+            ];
+        }
+
+        $locationIds = array_column($locationRows, 'l_id');
+
+        // 2. 取得這些地點底下的所有鋪路鋼板庫存明細
+        $data = $this->builder('inventories i')
+            ->join('locations l', 'l.l_id = i.i_l_id')
+            ->join('products pr', 'pr.pr_id = i.i_pr_id')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id')
+            ->where('mic.mic_name', '鋪路鋼板')
+            ->whereIn('i.i_l_id', $locationIds)
+            ->select('i.i_qty, l.l_name, pr.pr_name')
             ->get()
             ->getResultArray();
 

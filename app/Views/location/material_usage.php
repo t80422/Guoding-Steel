@@ -58,34 +58,40 @@
     }
 
     /* 4. 上方固定表頭 (縱向) */
-    /* 這裡的高度偏移需要精確計算或使用 JS 動態計算，先給定預估值 */
+    /* 計算高度：第一列 0px, 第二列約 41px, 第三列約 82px (實際依字體大小動態調整) */
     .sticky-table thead tr:nth-child(1) th {
         position: sticky;
-        z-index: 20;
+        top: 0;
+        z-index: 30;
+        /* 調高 Z-index 以防內容穿透 */
     }
 
     .sticky-table thead tr:nth-child(2) th {
         position: sticky;
-        z-index: 20;
+        top: 41px;
+        /* 第一列高度預估 */
+        z-index: 30;
     }
 
     .sticky-table thead tr:nth-child(3) th {
         position: sticky;
-        z-index: 20;
+        top: 82px;
+        /* 第一+二列高度預估 */
+        z-index: 30;
     }
 
     /* 5. 下方固定表尾 (縱向) */
     .sticky-table tfoot tr td {
         position: sticky;
         bottom: 0;
-        z-index: 20;
+        z-index: 30;
         background-color: #fff3cd !important;
         /* table-warning 顏色 */
         border-top: 2px solid #ffecb5 !important;
     }
 
     /* 6. 交集處 Z-Index 最高 */
-    /* 左上角表頭：確保水平捲動時，產品欄位會從下方滑過 */
+    /* 左上角表頭：確保在水平捲動與垂直捲動同時發生時，保持在最上方 */
     .sticky-table thead th.col-sticky-1,
     .sticky-table thead th.col-sticky-2,
     .sticky-table thead th.col-sticky-3,
@@ -94,7 +100,7 @@
         background-color: #EBF1EC !important;
     }
 
-    /* 左下角表尾：確保總計列在水平捲動時也不會被穿透 */
+    /* 左下角表尾：總計列的左側固定部分 */
     .sticky-table tfoot td.col-sticky-1,
     .sticky-table tfoot td.col-sticky-2,
     .sticky-table tfoot td.col-sticky-3,

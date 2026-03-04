@@ -49,12 +49,12 @@ class RentalController extends BaseController
         $filter = [
             'r_memo' => $this->request->getGet('memo')
         ];
-        
+
         $page = $this->request->getGet('page') ?? 1;
         $page = max(1, (int)$page);
 
         $result = $this->rentalModel->getList($filter, $page);
-        
+
         return view('rental', [
             'data' => $result['data'],
             'filter' => $filter,
@@ -84,7 +84,7 @@ class RentalController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
@@ -181,6 +181,12 @@ class RentalController extends BaseController
             $data = $this->request->getPost();
 
             if (isset($data['ro_id']) && !empty($data['ro_id'])) {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
+
                 // 更新 - 取得修改前的租賃資料用於庫存更新
                 $rentalId = $data['ro_id'];
                 $oldRental = $this->rentalOrderModel->find($rentalId);
@@ -195,6 +201,12 @@ class RentalController extends BaseController
                 // 更新庫存
                 $this->manufacturerInventoryService->updateInventoryForRental($rentalId, 'UPDATE', $oldRental, $oldRentalDetails);
             } else {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
+
                 // 新增
                 $data['ro_create_by'] = $userId;
                 $roId = $this->rentalOrderModel->insert($data);
@@ -289,7 +301,7 @@ class RentalController extends BaseController
     public function deleteOrder($id = null)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

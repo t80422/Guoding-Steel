@@ -48,12 +48,6 @@ class CarTypeController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         $data = sanitize_form_data($data, ['ct_id']);
         $userId = session()->get('userId');
@@ -64,8 +58,18 @@ class CarTypeController extends BaseController
         }
 
         if (empty($data['ct_id'])) {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['ct_created_by'] = $userId;
         } else {
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['ct_updated_by'] = $userId;
         }
         $this->carTypeModel->save($data);
@@ -77,7 +81,7 @@ class CarTypeController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

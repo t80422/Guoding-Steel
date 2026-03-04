@@ -42,26 +42,35 @@ class PositionController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
+        $p_id = $this->request->getPost('p_id');
         $data = [
             'p_name' => $this->request->getPost('p_name'),
         ];
+        if ($p_id) {
+            $data['p_id'] = $p_id;
+        }
+
         $userId = session()->get('userId');
 
         if (!$userId) {
             return redirect()->to(url_to('AuthController::index'))
                 ->with('error', '請先登入！');
         }
-        
-        if (isset($data['p_id'])) {
+
+        if (isset($data['p_id']) && !empty($data['p_id'])) {
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['p_update_by'] = $userId;
             $data['p_update_at'] = date('Y-m-d H:i:s');
         } else {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['p_create_by'] = $userId;
         }
 
@@ -74,7 +83,7 @@ class PositionController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

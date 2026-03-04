@@ -62,6 +62,12 @@
                 <label class="form-check-label" for="isReadonly">唯讀權限（無法新增、編輯、刪除）</label>
             </div>
         </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="isEditOnly" name="u_is_edit_only" value="1" <?= (old('u_is_edit_only', $data['u_is_edit_only'] ?? 0) == 1) ? 'checked' : '' ?>>
+                <label class="form-check-label" for="isEditOnly">只能編輯（無法新增、刪除）</label>
+            </div>
+        </div>
         <button type="submit" class="btn btn-primary">保存</button>
         <a href="/user" class="btn btn-secondary">取消</a>
     </form>

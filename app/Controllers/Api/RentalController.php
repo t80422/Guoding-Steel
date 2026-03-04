@@ -14,16 +14,26 @@ class RentalController extends Controller
     use ResponseTrait;
 
     private $rentalModel;
+    private $permissionService;
 
     const UPLOAD_PATH = WRITEPATH . 'uploads/rentals/';
 
     public function __construct()
     {
         $this->rentalModel = new RentalModel();
+        $this->permissionService = new \App\Services\PermissionService();
     }
 
     public function create()
     {
+        $userId = $this->request->getPost('userId');
+
+        // 檢查新增權限
+        $permissionCheck = $this->permissionService->validateCreatePermission(false, $userId);
+        if ($permissionCheck['status'] === 'error') {
+            return $this->failForbidden($permissionCheck['message']);
+        }
+
         $this->rentalModel->db->transStart();
         $fileManager = new FileManager(self::UPLOAD_PATH);
         $newFileNames = [];

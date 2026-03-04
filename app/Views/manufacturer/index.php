@@ -6,9 +6,11 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">廠商管理</h3>
-        <a href="<?= url_to('ManufacturerController::create') ?>" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> 新增
-        </a>
+        <?php if (service('PermissionService')->canCreateData()): ?>
+            <a href="<?= url_to('ManufacturerController::create') ?>" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> 新增
+            </a>
+        <?php endif; ?>
     </div>
     <!-- 搜尋列 -->
     <div class="card mb-4">
@@ -64,9 +66,11 @@
                                 <button class="btn btn-sm btn-outline-info" onclick="checkEditPermission('<?= url_to('ManufacturerController::edit', $item['ma_id']) ?>')" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('ManufacturerController::delete', $item['ma_id']) ?>')" title="刪除">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <?php if (service('PermissionService')->canDeleteData()): ?>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('ManufacturerController::delete', $item['ma_id']) ?>')" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -91,7 +95,7 @@
         const maName = document.getElementById('ma_name').value.trim();
 
         let queryParams = [];
-        
+
         if (maName) {
             queryParams.push('ma_name=' + encodeURIComponent(maName));
         }

@@ -15,6 +15,7 @@ class UserController extends BaseController
     private $positionModel;
     private $userLocationModel;
     private $locationModel;
+    private $permissionService;
 
     public function __construct()
     {
@@ -22,6 +23,7 @@ class UserController extends BaseController
         $this->positionModel = new PositionModel();
         $this->userLocationModel = new UserLocationModel();
         $this->locationModel = new LocationModel();
+        $this->permissionService = new \App\Services\PermissionService();
     }
 
     // 列表
@@ -47,6 +49,9 @@ class UserController extends BaseController
     // 新增
     public function create()
     {
+        // 檢查新增權限
+        $this->permissionService->validateCreatePermission(true);
+
         $positions = $this->positionModel->findAll();
         return view('user/form', ['isEdit' => false, 'positions' => $positions]);
     }
@@ -108,7 +113,8 @@ class UserController extends BaseController
         $result = [
             'u_name' => $data['u_name'],
             'u_is_admin' => $this->request->getVar('u_is_admin') ?? 0,
-            'u_is_readonly' => $this->request->getVar('u_is_readonly') ?? 0
+            'u_is_readonly' => $this->request->getVar('u_is_readonly') ?? 0,
+            'u_is_edit_only' => $this->request->getVar('u_is_edit_only') ?? 0
         ];
 
         if (!empty($data['u_p_id'])) {
@@ -127,7 +133,13 @@ class UserController extends BaseController
                 ->with('error', '請先登入！');
         }
 
-        if (!empty($data['u_id'])) {
+        if (empty($data['u_id'])) {
+            // 檢查新增權限
+            $this->permissionService->validateCreatePermission(true);
+        } else {
+            // 檢查編輯權限
+            $this->permissionService->validateEditPermission(true);
+
             $result['u_id'] = $data['u_id'];
             $result['u_update_by'] = $userId;
             $result['u_update_at'] = date('Y-m-d H:i:s');
@@ -141,6 +153,9 @@ class UserController extends BaseController
     // 刪除
     public function delete($id)
     {
+        // 檢查刪除權限
+        $this->permissionService->validateDeletePermission(true);
+
         $this->userModel->delete($id);
         return redirect()->to('user');
     }

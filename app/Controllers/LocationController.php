@@ -54,15 +54,8 @@ class LocationController extends BaseController
         return view('location/form', ['isEdit' => true, 'data' => $data]);
     }
 
-    // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         try {
             $data = $this->request->getPost();
             $userId = session()->get('userId');
@@ -73,8 +66,18 @@ class LocationController extends BaseController
             }
 
             if (empty($data['l_id'])) {
+                // 檢查新增權限
+                $permissionCheck = $this->permissionService->validateCreatePermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['l_create_by'] = $userId;
             } else {
+                // 檢查編輯權限
+                $permissionCheck = $this->permissionService->validateEditPermission();
+                if ($permissionCheck['status'] === 'error') {
+                    return redirect()->back()->with('error', $permissionCheck['message']);
+                }
                 $data['l_update_by'] = $userId;
                 $data['l_update_at'] = date('Y-m-d H:i:s');
             }
@@ -97,7 +100,7 @@ class LocationController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }
@@ -112,7 +115,7 @@ class LocationController extends BaseController
         $location = $this->locationModel->find($id);
         $manufacturerModel = new ManufacturerModel();
         $manufacturers = $manufacturerModel->getDropdown();
-        
+
         // 取得搜尋參數
         $searchParams = [
             'start_date' => $this->request->getGet('start_date'),
@@ -124,7 +127,7 @@ class LocationController extends BaseController
 
         // 取得詳細用料情況（整合訂單和租賃單資料）
         $materialData = $this->locationMaterialService->getMaterialUsage($id, $searchParams);
-        
+
         return view('location/material_usage', [
             'location' => $location,
             'orders' => $materialData['orders'],

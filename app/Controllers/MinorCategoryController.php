@@ -56,12 +56,6 @@ class MinorCategoryController extends BaseController
     // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         $data = sanitize_form_data($data, ['mic_id']);
         $userId = session()->get('userId');
@@ -73,6 +67,11 @@ class MinorCategoryController extends BaseController
 
         // 新增
         if (empty($data['mic_id'])) {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['mic_create_by'] = $userId;
             $micId = $this->minorCategoryModel->insert($data);
 
@@ -82,6 +81,11 @@ class MinorCategoryController extends BaseController
             }
         } else {
             // 編輯
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
             $data['mic_update_by'] = $userId;
             $data['mic_update_at'] = date('Y-m-d H:i:s');
             $this->minorCategoryModel->update($data['mic_id'], $data);
@@ -94,7 +98,7 @@ class MinorCategoryController extends BaseController
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

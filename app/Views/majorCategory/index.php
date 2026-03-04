@@ -6,9 +6,11 @@
     <!-- 標題列 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">大分類管理</h3>
-        <a href="<?= url_to('MajorCategoryController::create') ?>" class="btn btn-outline-primary">
-            <i class="bi bi-plus-lg me-1"></i> 新增
-        </a>
+        <?php if (service('PermissionService')->canCreateData()): ?>
+            <a href="<?= url_to('MajorCategoryController::create') ?>" class="btn btn-outline-primary">
+                <i class="bi bi-plus-lg me-1"></i> 新增
+            </a>
+        <?php endif; ?>
     </div>
     <!-- 搜尋列 -->
     <form class="mb-4" onsubmit="search('<?= url_to('MajorCategoryController::index') ?>'); return false;">
@@ -49,9 +51,11 @@
                                 <a href="<?= url_to('MajorCategoryController::edit', $item['mc_id']) ?>" class="btn btn-sm btn-outline-info me-1" title="編輯">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('MajorCategoryController::delete', $item['mc_id']) ?>')" title="刪除">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <?php if (service('PermissionService')->canDeleteData()): ?>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete('<?= url_to('MajorCategoryController::delete', $item['mc_id']) ?>')" title="刪除">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

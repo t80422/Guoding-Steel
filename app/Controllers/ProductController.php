@@ -67,7 +67,7 @@ class ProductController extends BaseController
         }
 
         $majorCategories = $this->majorCategoryModel->getDropdown();
-        $mcId=$this->minorCategoryModel->find($data['pr_mic_id'])['mic_mc_id'];
+        $mcId = $this->minorCategoryModel->find($data['pr_mic_id'])['mic_mc_id'];
 
         return view('product/form', [
             'isEdit' => true,
@@ -77,15 +77,8 @@ class ProductController extends BaseController
         ]);
     }
 
-    // 儲存
     public function save()
     {
-        // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
-        if ($permissionCheck['status'] === 'error') {
-            return redirect()->back()->with('error', $permissionCheck['message']);
-        }
-
         $data = $this->request->getPost();
         $userId = session()->get('userId');
 
@@ -94,16 +87,29 @@ class ProductController extends BaseController
                 ->with('error', '請先登入！');
         }
 
+        if (empty($data['pr_id'])) {
+            // 檢查新增權限
+            $permissionCheck = $this->permissionService->validateCreatePermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
+        } else {
+            // 檢查編輯權限
+            $permissionCheck = $this->permissionService->validateEditPermission();
+            if ($permissionCheck['status'] === 'error') {
+                return redirect()->back()->with('error', $permissionCheck['message']);
+            }
+        }
+
         $this->productService->save($data, $userId);
 
         return redirect()->to(url_to('ProductController::index'));
     }
 
-    // 刪除
     public function delete($id)
     {
         // 檢查權限
-        $permissionCheck = $this->permissionService->validateEditPermission();
+        $permissionCheck = $this->permissionService->validateDeletePermission();
         if ($permissionCheck['status'] === 'error') {
             return redirect()->back()->with('error', $permissionCheck['message']);
         }

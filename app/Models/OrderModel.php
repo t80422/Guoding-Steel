@@ -350,6 +350,7 @@ class OrderModel extends Model
             } else {
                 $builder->where('ma.ma_name', $searchParams['manufacturer']);
             }
+            // $builder->where('ma.ma_name', $searchParams['manufacturer']);
         }
 
         $builder->orderBy('o.o_date', 'DESC')
