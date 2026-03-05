@@ -155,9 +155,9 @@ class InventoryModel extends Model
     public function getProductInventoryByLocation($productId, $locationId)
     {
         return $this->builder('inventories i')
-            ->join('locations l', 'l.l_id = i.i_l_id')
-            ->join('products pr', 'pr.pr_id = i.i_pr_id')
-            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id')
+            ->join('locations l', 'l.l_id = i.i_l_id', 'left')
+            ->join('products pr', 'pr.pr_id = i.i_pr_id', 'left')
+            ->join('minor_categories mic', 'mic.mic_id = pr.pr_mic_id', 'left')
             ->select('i.*, l.l_name, pr.pr_name, mic.mic_name')
             ->where('i.i_pr_id', $productId)
             ->where('i.i_l_id', $locationId)

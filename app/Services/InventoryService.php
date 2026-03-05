@@ -74,7 +74,7 @@ class InventoryService
         foreach ($orderDetails as $detail) {
             // 出庫地點減少庫存
             $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], -$detail['od_qty']);
-            
+
             // 入庫地點增加庫存
             $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], $detail['od_qty']);
         }
@@ -137,30 +137,32 @@ class InventoryService
      */
     private function handleDeleteOrder($orderId)
     {
-        try
-        {
+        try {
             $order = $this->orderModel->find($orderId);
             if (!$order) {
                 throw new Exception('訂單不存在');
             }
-    
+
             $orderDetails = $this->orderDetailModel->getByOrderId($orderId);
-            
+
             foreach ($orderDetails as $detail) {
+                // 如果商品已刪除 (od_pr_id 為 null 或空)，則跳過庫存回沖
+                if (empty($detail['od_pr_id'])) {
+                    continue;
+                }
+
                 // 回復出庫地點庫存 (DELETE 操作跳過庫存檢查)
                 $this->adjustInventory($detail['od_pr_id'], $order['o_from_location'], $detail['od_qty'], true);
-                
+
                 // 回復入庫地點庫存 (DELETE 操作跳過庫存檢查)
                 $this->adjustInventory($detail['od_pr_id'], $order['o_to_location'], -$detail['od_qty'], true);
             }
-    
+
             return true;
-        }
-        catch (Exception $e) {
+        } catch (Exception $e) {
             log_message('error', 'InventoryService::handleDeleteOrder - ' . $e->getMessage());
             throw $e;
         }
-        
     }
 
     /**
@@ -176,9 +178,14 @@ class InventoryService
     {
         // 先回復原有的庫存影響 (UPDATE 操作的回復階段跳過庫存檢查)
         foreach ($oldOrderDetails as $detail) {
+            // 如果商品已刪除 (od_pr_id 為 null 或空)，則跳過庫存回沖
+            if (empty($detail['od_pr_id'])) {
+                continue;
+            }
+
             // 回復原出庫地點庫存
             $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_from_location'], $detail['od_qty'], true);
-            
+
             // 回復原入庫地點庫存
             $this->adjustInventory($detail['od_pr_id'], $oldOrderData['o_to_location'], -$detail['od_qty'], true);
         }
@@ -211,9 +218,9 @@ class InventoryService
 
         // 計算新的庫存數量
         $newQty = $inventory['i_qty'] + $qtyChange;
-        
+
         // 🔍 允許負數庫存，移除庫存不足檢查 (根據業務需求調整)
-        
+
         $updateData = [
             'i_qty' => $newQty,
             'i_update_by' => session()->get('userId') ?? 1, // 預設系統使用者
@@ -233,7 +240,7 @@ class InventoryService
     public function ensureInventoryExists($productId, $locationId)
     {
         $exists = $this->inventoryModel->isDuplicateLocationProduct($productId, $locationId);
-        
+
         if (!$exists) {
             $inventoryData = [
                 'i_pr_id' => $productId,
@@ -242,10 +249,10 @@ class InventoryService
                 'i_qty' => 0,
                 'i_create_by' => session()->get('userId') ?? 1 // 預設系統使用者
             ];
-            
+
             return $this->inventoryModel->insert($inventoryData);
         }
-        
+
         return true;
     }
 
@@ -332,7 +339,7 @@ class InventoryService
     public function saveInventory($data)
     {
         $userId = session()->get('userId');
-        
+
         if (empty($userId)) {
             throw new Exception('請先登入！');
         }
@@ -346,10 +353,10 @@ class InventoryService
             if ($this->inventoryModel->isDuplicateLocationProduct($data['i_pr_id'], $data['i_l_id'])) {
                 throw new Exception("此地點和產品的組合已存在庫存記錄！");
             }
-            
+
             $data['i_create_by'] = $userId;
         }
-        
+
         return $this->inventoryModel->save($data);
     }
 
@@ -363,4 +370,4 @@ class InventoryService
     {
         return $this->inventoryModel->delete($id);
     }
-} 
+}
