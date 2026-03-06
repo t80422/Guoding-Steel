@@ -57,7 +57,7 @@
                                 <td class="text-center">
                                     <?php
                                     $qty = $qtyMap[$product] ?? null;
-                                    echo ($qty !== null && $qty > 0) ? esc($qty) : '<span class="text-muted">-</span>';
+                                    echo ($qty !== null) ? esc($qty) : '<span class="text-muted">-</span>';
                                     ?>
                                 </td>
                             <?php endforeach; ?>
