@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="mb-0 fw-bold">小分類管理</h3>
         <?php if (service('PermissionService')->canCreateData()): ?>
-            <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('LocationController::create') ?>')">
+            <button class="btn btn-primary" onclick="checkCreatePermission('<?= url_to('MinorCategoryController::create') ?>')">
                 <i class="bi bi-plus-lg me-1"></i> 新增
             </button>
         <?php endif; ?>
